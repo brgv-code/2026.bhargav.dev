@@ -1,24 +1,24 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { buildConfig } from "payload/config";
-import { postgresAdapter } from "@payloadcms/db-postgres";
-import { lexicalEditor } from "@payloadcms/richtext-lexical";
+import { buildConfig } from "payload";
+import { sqliteAdapter } from "@payloadcms/db-sqlite";
 import { z } from "zod";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const envSchema = z.object({
-  DATABASE_URL: z.string().url(),
   PAYLOAD_SECRET: z.string().min(16),
-  OPENAI_API_KEY: z.string().min(1),
+  OPENAI_API_KEY: z.string().min(1).optional(),
 });
 
+const openAIKey = process.env.OPENAI_API_KEY?.trim();
 const env = envSchema.parse({
-  DATABASE_URL: process.env.DATABASE_URL,
   PAYLOAD_SECRET: process.env.PAYLOAD_SECRET,
-  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  OPENAI_API_KEY: openAIKey && openAIKey.length > 0 ? openAIKey : undefined,
 });
+
+const dbPath = process.env.CMS_DB_PATH ?? path.join(__dirname, "cms.db");
 
 const postsSlug = "posts";
 const workExperienceSlug = "work-experience";
@@ -26,20 +26,25 @@ const mediaSlug = "media";
 const favoritesSlug = "favorites";
 const streaksSlug = "streaks";
 
-export default buildConfig({
+const config = buildConfig({
   serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL,
   secret: env.PAYLOAD_SECRET,
   admin: {
     user: undefined,
   },
-  db: postgresAdapter({
-    url: env.DATABASE_URL,
+  db: sqliteAdapter({
+    client: {
+      url: `file:${dbPath}`,
+    },
   }),
   collections: [
     {
       slug: postsSlug,
       admin: {
         useAsTitle: "title",
+      },
+      access: {
+        read: () => true,
       },
       fields: [
         {
@@ -162,25 +167,29 @@ export default buildConfig({
           async ({ doc, req, previousDoc }) => {
             if (doc.status !== "published") return doc;
             if (doc.audio_summary) return doc;
+            if (!env.OPENAI_API_KEY) return doc;
 
             const text =
               typeof doc.content === "string"
                 ? doc.content
-                : doc.title ?? "Blog post";
+                : (doc.title ?? "Blog post");
 
             try {
-              const response = await fetch("https://api.openai.com/v1/audio/speech", {
-                method: "POST",
-                headers: {
-                  Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-                  "Content-Type": "application/json",
+              const response = await fetch(
+                "https://api.openai.com/v1/audio/speech",
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    model: "tts-1-hd",
+                    voice: "alloy",
+                    input: text,
+                  }),
                 },
-                body: JSON.stringify({
-                  model: "tts-1-hd",
-                  voice: "alloy",
-                  input: text,
-                }),
-              });
+              );
 
               if (!response.ok) {
                 return doc;
@@ -220,6 +229,9 @@ export default buildConfig({
       slug: workExperienceSlug,
       admin: {
         useAsTitle: "company",
+      },
+      access: {
+        read: () => true,
       },
       fields: [
         {
@@ -330,6 +342,9 @@ export default buildConfig({
   globals: [
     {
       slug: "profile",
+      access: {
+        read: () => true,
+      },
       fields: [
         {
           name: "name",
@@ -370,3 +385,5 @@ export default buildConfig({
   ],
 });
 
+export default config;
+export const configPromise = Promise.resolve(config);

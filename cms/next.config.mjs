@@ -1,7 +1,15 @@
+import { withPayload } from "@payloadcms/next/withPayload";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* Payload-specific config will be added as needed */
+  serverExternalPackages: [
+    "@payloadcms/db-sqlite",
+    "@libsql/client",
+    "libsql",
+    "esbuild",
+    "drizzle-kit",
+    "sharp",
+  ],
 };
 
-export default nextConfig;
-
+export default withPayload(nextConfig);

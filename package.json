@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "pnpm dev:web",
     "dev:web": "next dev",
-    "dev:cms": "cd cms && next dev",
+    "dev:cms": "cd cms && pnpm dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint ."
