@@ -3,6 +3,8 @@ import { fileURLToPath } from "node:url";
 
 import { Block, buildConfig } from "payload";
 import { seoPlugin } from "@payloadcms/plugin-seo";
+import type { Access } from "payload";
+
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import {
   lexicalEditor,
@@ -30,8 +32,7 @@ const env = envSchema.parse({
   CMS_DB_PATH: process.env.CMS_DB_PATH,
 });
 
-const dbPath = env.CMS_DB_PATH ?? path.join(__dirname, "cms.db");
-
+const isLoggedIn: Access = ({ req: { user } }) => !!user;
 const slugs = {
   users: "users",
   posts: "posts",
@@ -339,7 +340,12 @@ const config = buildConfig({
       slug: slugs.users,
       auth: true,
       admin: { useAsTitle: "email" },
-      access: { read: () => true },
+      access: {
+        read: () => true,
+        create: isLoggedIn,
+        update: isLoggedIn,
+        delete: isLoggedIn,
+      },
       fields: [
         {
           name: "name",
@@ -360,7 +366,12 @@ const config = buildConfig({
     {
       slug: slugs.tags,
       admin: { useAsTitle: "name" },
-      access: { read: () => true },
+      access: {
+        read: () => true,
+        create: isLoggedIn,
+        update: isLoggedIn,
+        delete: isLoggedIn,
+      },
       fields: [
         { name: "name", type: "text", required: true },
         { name: "slug", type: "text", required: true, unique: true },
@@ -375,7 +386,12 @@ const config = buildConfig({
     {
       slug: slugs.series,
       admin: { useAsTitle: "name" },
-      access: { read: () => true },
+      access: {
+        read: () => true,
+        create: isLoggedIn,
+        update: isLoggedIn,
+        delete: isLoggedIn,
+      },
       fields: [
         { name: "name", type: "text", required: true },
         { name: "slug", type: "text", required: true, unique: true },
@@ -392,7 +408,12 @@ const config = buildConfig({
     {
       slug: slugs.posts,
       admin: { useAsTitle: "title" },
-      access: { read: () => true },
+      access: {
+        read: () => true,
+        create: isLoggedIn,
+        update: isLoggedIn,
+        delete: isLoggedIn,
+      },
       fields: [
         {
           name: "title",
@@ -645,7 +666,12 @@ const config = buildConfig({
           "audio/mp4",
         ],
       },
-      access: { read: () => true },
+      access: {
+        read: () => true,
+        create: isLoggedIn,
+        update: isLoggedIn,
+        delete: isLoggedIn,
+      },
       fields: [
         {
           name: "alt",
@@ -669,7 +695,12 @@ const config = buildConfig({
     {
       slug: slugs.workExperience,
       admin: { useAsTitle: "company" },
-      access: { read: () => true },
+      access: {
+        read: () => true,
+        create: isLoggedIn,
+        update: isLoggedIn,
+        delete: isLoggedIn,
+      },
       fields: [
         { name: "company", type: "text", required: true },
         { name: "role", type: "text", required: true },
@@ -690,7 +721,12 @@ const config = buildConfig({
     {
       slug: slugs.favorites,
       admin: { useAsTitle: "title" },
-      access: { read: () => true },
+      access: {
+        read: () => true,
+        create: isLoggedIn,
+        update: isLoggedIn,
+        delete: isLoggedIn,
+      },
       fields: [
         {
           name: "type",
@@ -713,7 +749,12 @@ const config = buildConfig({
     {
       slug: slugs.streaks,
       admin: { useAsTitle: "label" },
-      access: { read: () => true },
+      access: {
+        read: () => true,
+        create: isLoggedIn,
+        update: isLoggedIn,
+        delete: isLoggedIn,
+      },
       fields: [
         { name: "label", type: "text", required: true },
         { name: "date", type: "date", required: true },
@@ -725,7 +766,10 @@ const config = buildConfig({
   globals: [
     {
       slug: "profile",
-      access: { read: () => true },
+      access: {
+        read: () => true,
+        update: isLoggedIn,
+      },
       fields: [
         { name: "name", type: "text", required: true },
         { name: "tagline", type: "text" },
