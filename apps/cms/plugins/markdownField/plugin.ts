@@ -146,16 +146,28 @@ export const markdownPlugin =
               const { lexicalJSON, html } =
                 await markdownToPayload(rawMarkdown);
 
-              await req.payload.update({
-                collection: uploadCollectionSlug,
-                id: doc.id,
+              try {
+                await req.payload.update({
+                  collection: uploadCollectionSlug,
+                  id: doc.id,
 
-                data: {
-                  [contentName]: lexicalJSON,
-                  [htmlName]: html,
-                } satisfies Record<string, unknown>,
-                overrideAccess: true,
-              });
+                  data: {
+                    [contentName]: lexicalJSON,
+                    [htmlName]: html,
+                  } satisfies Record<string, unknown>,
+                  overrideAccess: true,
+                });
+              } catch (updateErr) {
+                const status = (updateErr as { status?: number })?.status;
+                req.payload.logger.warn(
+                  {
+                    err: updateErr,
+                    documentId: doc.id,
+                    status,
+                  },
+                  "[markdownPlugin] Upload parse: could not persist parsed content (document saved; you can re-save or use file on a post to populate)"
+                );
+              }
 
               return { ...doc, [contentName]: lexicalJSON, [htmlName]: html };
             } catch (err) {
@@ -274,8 +286,60 @@ export const markdownPlugin =
                     depth: 0,
                   });
                   const docRecord = doc as unknown as Record<string, unknown>;
-                  const fromContent = docRecord[docContentName];
-                  const fromHtml = docRecord[docHtmlName];
+                  let fromContent = docRecord[docContentName];
+                  let fromHtml = docRecord[docHtmlName];
+                  const filename =
+                    typeof docRecord.filename === "string"
+                      ? docRecord.filename
+                      : undefined;
+
+                  if (
+                    (fromContent == null || fromHtml == null) &&
+                    filename?.match(/\.(md|markdown|txt)$/i)
+                  ) {
+                    const uploadCol = config.collections?.find(
+                      (c) => c.slug === uploadCollectionSlug
+                    );
+                    const uploadDir =
+                      typeof uploadCol?.upload === "object" &&
+                      uploadCol?.upload?.staticDir
+                        ? uploadCol.upload.staticDir
+                        : "media";
+                    const filePath = path.isAbsolute(uploadDir)
+                      ? path.join(uploadDir, filename)
+                      : path.resolve(process.cwd(), uploadDir, filename);
+                    if (fs.existsSync(filePath)) {
+                      try {
+                        const rawMarkdown = fs.readFileSync(
+                          filePath,
+                          "utf-8"
+                        );
+                        const parsed =
+                          await markdownToPayload(rawMarkdown);
+                        fromContent = parsed.lexicalJSON;
+                        fromHtml = parsed.html;
+                        try {
+                          await req.payload.update({
+                            collection: uploadCollectionSlug,
+                            id:
+                              typeof docRecord.id === "number"
+                                ? docRecord.id
+                                : String(docRecord.id),
+                            data: {
+                              [docContentName]: fromContent,
+                              [docHtmlName]: fromHtml,
+                            } satisfies Record<string, unknown>,
+                            overrideAccess: true,
+                          });
+                        } catch {
+                          // ignore; we have content for this save
+                        }
+                      } catch {
+                        // leave fromContent/fromHtml as-is
+                      }
+                    }
+                  }
+
                   if (fromContent != null || fromHtml != null) {
                     (data as Record<string, unknown>)[pasteContentName] =
                       fromContent;
