@@ -8,7 +8,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="w-full shrink-0 border-t border-[var(--editorial-border)] bg-[var(--editorial-surface)]">
+    <footer className="w-full shrink-0 border-t border-[var(--editorial-border)] bg-[var(--editorial-bg)]">
       <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="font-mono text-[10px] tracking-widest uppercase text-[var(--editorial-text-dim)]">
           © {year} bhargav.dev

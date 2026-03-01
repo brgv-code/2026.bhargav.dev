@@ -1,139 +1,78 @@
 "use client";
 
-/** Hardcoded activity for a single day in the streak grid. */
-type DayActivity = {
-  /** 0 = empty, 1–4 = light to dark fill */
-  intensity: 0 | 1 | 2 | 3 | 4;
-  /** If true, show current-day ring and ping dot */
-  isToday?: boolean;
-  /** Optional peek content on hover */
-  peek?: {
-    dateLabel: string;
-    tag: string;
-    /** Primary activity (e.g. WRITE = filled badge) */
-    tagPrimary?: boolean;
-    description: string;
-  };
-};
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type { PayloadActivityDay } from "@/lib/payload";
 
-const INTENSITY_CLASSES = [
-  "bg-[var(--editorial-text)]/5",
-  "bg-[var(--editorial-text)]/20",
-  "bg-[var(--editorial-text)]/40",
-  "bg-[var(--editorial-text)]/60",
-  "bg-[var(--editorial-text)]/80",
-] as const;
-
-/** Hardcoded 14-day activity for the homepage streak grid. */
-const HARDCODED_DAYS: DayActivity[] = [
-  { intensity: 0 },
-  { intensity: 0 },
-  {
-    intensity: 2,
-    peek: {
-      dateLabel: "Feb 20",
-      tag: "CODE",
-      description: "Refactored the Next.js router state machine.",
-    },
-  },
-  { intensity: 1 },
-  { intensity: 3 },
-  { intensity: 0 },
-  { intensity: 1 },
-  { intensity: 1 },
-  { intensity: 2 },
-  {
-    intensity: 4,
-    peek: {
-      dateLabel: "Feb 24",
-      tag: "WRITE",
-      tagPrimary: true,
-      description: 'Published "Type-Safe Prompts in Production"',
-    },
-  },
-  { intensity: 1 },
-  { intensity: 2 },
-  { intensity: 1 },
-  {
-    intensity: 2,
-    isToday: true,
-    peek: {
-      dateLabel: "Today",
-      tag: "CODE",
-      description: "Merged caching layer into Cognitive.ts",
-    },
-  },
+/** Fallback activity when no payload data is available. */
+const FALLBACK_ACTIVITY: PayloadActivityDay[] = [
+  { date: "Feb 15", intensity: 0.15, summary: "Minor CSS tweaks on blog layout" },
+  { date: "Feb 16", intensity: 0.25, summary: "Reviewed PR for auth module" },
+  { date: "Feb 17", intensity: 0.4, summary: "Wrote draft: ESM/CJS conflicts" },
+  { date: "Feb 18", intensity: 0.6, summary: "Refactored component library tokens" },
+  { date: "Feb 19", intensity: 0.25, summary: "Code review & standup notes" },
+  { date: "Feb 20", intensity: 0.8, summary: "Published Payload v3 + Next.js post" },
+  { date: "Feb 21", intensity: 0.15, summary: "Light reading & bookmarking" },
+  { date: "Feb 22", intensity: 0.3, summary: "Bug fix: sidebar scroll on mobile" },
+  { date: "Feb 23", intensity: 0.5, summary: "Built activity log component" },
+  { date: "Feb 24", intensity: 0.9, summary: "Major refactor: design system tokens" },
+  { date: "Feb 25", intensity: 0.4, summary: "Pair programming session on API layer" },
+  { date: "Feb 26", intensity: 0.7, summary: "Migrated 3 components to new tokens" },
+  { date: "Feb 27", intensity: 0.2, summary: "Documentation & README updates" },
+  { date: "Feb 28", intensity: 1.0, summary: "Shipped portfolio redesign v2 🚀" },
 ];
 
-export function ActivityStreakGrid() {
+type Props = {
+  /** Activity from Payload (e.g. streaks). If empty or undefined, fallback data is used. */
+  activityLog?: PayloadActivityDay[] | null;
+};
+
+export function ActivityStreakGrid({ activityLog }: Props) {
+  const days = activityLog?.length
+    ? activityLog
+    : FALLBACK_ACTIVITY;
+  const streak = days.length;
+
   return (
     <div className="border-t border-[var(--editorial-border)] pt-8">
-      <div className="flex justify-between items-baseline mb-4">
-        <span className="font-mono text-[10px] tracking-widest uppercase text-[var(--editorial-text-dim)]">
+      <div className="flex items-center justify-between mb-3">
+        <span className="font-mono text-[10px] tracking-[0.15em] uppercase text-[var(--editorial-text-dim)]">
           Activity Log
         </span>
-        <span className="font-mono text-[9px] text-[var(--editorial-accent)] uppercase tracking-widest">
-          14 Day Streak
+        <span className="font-mono text-[11px] text-[var(--editorial-accent)] font-medium">
+          {streak} day streak
         </span>
       </div>
-
       <div className="grid grid-cols-7 gap-1.5 w-full max-w-[220px]">
-        {HARDCODED_DAYS.map((day, i) => {
-          const hasPeek = day.peek != null;
-          const intensityClass = day.isToday
-            ? "bg-[var(--editorial-accent)]"
-            : INTENSITY_CLASSES[day.intensity];
-
-          return (
-            <div
-              key={i}
-              className={`
-                relative w-full aspect-square rounded-sm transition-all
-                ${intensityClass}
-                ${day.isToday ? "ring-1 ring-offset-1 ring-offset-[var(--editorial-bg)] ring-[var(--editorial-accent)]" : ""}
-                ${hasPeek ? "cursor-crosshair hover:ring-1 hover:ring-[var(--editorial-text)] hover:ring-offset-1 hover:ring-offset-[var(--editorial-bg)]" : ""}
-                group
-              `}
+        {days.map((day, i) => (
+          <Tooltip key={i}>
+            <TooltipTrigger asChild>
+              <div
+                className="aspect-square rounded-[2px] cursor-pointer transition-transform duration-150 ease-out hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--editorial-accent)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--editorial-bg)]"
+                style={{
+                  backgroundColor:
+                    i === days.length - 1
+                      ? "var(--editorial-accent)"
+                      : `color-mix(in srgb, var(--editorial-text) ${Math.max(8, day.intensity * 70)}%, transparent)`,
+                }}
+              />
+            </TooltipTrigger>
+            <TooltipContent
+              side="top"
+              className="font-mono text-[11px] px-3 py-2 max-w-[200px] rounded-sm border-0 shadow-md"
+              style={{
+                backgroundColor: "#232220",
+                color: "#f7f5f0",
+              }}
             >
-              {day.isToday && (
-                <span
-                  className="absolute -bottom-1 -right-1 flex h-2 w-2"
-                  aria-hidden
-                >
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--editorial-accent)] opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--editorial-accent)] border-2 border-[var(--editorial-bg)]" />
-                </span>
-              )}
-
-              {hasPeek && day.peek && (
-                <div
-                  className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-48 bg-[var(--editorial-bg)] border border-[var(--editorial-border)] shadow-[0_10px_30px_rgba(0,0,0,0.08)] p-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 z-50 translate-y-2 group-hover:translate-y-0"
-                  role="tooltip"
-                >
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span
-                      className={`font-mono text-[9px] uppercase ${day.isToday ? "text-[var(--editorial-accent)] font-bold" : "text-[var(--editorial-text-muted)]"}`}
-                    >
-                      {day.peek.dateLabel}
-                    </span>
-                    <span
-                      className={`font-mono text-[8px] px-1 py-0.5 rounded-sm ${day.peek.tagPrimary ? "bg-[var(--editorial-text)] text-[var(--editorial-bg)]" : "border border-[var(--editorial-border)]"}`}
-                    >
-                      {day.peek.tag}
-                    </span>
-                  </div>
-                  <p className="font-serif text-sm leading-snug text-[var(--editorial-text)]">
-                    {day.peek.description}
-                  </p>
-                  <div
-                    className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[var(--editorial-bg)] border-b border-r border-[var(--editorial-border)] rotate-45"
-                    aria-hidden
-                  />
-                </div>
-              )}
-            </div>
-          );
-        })}
+              <span className="block text-[10px] opacity-70 mb-0.5">{day.date}</span>
+              {day.summary}
+            </TooltipContent>
+          </Tooltip>
+        ))}
       </div>
     </div>
   );

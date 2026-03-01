@@ -4,6 +4,7 @@ import { Lora, Space_Mono, VT323, Inter, Newsreader, JetBrains_Mono } from "next
 import { Analytics } from "@vercel/analytics/next";
 import { SoundProvider } from "@/components/providers/sound-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 const spaceMono = Space_Mono({
@@ -71,9 +72,11 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`font-sans antialiased ${spaceMono.variable} ${vt323.variable} ${lora.variable} ${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable}`}>
         <ThemeProvider>
-          <SoundProvider>
-            {children}
-          </SoundProvider>
+          <TooltipProvider delayDuration={80} skipDelayDuration={500}>
+            <SoundProvider>
+              {children}
+            </SoundProvider>
+          </TooltipProvider>
         </ThemeProvider>
         <Analytics />
       </body>

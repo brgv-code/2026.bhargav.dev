@@ -225,7 +225,7 @@ export async function fetchWorkExperience(): Promise<PayloadWorkExperience[]> {
   try {
     const url = new URL(`${cmsUrl}/api/work-experience`);
     url.searchParams.set("limit", "100");
-    url.searchParams.set("depth", "0");
+    url.searchParams.set("depth", "1");
 
     const res = await fetch(url.toString(), {
       next: { revalidate: 300 },
@@ -285,5 +285,75 @@ export async function fetchFavoritesFromPayload(): Promise<PayloadFavorite[]> {
   } catch (e) {
     logCmsWarning("Favorites fetch error (is the CMS running?)", e);
     return [];
+  }
+}
+
+/** Activity log day for the streak grid (date, intensity 0–1, summary). */
+export type PayloadActivityDay = {
+  date: string;
+  intensity: number;
+  summary: string;
+};
+
+export type PayloadStreak = {
+  id: string;
+  label: string;
+  date: string;
+  completed?: boolean;
+};
+
+export async function fetchActivityFromPayload(): Promise<PayloadActivityDay[]> {
+  if (!cmsUrl) {
+    logCmsWarning(
+      "PAYLOAD_PUBLIC_SERVER_URL not set; activity log will use fallback.",
+    );
+    return [];
+  }
+
+  try {
+    const url = new URL(`${cmsUrl}/api/streaks`);
+    url.searchParams.set("limit", "50");
+    url.searchParams.set("sort", "-date");
+    url.searchParams.set("depth", "0");
+
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) {
+      logCmsWarning(
+        `Streaks fetch failed: ${res.status} ${res.statusText}`,
+        await res.text().catch(() => ""),
+      );
+      return [];
+    }
+    const data = (await res.json()) as PayloadListResult<PayloadStreak>;
+    const docs = data.docs ?? [];
+
+    return docs.slice(0, 14).map((s) => ({
+      date: formatActivityDate(s.date),
+      intensity: s.completed ? 0.85 : 0.35,
+      summary: s.label || "Activity",
+    }));
+  } catch (e) {
+    logCmsWarning("Activity/streaks fetch error (is the CMS running?)", e);
+    return [];
+  }
+}
+
+function formatActivityDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    const today = new Date();
+    const isToday =
+      d.getDate() === today.getDate() &&
+      d.getMonth() === today.getMonth() &&
+      d.getFullYear() === today.getFullYear();
+    if (isToday) return "Today";
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return iso;
   }
 }
