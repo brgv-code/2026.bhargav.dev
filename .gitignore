@@ -1,8 +1,13 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# dependencies (root and all workspaces)
 /node_modules
+**/node_modules
+**/node_modules/**
 /.pnp
+.pnpm
+**/.pnpm
+**/.pnpm/**
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -13,9 +18,26 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
+# next.js (all workspaces)
+.next/
+out/
+**/.next/
+**/out/
+*.tsbuildinfo
+
+# build / cache
+dist/
+**/dist/
+.turbo
+.cache
+
+# cms / database
+*.db
+**/*.db
+cms/.next/
+cms/out/
+cms/media/
+**/importMap.js
 
 # production
 /build
@@ -32,13 +54,19 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
 
 # typescript
-*.tsbuildinfo
 next-env.d.ts
 
+# ide / tooling
 .agents
 .cursor
+.turbo
+.pnpm-store
+
+# lockfiles (optional: uncomment to ignore)
+# pnpm-lock.yaml

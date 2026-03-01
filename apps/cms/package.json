@@ -1,0 +1,37 @@
+{
+  "name": "@repo/cms",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "generate:importmap": "NODE_OPTIONS='--no-experimental-strip-types --no-experimental-require-module ' payload generate:importmap"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "@payloadcms/db-sqlite": "^3.77.0",
+    "@payloadcms/next": "^3.77.0",
+    "@payloadcms/plugin-seo": "^3.77.0",
+    "@payloadcms/richtext-lexical": "^3.77.0",
+    "libsql": "^0.5.22",
+    "next": "15.3.9",
+    "payload": "^3.77.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@repo/tsconfig": "workspace:*",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.9",
+    "typescript": "^5"
+  }
+}
