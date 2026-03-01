@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { PixelBook, PixelClose, PixelNote } from "./pixel-icons";
 import { useSound } from "./providers/sound-provider";
@@ -36,13 +36,7 @@ export function ReadingJournal({ isOpen, onClose, book }: ReadingJournalProps) {
   const [loading, setLoading] = useState(false);
   const { playClick } = useSound();
 
-  useEffect(() => {
-    if (isOpen && book) {
-      fetchNotes();
-    }
-  }, [isOpen, book]);
-
-  const fetchNotes = async () => {
+  const fetchNotes = useCallback(async () => {
     if (!book) return;
     setLoading(true);
     const supabase = createClient();
@@ -56,7 +50,13 @@ export function ReadingJournal({ isOpen, onClose, book }: ReadingJournalProps) {
       setNotes(data);
     }
     setLoading(false);
-  };
+  }, [book]);
+
+  useEffect(() => {
+    if (isOpen && book) {
+      fetchNotes();
+    }
+  }, [isOpen, book, fetchNotes]);
 
   const handleNoteClick = (note: ReadingNote) => {
     playClick();

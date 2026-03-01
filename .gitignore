@@ -34,6 +34,10 @@ dist/
 # cms / database
 *.db
 **/*.db
+*.sqlite
+**/*.sqlite
+apps/cms/data/
+apps/cms/media/
 cms/.next/
 cms/out/
 cms/media/

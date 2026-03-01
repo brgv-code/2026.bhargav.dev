@@ -223,7 +223,8 @@ export default function FavoritesPage() {
                         className="w-full text-left p-4"
                       >
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1">
-                          <h3 className="font-serif text-xl sm:text-2xl text-[var(--editorial-text)] group-hover:text-[var(--editorial-accent)] transition-colors truncate pr-4">
+                          <h3 className="font-serif text-xl sm:text-2xl text-[var(--editorial-text)] group-hover:text-[var(--editorial-accent)] transition-colors truncate pr-4 flex items-center gap-2">
+                            <Icon className="w-4 h-4 shrink-0 text-[var(--editorial-text-muted)]" />
                             {favorite.title}
                           </h3>
                           <span className="font-mono text-[10px] text-[var(--editorial-text-dim)] shrink-0 mt-1 sm:mt-0">

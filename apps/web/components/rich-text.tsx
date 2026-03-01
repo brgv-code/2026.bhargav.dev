@@ -1,7 +1,6 @@
 import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical";
 import {
   convertLexicalToHTML,
-  defaultHTMLConverters,
   type HTMLConvertersFunction,
 } from "@payloadcms/richtext-lexical/html";
 function s(v: unknown): string {
@@ -94,7 +93,7 @@ const htmlConverters: HTMLConvertersFunction = ({ defaultConverters }) => ({
           ? "flex overflow-x-auto gap-4"
           : "grid grid-cols-2 gap-4";
       const items = images
-        .map((item, i) => {
+        .map((item) => {
           const img = item?.image;
           const src =
             typeof img === "object" && img && "url" in img ? s(img.url) : "";
