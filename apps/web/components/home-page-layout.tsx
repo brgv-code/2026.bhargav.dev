@@ -25,7 +25,7 @@ type Props = {
   favorites: PayloadFavorite[];
 };
 
-export function HomePageLayout({ profile, posts, projects, favorites }: Props) {
+export function HomePageLayout({ profile, posts, projects, work, favorites }: Props) {
   const [activeTab, setActiveTab] = useState<
     "writing" | "projects" | "experience" | "favorites"
   >("writing");
@@ -191,23 +191,49 @@ export function HomePageLayout({ profile, posts, projects, favorites }: Props) {
             aria-hidden={activeTab !== "experience"}
           >
             <div className="space-y-12">
-              <div className="flex flex-col sm:flex-row sm:gap-12">
-                <div className="font-mono text-xs text-[var(--editorial-text-dim)] w-32 shrink-0 pt-1 mb-2 sm:mb-0">
-                  2024 — Pres.
-                </div>
-                <div>
-                  <h3 className="font-serif text-2xl sm:text-3xl text-[var(--editorial-text)] mb-1">
-                    Founding Engineer
-                  </h3>
-                  <div className="font-mono text-[10px] text-[var(--editorial-accent)] uppercase tracking-widest mb-4">
-                    Stealth AI Lab
+              {work.length === 0 ? (
+                <p className="text-sm text-[var(--editorial-text-muted)]">
+                  No work experience added yet.
+                </p>
+              ) : (
+                work.map((role) => (
+                  <div
+                    key={role.id}
+                    className="flex flex-col sm:flex-row sm:gap-12"
+                  >
+                    <div className="font-mono text-xs text-[var(--editorial-text-dim)] w-32 shrink-0 pt-1 mb-2 sm:mb-0">
+                      {role.date_range ?? "—"}
+                    </div>
+                    <div>
+                      <h3 className="font-serif text-2xl sm:text-3xl text-[var(--editorial-text)] mb-1">
+                        {role.role}
+                      </h3>
+                      <div className="font-mono text-[10px] text-[var(--editorial-accent)] uppercase tracking-widest mb-4">
+                        {role.company}
+                      </div>
+                      {role.bullets && role.bullets.length > 0 ? (
+                        <ul className="space-y-1.5 text-sm font-light text-[var(--editorial-text-muted)] leading-relaxed max-w-2xl">
+                          {role.bullets.map((bullet) => (
+                            <li key={bullet.id} className="flex items-start gap-2">
+                              <span className="mt-1.5 h-[3px] w-[3px] shrink-0 rounded-full bg-[var(--editorial-accent)]" />
+                              {bullet.href ? (
+                                <a
+                                  href={bullet.href}
+                                  className="underline-offset-2 hover:text-[var(--editorial-accent)] hover:underline"
+                                >
+                                  {bullet.label}
+                                </a>
+                              ) : (
+                                <span>{bullet.label}</span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
                   </div>
-                  <p className="text-sm font-light text-[var(--editorial-text-muted)] leading-relaxed max-w-2xl">
-                    Architecting the primary UI and middle-tier API layer.
-                    Bridging the gap between AI outputs and type-safe state.
-                  </p>
-                </div>
-              </div>
+                ))
+              )}
             </div>
           </div>
 

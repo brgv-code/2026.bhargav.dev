@@ -1,10 +1,10 @@
 /**
- * Adds markdown plugin fields to all collections that use the paste field:
- * markdown_input, content_html, source_document_id.
- * Tables: posts, series, tags, work_experience, favorites, streaks.
- * Depends on 20250101_000000_create_documents_table (documents table must exist).
+ * Ensures all markdown/rich-text columns exist on every table. Use when earlier
+ * migrations were marked complete but some tables (e.g. work_experience) never
+ * received the columns (e.g. due to partial failure or migration order).
  *
- * Works with both SQLite (local) and Postgres (production).
+ * Tables: posts, series, tags, work_experience, favorites, streaks.
+ * Idempotent: skips adding columns that already exist.
  */
 import type { MigrateUpArgs, MigrateDownArgs } from "@payloadcms/db-sqlite";
 import { sql as sqliteSql } from "@payloadcms/db-sqlite";
@@ -39,6 +39,18 @@ function isDuplicateColumnError(e: unknown): boolean {
     .filter(Boolean)
     .join(" ");
   return /duplicate column name/i.test(msg);
+}
+
+function isDuplicateIndexError(e: unknown): boolean {
+  const err = e as Error & { cause?: Error };
+  const msg = [
+    err?.message,
+    err?.cause?.message,
+    String(e),
+  ]
+    .filter(Boolean)
+    .join(" ");
+  return /duplicate index name|already exists/i.test(msg);
 }
 
 async function runUp(
@@ -76,6 +88,13 @@ async function runUp(
           )
         );
       } catch (e) {
+        if (!isDuplicateIndexError(e)) throw e;
+      }
+      try {
+        await db.run(
+          sqliteSql.raw(`ALTER TABLE ${table} ADD COLUMN content text`)
+        );
+      } catch (e) {
         if (!isDuplicateColumnError(e)) throw e;
       }
     }
@@ -102,6 +121,11 @@ async function runUp(
           `CREATE INDEX IF NOT EXISTS ${table}_source_document_idx ON ${table} (source_document_id)`
         )
       );
+      await pgDb.execute(
+        pgSql.raw(
+          `ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS content text`
+        )
+      );
     }
   }
 }
@@ -109,40 +133,9 @@ async function runUp(
 async function runDown(
   db: MigrateDownArgs["db"] | PgMigrateDownArgs["db"]
 ): Promise<void> {
-  if (isSqlite(db)) {
-    for (const table of TABLES) {
-      await db.run(
-        sqliteSql.raw(`DROP INDEX IF EXISTS ${table}_source_document_idx`)
-      );
-      await db.run(
-        sqliteSql.raw(`ALTER TABLE ${table} DROP COLUMN markdown_input`)
-      );
-      await db.run(
-        sqliteSql.raw(`ALTER TABLE ${table} DROP COLUMN content_html`)
-      );
-      await db.run(
-        sqliteSql.raw(`ALTER TABLE ${table} DROP COLUMN source_document_id`)
-      );
-    }
-  } else {
-    const pgDb = db as { execute: (q: unknown) => Promise<unknown> };
-    for (const table of TABLES) {
-      await pgDb.execute(
-        pgSql.raw(`DROP INDEX IF EXISTS ${table}_source_document_idx`)
-      );
-      await pgDb.execute(
-        pgSql.raw(`ALTER TABLE ${table} DROP COLUMN IF EXISTS markdown_input`)
-      );
-      await pgDb.execute(
-        pgSql.raw(`ALTER TABLE ${table} DROP COLUMN IF EXISTS content_html`)
-      );
-      await pgDb.execute(
-        pgSql.raw(
-          `ALTER TABLE ${table} DROP COLUMN IF EXISTS source_document_id`
-        )
-      );
-    }
-  }
+  // No-op: this migration only ensures columns exist; we don't drop them on down
+  // to avoid breaking DBs that relied on the previous migrations.
+  void db;
 }
 
 export async function up(args: MigrateUpArgs): Promise<void> {

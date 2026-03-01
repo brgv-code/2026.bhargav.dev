@@ -40,8 +40,13 @@ async function runUp(
           sqliteSql.raw(`ALTER TABLE ${table} ADD COLUMN content text`)
         );
       } catch (e) {
-        const msg = String((e as Error)?.message ?? e);
-        if (!msg.includes("duplicate column name")) throw e;
+        const err = e as Error & { cause?: Error };
+        const msg = [
+          err?.message,
+          err?.cause?.message,
+          String(e),
+        ].filter(Boolean).join(" ");
+        if (!/duplicate column name/i.test(msg)) throw e;
       }
     }
   } else {
