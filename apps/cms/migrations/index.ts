@@ -1,9 +1,9 @@
-import * as migration_20260227_192954 from './20260227_192954';
+import * as migration_20260301_171234_add_posts_markdown_fields from './20260301_171234_add_posts_markdown_fields';
 
 export const migrations = [
   {
-    up: migration_20260227_192954.up,
-    down: migration_20260227_192954.down,
-    name: '20260227_192954'
+    up: migration_20260301_171234_add_posts_markdown_fields.up,
+    down: migration_20260301_171234_add_posts_markdown_fields.down,
+    name: '20260301_171234_add_posts_markdown_fields'
   },
 ];

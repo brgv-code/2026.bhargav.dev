@@ -12,7 +12,7 @@ export async function Hero() {
     <section className="py-5 md:py-6">
       <div className="w-full">
         <p className="font-serif italic text-[var(--editorial-text-muted)] text-[15px] mb-1">
-          hey, i'm
+          hey, I&apos;m
         </p>
 
         <h1 className="font-serif text-2xl sm:text-3xl text-[var(--editorial-text)] leading-tight mb-2">

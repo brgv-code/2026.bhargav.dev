@@ -75,6 +75,7 @@ export interface Config {
     'work-experience': WorkExperience;
     favorites: Favorite;
     streaks: Streak;
+    documents: Document;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +91,7 @@ export interface Config {
     'work-experience': WorkExperienceSelect<false> | WorkExperienceSelect<true>;
     favorites: FavoritesSelect<false> | FavoritesSelect<true>;
     streaks: StreaksSelect<false> | StreaksSelect<true>;
+    documents: DocumentsSelect<false> | DocumentsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -106,6 +108,9 @@ export interface Config {
     profile: ProfileSelect<false> | ProfileSelect<true>;
   };
   locale: null;
+  widgets: {
+    collections: CollectionsWidget;
+  };
   user: User;
   jobs: {
     tasks: unknown;
@@ -169,8 +174,72 @@ export interface Tag {
    * Optional. Shown on the tag index page.
    */
   description?: string | null;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents".
+ */
+export interface Document {
+  id: number;
+  parsedContent?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  contentHtml?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -184,6 +253,36 @@ export interface Series {
    * Shown at the top of each post in the series.
    */
   description?: string | null;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
   updatedAt: string;
   createdAt: string;
 }
@@ -247,6 +346,18 @@ export interface Post {
    * Timestamp of the last TTS generation.
    */
   audio_generated_at?: string | null;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -303,6 +414,36 @@ export interface WorkExperience {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
   updatedAt: string;
   createdAt: string;
 }
@@ -317,6 +458,36 @@ export interface Favorite {
   url?: string | null;
   source?: string | null;
   notes?: string | null;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
   updatedAt: string;
   createdAt: string;
 }
@@ -329,6 +500,36 @@ export interface Streak {
   label: string;
   date: string;
   completed?: boolean | null;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
   updatedAt: string;
   createdAt: string;
 }
@@ -387,6 +588,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'streaks';
         value: number | Streak;
+      } | null)
+    | ({
+        relationTo: 'documents';
+        value: number | Document;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -462,6 +667,10 @@ export interface TagsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   description?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -473,6 +682,10 @@ export interface SeriesSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   description?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -495,6 +708,9 @@ export interface PostsSelect<T extends boolean = true> {
   content?: T;
   audio_summary?: T;
   audio_generated_at?: T;
+  markdownInput?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
   meta?:
     | T
     | {
@@ -542,6 +758,10 @@ export interface WorkExperienceSelect<T extends boolean = true> {
         href?: T;
         id?: T;
       };
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -555,6 +775,10 @@ export interface FavoritesSelect<T extends boolean = true> {
   url?: T;
   source?: T;
   notes?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -566,8 +790,31 @@ export interface StreaksSelect<T extends boolean = true> {
   label?: T;
   date?: T;
   completed?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents_select".
+ */
+export interface DocumentsSelect<T extends boolean = true> {
+  parsedContent?: T;
+  contentHtml?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -642,6 +889,16 @@ export interface ProfileSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
