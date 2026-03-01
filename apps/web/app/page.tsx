@@ -1,17 +1,18 @@
 import { Navbar } from "@/components/navbar";
 import { HomePageLayout } from "@/components/home-page-layout";
 import { Footer } from "@/components/footer";
-import { fetchProfile, fetchBlogListPosts, fetchWorkExperience, fetchFavoritesFromPayload } from "@/lib/payload";
+import { fetchProfile, fetchBlogListPosts, fetchWorkExperience, fetchFavoritesFromPayload, fetchActivityFromPayload } from "@/lib/payload";
 import { projectsList } from "@/lib/projects-data";
 import { getCommitsThisWeek } from "@/lib/github";
 
 export default async function Home() {
-  const [profile, posts, work, favorites, commitsThisWeek] = await Promise.all([
+  const [profile, posts, work, favorites, commitsThisWeek, activityLog] = await Promise.all([
     fetchProfile(),
     fetchBlogListPosts(10),
     fetchWorkExperience(),
     fetchFavoritesFromPayload(),
     getCommitsThisWeek(),
+    fetchActivityFromPayload(),
   ]);
 
   return (
@@ -25,6 +26,7 @@ export default async function Home() {
             projects={projectsList}
             work={work}
             favorites={favorites}
+            activityLog={activityLog}
           />
         </div>
         <Footer />

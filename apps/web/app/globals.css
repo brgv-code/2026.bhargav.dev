@@ -139,18 +139,21 @@
   --color-streak-4: var(--streak-4);
 }
 
-/* Editorial blog theme — matches docs/blog-v2-editorial.html */
+/* Editorial theme — matches docs/homepage.html (paper, ink, rust) */
 [data-theme="editorial"] {
-  --editorial-bg: #f5f0e8;
-  --editorial-surface: #ede8de;
-  --editorial-surface2: #e4ddd0;
-  --editorial-border: #d4ccbc;
-  --editorial-text: #1a1714;
-  --editorial-text-muted: #8a8070;
-  --editorial-text-dim: #b0a898;
-  --editorial-accent: #c84b2f;
+  /* Reference: paper #F7F5F0, ink #232220, rust #B35032 */
+  --editorial-bg: #f7f5f0;
+  --editorial-surface: #ffffff;
+  --editorial-surface2: #f0eeea;
+  --editorial-border: rgba(35, 34, 32, 0.1);
+  --editorial-text: #232220;
+  --editorial-text-muted: rgba(35, 34, 32, 0.7);
+  --editorial-text-dim: rgba(35, 34, 32, 0.5);
+  --editorial-accent: #b35032;
   --editorial-accent2: #2a6b4a;
-  --editorial-font-serif: var(--font-lora, 'Lora'), Georgia, serif;
+  --editorial-font-serif: var(--font-newsreader), "Newsreader", Georgia, serif;
+  --editorial-font-sans: var(--font-inter), "Inter", sans-serif;
+  --editorial-font-mono: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
   /* Override Tailwind semantic colors so RichText blocks use the warm palette */
   --background: var(--editorial-bg);
   --foreground: var(--editorial-text);
@@ -159,9 +162,16 @@
   --border: var(--editorial-border);
   --destructive: var(--editorial-accent);
 }
+[data-theme="editorial"] {
+  font-family: var(--editorial-font-sans);
+}
+[data-theme="editorial"] ::selection {
+  background-color: var(--editorial-accent);
+  color: var(--editorial-bg);
+}
 
 [data-theme="editorial"] .prose-editorial {
-  color: #3a352e;
+  color: var(--editorial-text);
 }
 [data-theme="editorial"] .prose-editorial > p:first-of-type::first-letter {
   font-family: var(--editorial-font-serif);
@@ -173,7 +183,7 @@
   color: var(--editorial-accent);
 }
 [data-theme="editorial"] .prose-editorial p {
-  color: #3a352e;
+  color: var(--editorial-text);
   font-size: 16px;
   line-height: 1.85;
   margin-bottom: 1.3rem;
@@ -209,24 +219,44 @@
   color: var(--editorial-accent);
 }
 [data-theme="editorial"] .prose-editorial strong {
-  color: #3a352e;
+  color: var(--editorial-text);
 }
 [data-theme="editorial"] .prose-editorial blockquote {
   border-left-color: var(--editorial-border);
-  color: #3a352e;
+  color: var(--editorial-text);
 }
 [data-theme="editorial"] .prose-editorial pre {
-  background: #f9f5ed;
-  color: #2a2520;
+  background: var(--editorial-surface2);
+  color: var(--editorial-text);
   border: 1px solid var(--editorial-border);
   border-radius: 6px;
 }
 [data-theme="editorial"] .prose-editorial ul,
 [data-theme="editorial"] .prose-editorial ol {
-  color: #3a352e;
+  color: var(--editorial-text);
 }
 [data-theme="editorial"] h1 {
   font-family: var(--editorial-font-serif);
+}
+[data-theme="editorial"] .font-sans {
+  font-family: var(--editorial-font-sans);
+}
+[data-theme="editorial"] .font-serif {
+  font-family: var(--editorial-font-serif);
+}
+[data-theme="editorial"] .font-mono {
+  font-family: var(--editorial-font-mono);
+}
+[data-theme="editorial"]::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+[data-theme="editorial"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-theme="editorial"]::-webkit-scrollbar-thumb {
+  background: #e2ded5;
+  border-radius: 4px;
 }
 
 /* Header: reference fonts (Inter, Newsreader, JetBrains Mono) */
@@ -237,15 +267,43 @@ header .font-mono {
   font-family: var(--font-jetbrains-mono), monospace;
 }
 
-/* Tab content visibility (homepage template) */
+/* Tab content visibility and subtle enter animation (homepage template) */
 .tab-content {
   display: none;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transform: translateY(6px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 .tab-content.active {
   display: block;
   opacity: 1;
+  transform: translateY(0);
+  animation: tab-enter 0.28s ease-out;
+}
+@keyframes tab-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tooltip: short fade-in so hover between triggers feels smooth */
+.tooltip-content-smooth {
+  animation: tooltip-fade-in 0.12s ease-out;
+}
+@keyframes tooltip-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @layer base {
