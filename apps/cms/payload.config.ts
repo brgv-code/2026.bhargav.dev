@@ -2,8 +2,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { Block, buildConfig } from "payload";
-import { sqliteAdapter } from "@payloadcms/db-sqlite";
 import { seoPlugin } from "@payloadcms/plugin-seo";
+import { postgresAdapter } from "@payloadcms/db-postgres";
 import {
   lexicalEditor,
   HeadingFeature,
@@ -319,8 +319,10 @@ const config = buildConfig({
     livePreview: {},
   },
 
-  db: sqliteAdapter({
-    client: { url: `file:${dbPath}` },
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URL,
+    },
   }),
 
   plugins: [

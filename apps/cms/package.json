@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@libsql/client": "^0.14.0",
-    "@payloadcms/db-sqlite": "^3.77.0",
+    "@payloadcms/db-postgres": "^3.78.0",
     "@payloadcms/next": "^3.77.0",
     "@payloadcms/plugin-seo": "^3.77.0",
     "@payloadcms/richtext-lexical": "^3.77.0",
