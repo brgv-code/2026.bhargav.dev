@@ -1,0 +1,289 @@
+type PayloadListResult<T> = {
+  docs: T[];
+};
+
+const cmsUrl =
+  process.env.PAYLOAD_PUBLIC_SERVER_URL ??
+  (process.env.NODE_ENV === "development"
+    ? "http://localhost:3001"
+    : undefined);
+
+function logCmsWarning(message: string, detail?: unknown) {
+  if (process.env.NODE_ENV === "development") {
+    console.warn("[Payload CMS]", message, detail ?? "");
+  }
+}
+
+export async function fetchProfile() {
+  if (!cmsUrl) {
+    logCmsWarning(
+      "PAYLOAD_PUBLIC_SERVER_URL not set; profile will be fallback.",
+    );
+    return null;
+  }
+
+  try {
+    const res = await fetch(`${cmsUrl}/api/globals/profile`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) {
+      logCmsWarning(
+        `Profile fetch failed: ${res.status} ${res.statusText}`,
+        await res.text().catch(() => ""),
+      );
+      return null;
+    }
+    return res.json();
+  } catch (e) {
+    logCmsWarning("Profile fetch error (is the CMS running?)", e);
+    return null;
+  }
+}
+
+export type PayloadPostSummary = {
+  id: string;
+  title: string;
+  slug: string;
+  publishedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type PayloadTag = {
+  id: number;
+  name: string;
+  slug: string;
+};
+
+export function tagNames(tags: PayloadTag[] | null | undefined): string[] {
+  if (!tags?.length) return [];
+  return tags
+    .map((t) =>
+      typeof t === "object" && t != null && "name" in t ? t.name : null,
+    )
+    .filter((n): n is string => typeof n === "string");
+}
+
+export async function fetchLatestPosts(
+  limit = 3,
+): Promise<PayloadPostSummary[]> {
+  if (!cmsUrl) {
+    logCmsWarning("PAYLOAD_PUBLIC_SERVER_URL not set; posts will be empty.");
+    return [];
+  }
+
+  try {
+    const url = new URL(`${cmsUrl}/api/posts`);
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("sort", "-publishedAt");
+    url.searchParams.set("where[status][equals]", "published");
+    url.searchParams.set("depth", "0");
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) {
+      logCmsWarning(
+        `Posts fetch failed: ${res.status} ${res.statusText}`,
+        await res.text().catch(() => ""),
+      );
+      return [];
+    }
+    const data = (await res.json()) as PayloadListResult<PayloadPostSummary>;
+    return data.docs ?? [];
+  } catch (e) {
+    logCmsWarning("Posts fetch error (is the CMS running?)", e);
+    return [];
+  }
+}
+
+export type PayloadPostListItem = PayloadPostSummary & {
+  description?: string | null;
+  readingTime?: number | null;
+  tags?: PayloadTag[] | null;
+};
+
+export async function fetchBlogListPosts(
+  limit = 50,
+): Promise<PayloadPostListItem[]> {
+  if (!cmsUrl) {
+    logCmsWarning("PAYLOAD_PUBLIC_SERVER_URL not set; blog list will be empty.");
+    return [];
+  }
+
+  try {
+    const url = new URL(`${cmsUrl}/api/posts`);
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("sort", "-publishedAt");
+    url.searchParams.set("where[status][equals]", "published");
+    url.searchParams.set("depth", "1");
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) {
+      logCmsWarning(
+        `Blog list fetch failed: ${res.status} ${res.statusText}`,
+        await res.text().catch(() => ""),
+      );
+      return [];
+    }
+    const data = (await res.json()) as PayloadListResult<PayloadPostListItem>;
+    return data.docs ?? [];
+  } catch (e) {
+    logCmsWarning("Blog list fetch error (is the CMS running?)", e);
+    return [];
+  }
+}
+
+export type PayloadTocItem = {
+  id: string;
+  text: string;
+  level: number;
+};
+
+export type PayloadPost = PayloadPostSummary & {
+  description?: string | null;
+  content?: unknown;
+  readingTime?: number | null;
+  wordCount?: number | null;
+  tags?: PayloadTag[] | null;
+  tocItems?: PayloadTocItem[] | null;
+};
+
+export async function fetchPostBySlug(
+  slug: string,
+): Promise<PayloadPost | null> {
+  if (!cmsUrl) {
+    logCmsWarning("PAYLOAD_PUBLIC_SERVER_URL not set; cannot fetch post.");
+    return null;
+  }
+
+  try {
+    const url = new URL(`${cmsUrl}/api/posts`);
+    url.searchParams.set("where[slug][equals]", slug);
+    url.searchParams.set("where[status][equals]", "published");
+    url.searchParams.set("limit", "1");
+    url.searchParams.set("depth", "1");
+
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as PayloadListResult<PayloadPost>;
+    const post = data.docs?.[0] ?? null;
+    return post;
+  } catch (e) {
+    logCmsWarning("Post fetch error (is the CMS running?)", e);
+    return null;
+  }
+}
+
+export async function fetchRelatedPosts(
+  excludeSlug: string,
+  limit = 4
+): Promise<PayloadPostSummary[]> {
+  if (!cmsUrl) {
+    logCmsWarning("PAYLOAD_PUBLIC_SERVER_URL not set; related posts will be empty.");
+    return [];
+  }
+  try {
+    const url = new URL(`${cmsUrl}/api/posts`);
+    url.searchParams.set("limit", String(limit + 5));
+    url.searchParams.set("sort", "-publishedAt");
+    url.searchParams.set("where[status][equals]", "published");
+    url.searchParams.set("depth", "0");
+    const res = await fetch(url.toString(), { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const data = (await res.json()) as PayloadListResult<PayloadPostSummary>;
+    const docs = data.docs ?? [];
+    return docs.filter((p) => p.slug !== excludeSlug).slice(0, limit);
+  } catch (e) {
+    logCmsWarning("Related posts fetch error", e);
+    return [];
+  }
+}
+
+export type PayloadWorkExperience = {
+  id: string;
+  company: string;
+  role: string;
+  date_range?: string;
+  bullets?: {
+    id: string;
+    label: string;
+    href?: string;
+  }[];
+};
+
+export async function fetchWorkExperience(): Promise<PayloadWorkExperience[]> {
+  if (!cmsUrl) {
+    logCmsWarning(
+      "PAYLOAD_PUBLIC_SERVER_URL not set; work experience will be empty.",
+    );
+    return [];
+  }
+
+  try {
+    const url = new URL(`${cmsUrl}/api/work-experience`);
+    url.searchParams.set("limit", "100");
+    url.searchParams.set("depth", "0");
+
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) {
+      logCmsWarning(
+        `Work experience fetch failed: ${res.status} ${res.statusText}`,
+        await res.text().catch(() => ""),
+      );
+      return [];
+    }
+    const data = (await res.json()) as PayloadListResult<PayloadWorkExperience>;
+    return data.docs ?? [];
+  } catch (e) {
+    logCmsWarning("Work experience fetch error (is the CMS running?)", e);
+    return [];
+  }
+}
+
+export type PayloadFavorite = {
+  id: number;
+  type?: "article" | "video" | "podcast" | "book" | "tool" | null;
+  title: string;
+  url?: string | null;
+  source?: string | null;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+};
+
+export async function fetchFavoritesFromPayload(): Promise<PayloadFavorite[]> {
+  if (!cmsUrl) {
+    logCmsWarning(
+      "PAYLOAD_PUBLIC_SERVER_URL not set; Payload favorites will be empty.",
+    );
+    return [];
+  }
+
+  try {
+    const url = new URL(`${cmsUrl}/api/favorites`);
+    url.searchParams.set("limit", "500");
+    url.searchParams.set("sort", "-createdAt");
+    url.searchParams.set("depth", "0");
+
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) {
+      logCmsWarning(
+        `Favorites fetch failed: ${res.status} ${res.statusText}`,
+        await res.text().catch(() => ""),
+      );
+      return [];
+    }
+    const data = (await res.json()) as PayloadListResult<PayloadFavorite>;
+    return data.docs ?? [];
+  } catch (e) {
+    logCmsWarning("Favorites fetch error (is the CMS running?)", e);
+    return [];
+  }
+}
