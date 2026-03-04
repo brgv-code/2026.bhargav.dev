@@ -229,11 +229,13 @@ async function downPostgres(db: { execute: (q: unknown) => Promise<unknown> }): 
   await db.execute(pgSql.raw(`DROP TABLE IF EXISTS ${NOTEBOOKS}`));
 }
 
+type PgDb = { execute: (q: unknown) => Promise<unknown> };
+
 export async function up(args: MigrateUpArgs): Promise<void> {
   if (isSqlite(args.db)) {
     await upSqlite(args.db);
   } else {
-    await upPostgres(args.db as { execute: (q: unknown) => Promise<unknown> });
+    await upPostgres(args.db as unknown as PgDb);
   }
 }
 
@@ -241,6 +243,6 @@ export async function down(args: MigrateDownArgs): Promise<void> {
   if (isSqlite(args.db)) {
     await downSqlite(args.db);
   } else {
-    await downPostgres(args.db as { execute: (q: unknown) => Promise<unknown> });
+    await downPostgres(args.db as unknown as PgDb);
   }
 }
