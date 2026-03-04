@@ -10,6 +10,7 @@ export const slugs = {
   favorites: "favorites",
   streaks: "streaks",
   documents: "documents",
+  notebooks: "notebooks",
 } as const;
 export type SlugValues = (typeof slugs)[keyof typeof slugs];
 

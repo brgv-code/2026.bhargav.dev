@@ -10,6 +10,7 @@ import { getMediaCollection } from "./media";
 import { workExperienceCollection } from "./work-experience";
 import { favoritesCollection } from "./favorites";
 import { streaksCollection } from "./streaks";
+import { notebooksCollection } from "./notebooks";
 
 export { isLoggedIn, slugs } from "./constants";
 
@@ -26,6 +27,7 @@ export function getCollections(): CollectionConfig[] {
     workExperienceCollection,
     favoritesCollection,
     streaksCollection,
+    notebooksCollection,
     getDocumentsCollection(cmsDir),
   ];
 }

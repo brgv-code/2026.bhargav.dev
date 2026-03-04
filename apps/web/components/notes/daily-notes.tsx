@@ -7,9 +7,6 @@ import { CodeBlock } from "./code-block";
 // Enable GitHub Flavored Markdown: lists, tables, strikethrough, task lists, autolinks
 marked.use({ gfm: true, breaks: true });
 
-// Enable GitHub Flavored Markdown: lists, tables, strikethrough, task lists, autolinks
-marked.use({ gfm: true, breaks: true });
-
 // ─── Block type config ────────────────────────────────────────────────────────
 type BlockType = "thought" | "code" | "link" | "learning" | "quote";
 
@@ -138,6 +135,83 @@ const count = useSyncExternalStore(
     ],
   },
 ].map((entry) => ({ pinned: false, ...entry })) as Entry[];
+
+// ─── API mapping ───────────────────────────────────────────────────────────────
+type NotebookDoc = {
+  id: number | string;
+  date: string;
+  visibility: "public" | "private";
+  pinned?: boolean;
+  blocks?: Array<{
+    id?: string;
+    blockId?: string;
+    block_id?: string;
+    type: BlockType;
+    content: string;
+    lang?: string | null;
+    meta?: string | null;
+    tags?: string[] | string | null;
+  }> | null;
+};
+
+function parseBlockTags(tags: string[] | string | null | undefined): string[] {
+  if (Array.isArray(tags)) return tags;
+  if (typeof tags === "string") {
+    try {
+      const parsed = JSON.parse(tags) as unknown;
+      return Array.isArray(parsed) ? (parsed as string[]) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function notebookToEntry(doc: NotebookDoc): Entry {
+  const rawBlocks = doc.blocks ?? [];
+  const blocks: Block[] = rawBlocks.map((b, i) => {
+    const blockId = b.blockId ?? (b as { block_id?: string }).block_id ?? b.id;
+    const id =
+      typeof blockId === "string" && blockId.length > 0
+        ? blockId
+        : `block-${doc.id}-${i}`;
+    return {
+      id,
+      type: b.type,
+      content: b.content ?? "",
+      lang: b.lang ?? undefined,
+      meta: b.meta ?? undefined,
+      tags: parseBlockTags(b.tags),
+    };
+  });
+  return {
+    id: String(doc.id),
+    date: doc.date,
+    visibility: (doc.visibility === "public" ? "public" : "private") as EntryVisibility,
+    pinned: doc.pinned ?? false,
+    blocks,
+  };
+}
+
+function entryToNotebookPayload(entry: Entry) {
+  return {
+    date: entry.date,
+    visibility: entry.visibility,
+    pinned: entry.pinned ?? false,
+    blocks: entry.blocks.map((b) => ({
+      blockId: b.id,
+      type: b.type,
+      content: b.content,
+      lang: b.lang ?? undefined,
+      meta: b.meta ?? undefined,
+      tags: b.tags ?? [],
+    })),
+  };
+}
+
+function isApiId(id: string): boolean {
+  return /^\d+$/.test(id);
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function todayStr() {
@@ -882,10 +956,17 @@ function DayEntry({
 
   return (
     <section className="mb-8 border-b border-dashed pb-6" style={{ borderColor: NOTE_BORDER }} aria-label={fmtDate(entry.date)}>
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setCollapsed((c) => !c)}
-        className="flex items-center gap-3 w-full text-left group py-2.5"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setCollapsed((c) => !c);
+          }
+        }}
+        className="flex items-center gap-3 w-full text-left group py-2.5 cursor-pointer"
       >
         <span className="font-mono text-[14px] tracking-[0.08em] uppercase" style={{ color: NOTE_INK }}>
           {isToday ? (collapsed ? "▸ Today" : "▾ Today") : collapsed ? "▸" : "▾"}{" "}
@@ -895,7 +976,7 @@ function DayEntry({
           {filteredBlocks.length} block
           {filteredBlocks.length === 1 ? "" : "s"}
         </span>
-        <span className="ml-auto flex items-center gap-2 text-[13px] font-mono" style={{ color: NOTE_INK }}>
+        <span className="ml-auto flex items-center gap-2 text-[13px] font-mono" style={{ color: NOTE_INK }} onClick={(e) => e.stopPropagation()}>
           <button
             type="button"
             onClick={(e) => {
@@ -949,7 +1030,7 @@ function DayEntry({
             </button>
           )}
         </span>
-      </button>
+      </div>
 
       {!collapsed && (
         <div className="mt-2">
@@ -1019,28 +1100,79 @@ type DailyNotesProps = {
 export function DailyNotes({ initialExpandDate }: DailyNotesProps = {}) {
   const today = todayStr();
 
-  const [entries, setEntries] = useState<Entry[]>(() => {
-    const hasToday = SEED.some((e) => e.date === today);
-    const withToday: Entry[] = hasToday
-      ? SEED
-      : [{ id: uid(), date: today, visibility: "private" as const, pinned: false, blocks: [] }, ...SEED];
-    let result = withToday.slice().sort((a, b) => (a.date < b.date ? 1 : -1));
-    // when opening a shared link, ensure that date exists so the page shows something
-    if (initialExpandDate && !result.some((e) => e.date === initialExpandDate)) {
-      result = [
-        { id: uid(), date: initialExpandDate, visibility: "private" as const, pinned: false, blocks: [] },
-        ...result,
-      ].sort((a, b) => (a.date < b.date ? 1 : -1));
-    }
-    return result;
-  });
-
+  // Start empty so we don't flash SEED then overwrite with API (avoids "3 blocks → 0" on load)
+  const [entries, setEntries] = useState<Entry[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<SplitEditorDraft>({ body: "" });
   const [hasRestorableDraft, setHasRestorableDraft] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
+
+  // Load notebooks from API (or fall back to SEED on error). Start with [] to avoid flashing SEED then API.
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetch("/api/notebooks")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { docs?: NotebookDoc[] } | NotebookDoc[] | null) => {
+        if (cancelled) return;
+        const docs = Array.isArray(data) ? data : (data as { docs?: NotebookDoc[] })?.docs;
+        if (Array.isArray(docs)) {
+          const fromApi = docs.map(notebookToEntry).sort((a, b) => (a.date < b.date ? 1 : -1));
+          const hasTodayInApi = fromApi.some((e) => e.date === today);
+          let result = fromApi;
+          if (!hasTodayInApi) {
+            result = [
+              { id: uid(), date: today, visibility: "private" as const, pinned: false, blocks: [] },
+              ...fromApi,
+            ].sort((a, b) => (a.date < b.date ? 1 : -1));
+          }
+          if (initialExpandDate && !result.some((e) => e.date === initialExpandDate)) {
+            result = [
+              { id: uid(), date: initialExpandDate, visibility: "private" as const, pinned: false, blocks: [] },
+              ...result,
+            ].sort((a, b) => (a.date < b.date ? 1 : -1));
+          }
+          setEntries(result);
+          return;
+        }
+        const hasToday = SEED.some((e) => e.date === today);
+        const withToday: Entry[] = hasToday
+          ? SEED
+          : [{ id: uid(), date: today, visibility: "private" as const, pinned: false, blocks: [] }, ...SEED];
+        let fallback = withToday.slice().sort((a, b) => (a.date < b.date ? 1 : -1));
+        if (initialExpandDate && !fallback.some((e) => e.date === initialExpandDate)) {
+          fallback = [
+            { id: uid(), date: initialExpandDate, visibility: "private" as const, pinned: false, blocks: [] },
+            ...fallback,
+          ].sort((a, b) => (a.date < b.date ? 1 : -1));
+        }
+        setEntries(fallback);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        const hasToday = SEED.some((e) => e.date === today);
+        const withToday: Entry[] = hasToday
+          ? SEED
+          : [{ id: uid(), date: today, visibility: "private" as const, pinned: false, blocks: [] }, ...SEED];
+        let fallback = withToday.slice().sort((a, b) => (a.date < b.date ? 1 : -1));
+        if (initialExpandDate && !fallback.some((e) => e.date === initialExpandDate)) {
+          fallback = [
+            { id: uid(), date: initialExpandDate, visibility: "private" as const, pinned: false, blocks: [] },
+            ...fallback,
+          ].sort((a, b) => (a.date < b.date ? 1 : -1));
+        }
+        setEntries(fallback);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [today, initialExpandDate]);
 
   const allTagsList = useMemo(() => allTags(entries), [entries]);
 
@@ -1132,30 +1264,63 @@ export function DailyNotes({ initialExpandDate }: DailyNotesProps = {}) {
       content: draft.body.trim(),
       tags: [],
     };
-    setEntries((prev) =>
-      prev.map((e) =>
+    setEntries((prev) => {
+      const next = prev.map((e) =>
         e.id === todayEntry.id ? { ...e, blocks: [...e.blocks, block] } : e,
-      ),
-    );
+      );
+      const entry = next.find((e) => e.id === todayEntry.id);
+      if (entry) void persistEntry(entry);
+      return next;
+    });
     setDraft({ body: "" });
   }
 
+  async function persistEntry(entry: Entry) {
+    const payload = entryToNotebookPayload(entry);
+    if (isApiId(entry.id)) {
+      const res = await fetch(`/api/notebooks/${entry.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      return res.ok;
+    } else {
+      const res = await fetch("/api/notebooks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) return false;
+      const doc = (await res.json()) as NotebookDoc;
+      setEntries((prev) =>
+        prev.map((e) => (e.id === entry.id ? notebookToEntry(doc) : e)).sort((a, b) => (a.date < b.date ? 1 : -1)),
+      );
+      return true;
+    }
+  }
+
   function handleBlockAdd(entryId: string, block: Block) {
-    setEntries((prev) =>
-      prev.map((e) =>
+    setEntries((prev) => {
+      const next = prev.map((e) =>
         e.id === entryId ? { ...e, blocks: [...e.blocks, block] } : e,
-      ),
-    );
+      );
+      const entry = next.find((e) => e.id === entryId);
+      if (entry) void persistEntry(entry);
+      return next;
+    });
   }
 
   function handleBlockDelete(entryId: string, blockId: string) {
-    setEntries((prev) =>
-      prev.map((e) =>
+    setEntries((prev) => {
+      const next = prev.map((e) =>
         e.id === entryId
           ? { ...e, blocks: e.blocks.filter((b) => b.id !== blockId) }
           : e,
-      ),
-    );
+      );
+      const entry = next.find((e) => e.id === entryId);
+      if (entry) void persistEntry(entry);
+      return next;
+    });
   }
 
   function handleBlockUpdate(
@@ -1163,8 +1328,8 @@ export function DailyNotes({ initialExpandDate }: DailyNotesProps = {}) {
     blockId: string,
     payload: { content: string; lang?: string; meta?: string; tags: string[] },
   ) {
-    setEntries((prev) =>
-      prev.map((e) =>
+    setEntries((prev) => {
+      const next = prev.map((e) =>
         e.id === entryId
           ? {
               ...e,
@@ -1173,26 +1338,32 @@ export function DailyNotes({ initialExpandDate }: DailyNotesProps = {}) {
               ),
             }
           : e,
-      ),
-    );
+      );
+      const entry = next.find((e) => e.id === entryId);
+      if (entry) void persistEntry(entry);
+      return next;
+    });
   }
 
   function handleToggleVisibility(entryId: string) {
-    setEntries((prev) =>
-      prev.map((e) =>
+    setEntries((prev) => {
+      const next = prev.map((e) =>
         e.id === entryId
           ? {
               ...e,
-              visibility: e.visibility === "public" ? "private" : "public",
+              visibility: (e.visibility === "public" ? "private" : "public") as EntryVisibility,
             }
           : e,
-      ),
-    );
+      );
+      const entry = next.find((e) => e.id === entryId);
+      if (entry) void persistEntry(entry);
+      return next;
+    });
   }
 
   function handleTogglePinned(entryId: string) {
-    setEntries((prev) =>
-      prev
+    setEntries((prev) => {
+      const next = prev
         .map((e) =>
           e.id === entryId ? { ...e, pinned: !e.pinned } : e,
         )
@@ -1202,8 +1373,11 @@ export function DailyNotes({ initialExpandDate }: DailyNotesProps = {}) {
             return a.date < b.date ? 1 : -1;
           }
           return a.pinned ? -1 : 1;
-        }),
-    );
+        });
+      const entry = next.find((e) => e.id === entryId);
+      if (entry) void persistEntry(entry);
+      return next;
+    });
   }
 
   function copyToClipboard(text: string, id: string) {
@@ -1318,10 +1492,15 @@ export function DailyNotes({ initialExpandDate }: DailyNotesProps = {}) {
         />
       )}
 
+      {loading && (
+        <p className="font-mono text-[13px]" style={{ color: NOTE_INK_MUTED }}>
+          Loading notes…
+        </p>
+      )}
       <section aria-label="Notebook entries" className="space-y-4">
         {filteredEntries.length === 0 ? (
           <p className="font-mono text-[15px]" style={{ color: NOTE_INK_MUTED }}>
-            no results for &quot;{search}&quot;
+            {search.trim() ? `no results for "${search}"` : "No notes yet. Add a block below or use the editor above."}
           </p>
         ) : (
           filteredEntries.map((entry) => (

@@ -357,3 +357,55 @@ function formatActivityDate(iso: string): string {
     return iso;
   }
 }
+
+// ─── Notebooks (daily notes) ─────────────────────────────────────────────────
+
+export type PayloadNotebookBlock = {
+  id?: string;
+  blockId: string;
+  type: "thought" | "code" | "link" | "learning" | "quote";
+  content: string;
+  lang?: string | null;
+  meta?: string | null;
+  tags?: string[] | null;
+};
+
+export type PayloadNotebook = {
+  id: number | string;
+  date: string;
+  visibility: "public" | "private";
+  pinned?: boolean;
+  blocks?: PayloadNotebookBlock[] | null;
+  updatedAt?: string;
+  createdAt?: string;
+};
+
+export async function fetchNotebooks(): Promise<PayloadNotebook[]> {
+  if (!cmsUrl) {
+    logCmsWarning("PAYLOAD_PUBLIC_SERVER_URL not set; notebooks will be empty.");
+    return [];
+  }
+
+  try {
+    const url = new URL(`${cmsUrl}/api/notebooks`);
+    url.searchParams.set("limit", "500");
+    url.searchParams.set("sort", "-date");
+    url.searchParams.set("depth", "1");
+
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 30 },
+    });
+    if (!res.ok) {
+      logCmsWarning(
+        `Notebooks fetch failed: ${res.status} ${res.statusText}`,
+        await res.text().catch(() => ""),
+      );
+      return [];
+    }
+    const data = (await res.json()) as PayloadListResult<PayloadNotebook>;
+    return data.docs ?? [];
+  } catch (e) {
+    logCmsWarning("Notebooks fetch error (is the CMS running?)", e);
+    return [];
+  }
+}
