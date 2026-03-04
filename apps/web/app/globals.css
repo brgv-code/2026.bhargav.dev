@@ -234,6 +234,46 @@
 [data-theme="editorial"] .prose-editorial ul,
 [data-theme="editorial"] .prose-editorial ol {
   color: var(--editorial-text);
+  margin: 0 0 1rem;
+  padding-left: 1.5rem;
+}
+[data-theme="editorial"] .prose-editorial li {
+  margin-bottom: 0.25rem;
+}
+[data-theme="editorial"] .prose-editorial del {
+  text-decoration: line-through;
+  color: var(--editorial-text-muted);
+}
+[data-theme="editorial"] .prose-editorial .task-list-item {
+  list-style: none;
+  margin-left: -1.5rem;
+}
+[data-theme="editorial"] .prose-editorial .task-list-item input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+[data-theme="editorial"] .prose-editorial table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+[data-theme="editorial"] .prose-editorial th,
+[data-theme="editorial"] .prose-editorial td {
+  border: 1px solid var(--editorial-border);
+  padding: 0.4rem 0.75rem;
+  text-align: left;
+}
+[data-theme="editorial"] .prose-editorial th {
+  background: var(--editorial-surface2);
+  font-weight: 600;
+}
+/* Notes editor preview: collapse empty elements to avoid extra blank space */
+[data-theme="editorial"] .prose-editorial-preview p:empty,
+[data-theme="editorial"] .prose-editorial-preview pre:empty {
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  display: none;
 }
 [data-theme="editorial"] h1 {
   font-family: var(--editorial-font-serif);

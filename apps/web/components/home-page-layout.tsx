@@ -86,13 +86,13 @@ function groupFavoritesByType(favorites: PayloadFavorite[]): FavoriteCategory[] 
 
 export function HomePageLayout({ profile, posts, projects, work, favorites, activityLog }: Props) {
   const [activeTab, setActiveTab] = useState<
-    "writing" | "projects" | "experience" | "favorites"
+    "writing" | "projects" | "experience" | "favorites" | "notes"
   >("writing");
   const [showBio, setShowBio] = useState(false);
   const { playClick } = useSound();
 
   const switchTab = (
-    tab: "writing" | "projects" | "experience" | "favorites"
+    tab: "writing" | "projects" | "experience" | "favorites" | "notes"
   ) => {
     playClick();
     setActiveTab(tab);
@@ -271,6 +271,13 @@ export function HomePageLayout({ profile, posts, projects, work, favorites, acti
             className={activeTab === "favorites" ? tabActive : tabInactive}
           >
             Favorites
+          </button>
+          <button
+            type="button"
+            onClick={() => switchTab("notes")}
+            className={activeTab === "notes" ? tabActive : tabInactive}
+          >
+            Notes
           </button>
         </nav>
 
@@ -519,6 +526,37 @@ export function HomePageLayout({ profile, posts, projects, work, favorites, acti
                 ))}
               </div>
             )}
+          </div>
+
+          <div
+            id="tab-notes"
+            className={`tab-content ${activeTab === "notes" ? "active" : ""}`}
+            role="tabpanel"
+            aria-hidden={activeTab !== "notes"}
+          >
+            <div className="flex flex-col gap-6">
+              <div className="space-y-3">
+                <h2 className="font-serif text-[1.6rem] text-[var(--editorial-text)] leading-tight">
+                  Daily notebook
+                </h2>
+                <p className="text-[13.5px] text-[var(--editorial-text-muted)] leading-relaxed max-w-md">
+                  A running log of code snippets, links, and small learnings.
+                  Less polished than the blog, closer to a working notebook.
+                </p>
+              </div>
+              <div className="border-t border-[var(--editorial-border)] pt-4 flex items-center justify-between gap-4">
+                <p className="font-mono text-[11px] text-[var(--editorial-text-muted)]">
+                  Browse the full notebook, grouped by day with tags, search, and a
+                  streak view.
+                </p>
+                <Link
+                  href="/notes"
+                  className="font-mono text-[11px] tracking-[0.16em] uppercase px-4 py-2 rounded-sm border border-[var(--editorial-text)] text-[var(--editorial-bg)] bg-[var(--editorial-text)] hover:bg-transparent hover:text-[var(--editorial-text)] transition-colors whitespace-nowrap"
+                >
+                  Open notebook →
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </main>

@@ -75,6 +75,7 @@ export interface Config {
     'work-experience': WorkExperience;
     favorites: Favorite;
     streaks: Streak;
+    notebooks: Notebook;
     documents: Document;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -91,6 +92,7 @@ export interface Config {
     'work-experience': WorkExperienceSelect<false> | WorkExperienceSelect<true>;
     favorites: FavoritesSelect<false> | FavoritesSelect<true>;
     streaks: StreaksSelect<false> | StreaksSelect<true>;
+    notebooks: NotebooksSelect<false> | NotebooksSelect<true>;
     documents: DocumentsSelect<false> | DocumentsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -535,6 +537,79 @@ export interface Streak {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notebooks".
+ */
+export interface Notebook {
+  id: number;
+  /**
+   * YYYY-MM-DD
+   */
+  date: string;
+  visibility: 'public' | 'private';
+  pinned?: boolean | null;
+  /**
+   * Note blocks for this day
+   */
+  blocks?:
+    | {
+        /**
+         * Optional. Auto-generated if left blank (for permalinks).
+         */
+        blockId?: string | null;
+        type: 'thought' | 'code' | 'link' | 'learning' | 'quote';
+        content: string;
+        lang?: string | null;
+        meta?: string | null;
+        /**
+         * Array of tag strings
+         */
+        tags?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -588,6 +663,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'streaks';
         value: number | Streak;
+      } | null)
+    | ({
+        relationTo: 'notebooks';
+        value: number | Notebook;
       } | null)
     | ({
         relationTo: 'documents';
@@ -790,6 +869,32 @@ export interface StreaksSelect<T extends boolean = true> {
   label?: T;
   date?: T;
   completed?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notebooks_select".
+ */
+export interface NotebooksSelect<T extends boolean = true> {
+  date?: T;
+  visibility?: T;
+  pinned?: T;
+  blocks?:
+    | T
+    | {
+        blockId?: T;
+        type?: T;
+        content?: T;
+        lang?: T;
+        meta?: T;
+        tags?: T;
+        id?: T;
+      };
   markdownInput?: T;
   content?: T;
   contentHtml?: T;
