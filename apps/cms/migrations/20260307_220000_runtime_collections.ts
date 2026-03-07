@@ -414,7 +414,7 @@ async function upPostgres(
         page_end NUMERIC NOT NULL,
         pages_read NUMERIC NOT NULL DEFAULT 0,
         thoughts TEXT,
-        habit_completion_id INTEGER REFERENCES habit_completions(id) ON DELETE SET NULL,
+        habit_completion_id INTEGER,
         markdown_input TEXT,
         content TEXT,
         content_html TEXT,
@@ -470,6 +470,24 @@ async function upPostgres(
   );
   await db.execute(
     pgSql.raw(`CREATE INDEX IF NOT EXISTS habit_completions_created_at_idx ON habit_completions (created_at)`),
+  );
+  await db.execute(
+    pgSql.raw(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM pg_constraint
+          WHERE conname = 'reading_notes_habit_completion_id_fkey'
+        ) THEN
+          ALTER TABLE reading_notes
+          ADD CONSTRAINT reading_notes_habit_completion_id_fkey
+          FOREIGN KEY (habit_completion_id)
+          REFERENCES habit_completions(id)
+          ON DELETE SET NULL;
+        END IF;
+      END $$;
+    `),
   );
 
   await db.execute(
