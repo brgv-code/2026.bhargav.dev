@@ -27,9 +27,11 @@ function createOscillatorSound(
 ) {
   if (typeof window === "undefined") return;
 
-  const audioContext = new (window.AudioContext ||
+  const audioContext = new (
+    window.AudioContext ||
     (window as unknown as { webkitAudioContext: typeof AudioContext })
-      .webkitAudioContext)();
+      .webkitAudioContext
+  )();
   const oscillator = audioContext.createOscillator();
   const gainNode = audioContext.createGain();
 

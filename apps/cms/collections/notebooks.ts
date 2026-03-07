@@ -1,7 +1,17 @@
 import type { CollectionConfig } from "payload";
 import { slugs } from "./constants";
 
-const BLOCK_TYPES = ["thought", "code", "link", "learning", "quote"] as const;
+const BLOCK_TYPES = [
+  "thought",
+  "code",
+  "link",
+  "learning",
+  "quote",
+  "bugs",
+  "features",
+  "reminders",
+  "work",
+] as const;
 
 function generateBlockId(): string {
   return `block-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;

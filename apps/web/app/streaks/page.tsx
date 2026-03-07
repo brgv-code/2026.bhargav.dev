@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
-import { StreakCalendar } from "@/components/streak-calendar";
-import { WeeklyView } from "@/components/weekly-view";
+import { Navbar } from "@/components/shared/navbar";
+import { Footer } from "@/components/shared/footer";
+import { StreakCalendar } from "@/components/streaks/streak-calendar";
+import { WeeklyView } from "@/components/streaks/weekly-view";
 import {
   PixelBook,
   PixelWorkout,
@@ -13,7 +13,7 @@ import {
   PixelSleep,
   PixelCode,
   PixelEdit,
-} from "@/components/pixel-icons";
+} from "@/components/shared/pixel-icons";
 
 type ViewMode = "daily" | "weekly";
 
@@ -113,7 +113,10 @@ export default function StreaksPage() {
   return (
     <>
       <Navbar />
-      <div data-theme="editorial" className="min-h-screen bg-[var(--editorial-bg)]">
+      <div
+        data-theme="editorial"
+        className="min-h-screen bg-[var(--editorial-bg)]"
+      >
         <main className="max-w-4xl mx-auto w-full px-6 md:px-8 pt-28 pb-24">
           <header className="mb-14">
             <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--editorial-text-dim)] mb-4">
@@ -131,16 +134,28 @@ export default function StreaksPage() {
           {/* Stats Overview */}
           <section className="flex items-center gap-8 mb-10 text-sm">
             <div>
-              <span className="text-[var(--editorial-text-muted)]">current </span>
-              <span className="font-mono text-[var(--editorial-accent)]">{stats.currentStreak}d</span>
+              <span className="text-[var(--editorial-text-muted)]">
+                current{" "}
+              </span>
+              <span className="font-mono text-[var(--editorial-accent)]">
+                {stats.currentStreak}d
+              </span>
             </div>
             <div>
-              <span className="text-[var(--editorial-text-muted)]">longest </span>
-              <span className="font-mono text-[var(--editorial-text)]">{stats.longestStreak}d</span>
+              <span className="text-[var(--editorial-text-muted)]">
+                longest{" "}
+              </span>
+              <span className="font-mono text-[var(--editorial-text)]">
+                {stats.longestStreak}d
+              </span>
             </div>
             <div>
-              <span className="text-[var(--editorial-text-muted)]">completed </span>
-              <span className="font-mono text-[var(--editorial-text)]">{stats.totalCompleted}</span>
+              <span className="text-[var(--editorial-text-muted)]">
+                completed{" "}
+              </span>
+              <span className="font-mono text-[var(--editorial-text)]">
+                {stats.totalCompleted}
+              </span>
             </div>
           </section>
 

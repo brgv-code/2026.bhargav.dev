@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { PayloadTocItem } from "@/lib/payload";
+import type { PayloadTocItem } from "@/lib/data/cms";
 
 type Props = {
   items: PayloadTocItem[] | null | undefined;

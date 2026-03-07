@@ -4,16 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSound } from "@/components/providers/sound-provider";
-import { Reading } from "@/components/reading-journal";
-import { ActivityStreakGrid } from "@/components/activity-streak-grid";
+import { Reading } from "@/components/home/reading-journal";
+import { ActivityStreakGrid } from "@/components/streaks/activity-streak-grid";
 import { BlogCard } from "@/components/blog";
 import type {
   PayloadPostListItem,
   PayloadWorkExperience,
   PayloadFavorite,
   PayloadActivityDay,
-} from "@/lib/payload";
-import { tagNames } from "@/lib/payload";
+} from "@/lib/data/cms";
+import { tagNames } from "@/lib/data/cms";
 import { formatPostDate, formatReadTime } from "@/lib/format";
 import type { ProjectItem, ProjectStatus } from "@/lib/projects-data";
 
@@ -50,7 +50,10 @@ const projectStatusLabels: Record<ProjectStatus, string> = {
   archived: "Archived",
 };
 
-const FAVORITE_TYPE_LABELS: Record<NonNullable<PayloadFavorite["type"]>, string> = {
+const FAVORITE_TYPE_LABELS: Record<
+  NonNullable<PayloadFavorite["type"]>,
+  string
+> = {
   article: "Articles",
   video: "Videos",
   podcast: "Podcasts",
@@ -60,17 +63,31 @@ const FAVORITE_TYPE_LABELS: Record<NonNullable<PayloadFavorite["type"]>, string>
 
 type FavoriteCategory = {
   category: string;
-  items: { id: number; title: string; url?: string | null; subtitle?: string | null }[];
+  items: {
+    id: number;
+    title: string;
+    url?: string | null;
+    subtitle?: string | null;
+  }[];
 };
 
-function groupFavoritesByType(favorites: PayloadFavorite[]): FavoriteCategory[] {
+function groupFavoritesByType(
+  favorites: PayloadFavorite[]
+): FavoriteCategory[] {
   const byType = new Map<string, PayloadFavorite[]>();
   for (const fav of favorites) {
     const key = fav.type ?? "other";
     if (!byType.has(key)) byType.set(key, []);
     byType.get(key)!.push(fav);
   }
-  const order = ["article", "video", "podcast", "book", "tool", "other"] as const;
+  const order = [
+    "article",
+    "video",
+    "podcast",
+    "book",
+    "tool",
+    "other",
+  ] as const;
   return order
     .filter((k) => byType.has(k))
     .map((key) => ({
@@ -84,7 +101,14 @@ function groupFavoritesByType(favorites: PayloadFavorite[]): FavoriteCategory[] 
     }));
 }
 
-export function HomePageLayout({ profile, posts, projects, work, favorites, activityLog }: Props) {
+export function HomePageLayout({
+  profile,
+  posts,
+  projects,
+  work,
+  favorites,
+  activityLog,
+}: Props) {
   const [activeTab, setActiveTab] = useState<
     "writing" | "projects" | "experience" | "favorites" | "notes"
   >("writing");
@@ -150,7 +174,11 @@ export function HomePageLayout({ profile, posts, projects, work, favorites, acti
                   )}
                   {(profile?.github ?? process.env.NEXT_PUBLIC_GITHUB_URL) && (
                     <a
-                      href={profile?.github ?? process.env.NEXT_PUBLIC_GITHUB_URL ?? "#"}
+                      href={
+                        profile?.github ??
+                        process.env.NEXT_PUBLIC_GITHUB_URL ??
+                        "#"
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-mono text-[12px] text-[var(--editorial-text-muted)] hover:text-[var(--editorial-text)] transition-colors"
@@ -160,7 +188,9 @@ export function HomePageLayout({ profile, posts, projects, work, favorites, acti
                   )}
                   {(profile?.x ?? process.env.NEXT_PUBLIC_TWITTER_URL) && (
                     <a
-                      href={profile?.x ?? process.env.NEXT_PUBLIC_TWITTER_URL ?? "#"}
+                      href={
+                        profile?.x ?? process.env.NEXT_PUBLIC_TWITTER_URL ?? "#"
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-mono text-[12px] text-[var(--editorial-text-muted)] hover:text-[var(--editorial-text)] transition-colors"
@@ -168,9 +198,14 @@ export function HomePageLayout({ profile, posts, projects, work, favorites, acti
                       Twitter / X ↗
                     </a>
                   )}
-                  {(profile?.linkedin ?? process.env.NEXT_PUBLIC_LINKEDIN_URL) && (
+                  {(profile?.linkedin ??
+                    process.env.NEXT_PUBLIC_LINKEDIN_URL) && (
                     <a
-                      href={profile?.linkedin ?? process.env.NEXT_PUBLIC_LINKEDIN_URL ?? "#"}
+                      href={
+                        profile?.linkedin ??
+                        process.env.NEXT_PUBLIC_LINKEDIN_URL ??
+                        "#"
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-mono text-[12px] text-[var(--editorial-text-muted)] hover:text-[var(--editorial-text)] transition-colors"
@@ -546,8 +581,8 @@ export function HomePageLayout({ profile, posts, projects, work, favorites, acti
               </div>
               <div className="border-t border-[var(--editorial-border)] pt-4 flex items-center justify-between gap-4">
                 <p className="font-mono text-[11px] text-[var(--editorial-text-muted)]">
-                  Browse the full notebook, grouped by day with tags, search, and a
-                  streak view.
+                  Browse the full notebook, grouped by day with tags, search,
+                  and a streak view.
                 </p>
                 <Link
                   href="/notes"

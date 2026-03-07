@@ -1,28 +1,56 @@
 "use client";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import type { PayloadActivityDay } from "@/lib/payload";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@repo/ui";
+import type { PayloadActivityDay } from "@/lib/data/cms";
 
 /** Fallback activity when no payload data is available. */
 const FALLBACK_ACTIVITY: PayloadActivityDay[] = [
-  { date: "Feb 15", intensity: 0.15, summary: "Minor CSS tweaks on blog layout" },
+  {
+    date: "Feb 15",
+    intensity: 0.15,
+    summary: "Minor CSS tweaks on blog layout",
+  },
   { date: "Feb 16", intensity: 0.25, summary: "Reviewed PR for auth module" },
   { date: "Feb 17", intensity: 0.4, summary: "Wrote draft: ESM/CJS conflicts" },
-  { date: "Feb 18", intensity: 0.6, summary: "Refactored component library tokens" },
+  {
+    date: "Feb 18",
+    intensity: 0.6,
+    summary: "Refactored component library tokens",
+  },
   { date: "Feb 19", intensity: 0.25, summary: "Code review & standup notes" },
-  { date: "Feb 20", intensity: 0.8, summary: "Published Payload v3 + Next.js post" },
+  {
+    date: "Feb 20",
+    intensity: 0.8,
+    summary: "Published Payload v3 + Next.js post",
+  },
   { date: "Feb 21", intensity: 0.15, summary: "Light reading & bookmarking" },
-  { date: "Feb 22", intensity: 0.3, summary: "Bug fix: sidebar scroll on mobile" },
+  {
+    date: "Feb 22",
+    intensity: 0.3,
+    summary: "Bug fix: sidebar scroll on mobile",
+  },
   { date: "Feb 23", intensity: 0.5, summary: "Built activity log component" },
-  { date: "Feb 24", intensity: 0.9, summary: "Major refactor: design system tokens" },
-  { date: "Feb 25", intensity: 0.4, summary: "Pair programming session on API layer" },
-  { date: "Feb 26", intensity: 0.7, summary: "Migrated 3 components to new tokens" },
+  {
+    date: "Feb 24",
+    intensity: 0.9,
+    summary: "Major refactor: design system tokens",
+  },
+  {
+    date: "Feb 25",
+    intensity: 0.4,
+    summary: "Pair programming session on API layer",
+  },
+  {
+    date: "Feb 26",
+    intensity: 0.7,
+    summary: "Migrated 3 components to new tokens",
+  },
   { date: "Feb 27", intensity: 0.2, summary: "Documentation & README updates" },
-  { date: "Feb 28", intensity: 1.0, summary: "Shipped portfolio redesign v2 🚀" },
+  {
+    date: "Feb 28",
+    intensity: 1.0,
+    summary: "Shipped portfolio redesign v2 🚀",
+  },
 ];
 
 type Props = {
@@ -31,9 +59,7 @@ type Props = {
 };
 
 export function ActivityStreakGrid({ activityLog }: Props) {
-  const days = activityLog?.length
-    ? activityLog
-    : FALLBACK_ACTIVITY;
+  const days = activityLog?.length ? activityLog : FALLBACK_ACTIVITY;
   const streak = days.length;
 
   return (
@@ -68,7 +94,9 @@ export function ActivityStreakGrid({ activityLog }: Props) {
                 color: "#f7f5f0",
               }}
             >
-              <span className="block text-[10px] opacity-70 mb-0.5">{day.date}</span>
+              <span className="block text-[10px] opacity-70 mb-0.5">
+                {day.date}
+              </span>
               {day.summary}
             </TooltipContent>
           </Tooltip>

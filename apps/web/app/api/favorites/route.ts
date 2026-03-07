@@ -1,7 +1,15 @@
-import { fetchFavoritesFromPayload } from "@/lib/payload";
+import { getFavorites } from "@/lib/data/favorites";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const favorites = await fetchFavoritesFromPayload();
-  return NextResponse.json(favorites);
+  try {
+    const favorites = await getFavorites();
+    return NextResponse.json(favorites);
+  } catch (e) {
+    console.error("[api/favorites GET]", e);
+    return NextResponse.json(
+      { error: "Failed to fetch favorites" },
+      { status: 500 }
+    );
+  }
 }

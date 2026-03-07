@@ -6,7 +6,7 @@ import {
   PixelPython,
   PixelTailwind,
   PixelCoolify,
-} from "./pixel-icons";
+} from "@/components/shared/pixel-icons";
 
 const technologies = [
   { name: "React", icon: PixelReact },

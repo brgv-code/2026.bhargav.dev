@@ -21,7 +21,9 @@ export function PixelCode({ className = "w-6 h-6" }: { className?: string }) {
 
 export function PixelTerminal({
   className = "w-6 h-6",
-}: { className?: string }) {
+}: {
+  className?: string;
+}) {
   return (
     <svg
       className={className}
@@ -84,7 +86,9 @@ export function PixelGithub({ className = "w-6 h-6" }: { className?: string }) {
 
 export function PixelTwitter({
   className = "w-6 h-6",
-}: { className?: string }) {
+}: {
+  className?: string;
+}) {
   return (
     <svg
       className={className}
@@ -108,7 +112,9 @@ export function PixelTwitter({
 
 export function PixelLinkedIn({
   className = "w-6 h-6",
-}: { className?: string }) {
+}: {
+  className?: string;
+}) {
   return (
     <svg
       className={className}
@@ -149,7 +155,9 @@ export function PixelArrow({ className = "w-6 h-6" }: { className?: string }) {
 
 export function PixelCalendar({
   className = "w-6 h-6",
-}: { className?: string }) {
+}: {
+  className?: string;
+}) {
   return (
     <svg
       className={className}
@@ -237,7 +245,9 @@ export function PixelNode({ className = "w-6 h-6" }: { className?: string }) {
 
 export function PixelTypeScript({
   className = "w-6 h-6",
-}: { className?: string }) {
+}: {
+  className?: string;
+}) {
   return (
     <svg
       className={className}
@@ -255,9 +265,7 @@ export function PixelTypeScript({
   );
 }
 
-export function PixelPython({
-  className = "w-6 h-6",
-}: { className?: string }) {
+export function PixelPython({ className = "w-6 h-6" }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -279,7 +287,9 @@ export function PixelPython({
 
 export function PixelTailwind({
   className = "w-6 h-6",
-}: { className?: string }) {
+}: {
+  className?: string;
+}) {
   return (
     <svg
       className={className}
@@ -303,7 +313,9 @@ export function PixelTailwind({
 
 export function PixelCoolify({
   className = "w-6 h-6",
-}: { className?: string }) {
+}: {
+  className?: string;
+}) {
   return (
     <svg
       className={className}
@@ -324,7 +336,9 @@ export function PixelCoolify({
 
 export function PixelWorkout({
   className = "w-6 h-6",
-}: { className?: string }) {
+}: {
+  className?: string;
+}) {
   return (
     <svg
       className={className}
@@ -467,7 +481,9 @@ export function PixelSound({ className = "w-6 h-6" }: { className?: string }) {
 
 export function PixelSoundOff({
   className = "w-6 h-6",
-}: { className?: string }) {
+}: {
+  className?: string;
+}) {
   return (
     <svg
       className={className}
@@ -543,7 +559,9 @@ export function PixelVideo({ className = "w-6 h-6" }: { className?: string }) {
 
 export function PixelArticle({
   className = "w-6 h-6",
-}: { className?: string }) {
+}: {
+  className?: string;
+}) {
   return (
     <svg
       className={className}
@@ -564,7 +582,9 @@ export function PixelArticle({
 
 export function PixelPodcast({
   className = "w-6 h-6",
-}: { className?: string }) {
+}: {
+  className?: string;
+}) {
   return (
     <svg
       className={className}

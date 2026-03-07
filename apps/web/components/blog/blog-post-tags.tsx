@@ -1,4 +1,4 @@
-import type { PayloadTag } from "@/lib/payload";
+import type { PayloadTag } from "@/lib/data/cms";
 
 type Props = {
   tags: PayloadTag[] | null | undefined;

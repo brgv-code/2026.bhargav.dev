@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { PayloadPostSummary } from "@/lib/payload";
+import type { PayloadPostSummary } from "@/lib/data/cms";
 
 const RELATED_PLACEHOLDER = "No related articles yet.";
 

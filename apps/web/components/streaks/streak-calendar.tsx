@@ -69,7 +69,9 @@ export function StreakCalendar({ data, habitName }: StreakCalendarProps) {
 
   return (
     <div className="py-6 border-b border-[var(--editorial-border)]">
-      <h3 className="font-mono text-[10px] tracking-widest uppercase text-[var(--editorial-text-dim)] mb-4">{habitName}</h3>
+      <h3 className="font-mono text-[10px] tracking-widest uppercase text-[var(--editorial-text-dim)] mb-4">
+        {habitName}
+      </h3>
 
       <div className="overflow-x-auto">
         <div className="min-w-max">

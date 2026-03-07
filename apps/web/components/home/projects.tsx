@@ -1,4 +1,4 @@
-import { PixelArrow } from "./pixel-icons";
+import { PixelArrow } from "@/components/shared/pixel-icons";
 import { projectsList } from "@/lib/projects-data";
 
 export function Projects() {

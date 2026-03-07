@@ -1,5 +1,5 @@
-import { PixelArrow } from "./pixel-icons";
-import { fetchLatestPosts } from "@/lib/payload";
+import { PixelArrow } from "@/components/shared/pixel-icons";
+import { fetchLatestPosts } from "@/lib/data/cms";
 import { formatMonthYear } from "@/lib/format";
 
 export async function Posts() {

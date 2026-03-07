@@ -2,8 +2,12 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { PixelClose, PixelBook, PixelCheck } from "./pixel-icons";
-import { useSound } from "./providers/sound-provider";
+import {
+  PixelClose,
+  PixelBook,
+  PixelCheck,
+} from "@/components/shared/pixel-icons";
+import { useSound } from "@/components/providers/sound-provider";
 import { formatWithWeekday } from "@/lib/format";
 
 interface HabitNoteModalProps {
@@ -138,7 +142,9 @@ export function HabitNoteModal({
         {/* Notes */}
         <div className="mb-6">
           <label className="text-xs text-muted-foreground block mb-2">
-            {isReading ? "what did you read? (brief notes)" : "notes (optional)"}
+            {isReading
+              ? "what did you read? (brief notes)"
+              : "notes (optional)"}
           </label>
           <textarea
             value={notes}

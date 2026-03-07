@@ -9,9 +9,9 @@ import {
   PixelSleep,
   PixelCode,
   PixelEdit,
-} from "./pixel-icons";
-import { HabitNoteModal } from "./habit-note-modal";
-import { useSound } from "./providers/sound-provider";
+} from "@/components/shared/pixel-icons";
+import { HabitNoteModal } from "@/components/streaks/habit-note-modal";
+import { useSound } from "@/components/providers/sound-provider";
 
 interface WeeklyViewProps {
   habitData: Record<string, Record<string, number>>;
@@ -92,9 +92,9 @@ export function WeeklyView({ habitData, onDataUpdate }: WeeklyViewProps) {
     isCompleted: boolean
   ) => {
     if (isFuture) return;
-    
+
     playClick();
-    
+
     // If reading habit or not completed, show modal for notes
     if (habit.key === "reading" || !isCompleted) {
       setNoteModal({
@@ -115,7 +115,9 @@ export function WeeklyView({ habitData, onDataUpdate }: WeeklyViewProps) {
   return (
     <>
       <div>
-        <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--editorial-text-dim)] mb-4">this week</p>
+        <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--editorial-text-dim)] mb-4">
+          this week
+        </p>
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[600px]">
@@ -131,7 +133,9 @@ export function WeeklyView({ habitData, onDataUpdate }: WeeklyViewProps) {
                     <th
                       key={i}
                       className={`text-center font-mono text-[10px] font-normal pb-4 w-16 ${
-                        isToday ? "text-[var(--editorial-text)]" : "text-[var(--editorial-text-muted)]"
+                        isToday
+                          ? "text-[var(--editorial-text)]"
+                          : "text-[var(--editorial-text-muted)]"
                       }`}
                     >
                       <div>{dayNames[date.getDay()]}</div>
@@ -167,7 +171,10 @@ export function WeeklyView({ habitData, onDataUpdate }: WeeklyViewProps) {
                 }
 
                 return (
-                  <tr key={habit.key} className="border-t border-[var(--editorial-border)]">
+                  <tr
+                    key={habit.key}
+                    className="border-t border-[var(--editorial-border)]"
+                  >
                     <td className="py-3 pr-4">
                       <div className="flex items-center gap-2">
                         <Icon className="w-3.5 h-3.5 text-[var(--editorial-accent)]" />
@@ -190,7 +197,12 @@ export function WeeklyView({ habitData, onDataUpdate }: WeeklyViewProps) {
                           <div className="flex justify-center">
                             <button
                               onClick={() =>
-                                handleCellClick(habit, date, isFuture, isCompleted)
+                                handleCellClick(
+                                  habit,
+                                  date,
+                                  isFuture,
+                                  isCompleted
+                                )
                               }
                               disabled={isFuture}
                               className={`w-8 h-8 transition-all ${
