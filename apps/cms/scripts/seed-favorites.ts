@@ -141,7 +141,9 @@ async function run(): Promise<void> {
   await payload.destroy();
 }
 
-void run().catch((error) => {
+try {
+  await run();
+} catch (error) {
   console.error("[seed-favorites] failed", error);
   process.exit(1);
-});
+}
