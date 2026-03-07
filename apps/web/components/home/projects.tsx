@@ -1,7 +1,11 @@
 import { PixelArrow } from "@/components/shared/pixel-icons";
-import { projectsList } from "@/lib/projects-data";
+import type { ProjectItem } from "@/lib/projects-data";
 
-export function Projects() {
+type ProjectsProps = {
+  projects: ProjectItem[];
+};
+
+export function Projects({ projects }: ProjectsProps) {
   return (
     <section className="py-5">
       <h2 className="text-[var(--editorial-text-dim)] font-mono text-[10px] uppercase tracking-widest mb-4">
@@ -9,7 +13,7 @@ export function Projects() {
       </h2>
 
       <div className="space-y-0">
-        {projectsList.map((project) => (
+        {projects.map((project) => (
           <a
             key={project.name}
             href={project.url}

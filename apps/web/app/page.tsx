@@ -7,12 +7,13 @@ import {
   fetchWorkExperience,
   fetchFavoritesFromPayload,
   fetchActivityFromPayload,
+  fetchProjectsFromPayload,
 } from "@/lib/data/cms";
-import { projectsList } from "@/lib/projects-data";
+import type { ProjectItem } from "@/lib/projects-data";
 import { getCommitsThisWeek } from "@/lib/github";
 
 export default async function Home() {
-  const [profile, posts, work, favorites, commitsThisWeek, activityLog] =
+  const [profile, posts, work, favorites, commitsThisWeek, activityLog, projects] =
     await Promise.all([
       fetchProfile(),
       fetchBlogListPosts(10),
@@ -20,7 +21,23 @@ export default async function Home() {
       fetchFavoritesFromPayload(),
       getCommitsThisWeek(),
       fetchActivityFromPayload(),
+      fetchProjectsFromPayload(),
     ]);
+
+  const projectItems: ProjectItem[] = projects.map((project) => ({
+    name: project.name,
+    title: project.title ?? undefined,
+    description: project.description,
+    url: project.url,
+    status: project.status ?? undefined,
+    year: project.year ?? undefined,
+    tech: Array.isArray(project.tech)
+      ? project.tech
+          .map((entry) => entry?.label)
+          .filter((label): label is string => typeof label === "string")
+      : undefined,
+    github: project.github ?? undefined,
+  }));
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -33,7 +50,7 @@ export default async function Home() {
           <HomePageLayout
             profile={profile}
             posts={posts}
-            projects={projectsList}
+            projects={projectItems}
             work={work}
             favorites={favorites}
             activityLog={activityLog}

@@ -72,8 +72,13 @@ export interface Config {
     series: Series;
     posts: Post;
     media: Media;
+    projects: Project;
     'work-experience': WorkExperience;
     favorites: Favorite;
+    books: Book;
+    'reading-notes': ReadingNote;
+    'habit-completions': HabitCompletion;
+    'error-logs': ErrorLog;
     streaks: Streak;
     notebooks: Notebook;
     documents: Document;
@@ -89,8 +94,13 @@ export interface Config {
     series: SeriesSelect<false> | SeriesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    projects: ProjectsSelect<false> | ProjectsSelect<true>;
     'work-experience': WorkExperienceSelect<false> | WorkExperienceSelect<true>;
     favorites: FavoritesSelect<false> | FavoritesSelect<true>;
+    books: BooksSelect<false> | BooksSelect<true>;
+    'reading-notes': ReadingNotesSelect<false> | ReadingNotesSelect<true>;
+    'habit-completions': HabitCompletionsSelect<false> | HabitCompletionsSelect<true>;
+    'error-logs': ErrorLogsSelect<false> | ErrorLogsSelect<true>;
     streaks: StreaksSelect<false> | StreaksSelect<true>;
     notebooks: NotebooksSelect<false> | NotebooksSelect<true>;
     documents: DocumentsSelect<false> | DocumentsSelect<true>;
@@ -400,6 +410,58 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects".
+ */
+export interface Project {
+  id: number;
+  name: string;
+  title?: string | null;
+  description: string;
+  url: string;
+  status?: ('active' | 'wip' | 'archived') | null;
+  year?: string | null;
+  tech?:
+    | {
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  github?: string | null;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "work-experience".
  */
 export interface WorkExperience {
@@ -458,8 +520,220 @@ export interface Favorite {
   type?: ('article' | 'video' | 'podcast' | 'book' | 'tool') | null;
   title: string;
   url?: string | null;
+  thumbnailUrl?: string | null;
   source?: string | null;
+  thoughts?: string | null;
+  dateAdded: string;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "books".
+ */
+export interface Book {
+  id: number;
+  title: string;
+  author?: string | null;
+  totalPages?: number | null;
+  currentPage: number;
+  status: 'reading' | 'completed' | 'paused' | 'wishlist';
+  coverImage?: (number | null) | Media;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  summary?: string | null;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reading-notes".
+ */
+export interface ReadingNote {
+  id: number;
+  book: number | Book;
+  /**
+   * YYYY-MM-DD
+   */
+  date: string;
+  pageStart: number;
+  pageEnd: number;
+  /**
+   * Auto-computed from page range.
+   */
+  pagesRead: number;
+  thoughts?: string | null;
+  habitCompletion?: (number | null) | HabitCompletion;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "habit-completions".
+ */
+export interface HabitCompletion {
+  id: number;
+  habitKey: 'reading' | 'workout' | 'steps' | 'eating' | 'sleep' | 'coding' | 'editing';
+  /**
+   * YYYY-MM-DD
+   */
+  date: string;
+  completed: boolean;
+  /**
+   * Numeric progress for the day (pages, steps, score, etc.).
+   */
+  value?: number | null;
   notes?: string | null;
+  readingNote?: (number | null) | ReadingNote;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-logs".
+ */
+export interface ErrorLog {
+  id: number;
+  level: 'info' | 'warn' | 'error' | 'fatal';
+  source: string;
+  message: string;
+  stack?: string | null;
+  /**
+   * Additional structured context (route, payload, user agent, etc.).
+   */
+  context?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  occurredAt: string;
+  resolved?: boolean | null;
+  resolvedAt?: string | null;
+  resolutionNotes?: string | null;
   /**
    * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
    */
@@ -653,12 +927,32 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
+        relationTo: 'projects';
+        value: number | Project;
+      } | null)
+    | ({
         relationTo: 'work-experience';
         value: number | WorkExperience;
       } | null)
     | ({
         relationTo: 'favorites';
         value: number | Favorite;
+      } | null)
+    | ({
+        relationTo: 'books';
+        value: number | Book;
+      } | null)
+    | ({
+        relationTo: 'reading-notes';
+        value: number | ReadingNote;
+      } | null)
+    | ({
+        relationTo: 'habit-completions';
+        value: number | HabitCompletion;
+      } | null)
+    | ({
+        relationTo: 'error-logs';
+        value: number | ErrorLog;
       } | null)
     | ({
         relationTo: 'streaks';
@@ -822,6 +1116,31 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects_select".
+ */
+export interface ProjectsSelect<T extends boolean = true> {
+  name?: T;
+  title?: T;
+  description?: T;
+  url?: T;
+  status?: T;
+  year?: T;
+  tech?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
+  github?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "work-experience_select".
  */
 export interface WorkExperienceSelect<T extends boolean = true> {
@@ -852,8 +1171,89 @@ export interface FavoritesSelect<T extends boolean = true> {
   type?: T;
   title?: T;
   url?: T;
+  thumbnailUrl?: T;
   source?: T;
+  thoughts?: T;
+  dateAdded?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "books_select".
+ */
+export interface BooksSelect<T extends boolean = true> {
+  title?: T;
+  author?: T;
+  totalPages?: T;
+  currentPage?: T;
+  status?: T;
+  coverImage?: T;
+  startedAt?: T;
+  finishedAt?: T;
+  summary?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reading-notes_select".
+ */
+export interface ReadingNotesSelect<T extends boolean = true> {
+  book?: T;
+  date?: T;
+  pageStart?: T;
+  pageEnd?: T;
+  pagesRead?: T;
+  thoughts?: T;
+  habitCompletion?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "habit-completions_select".
+ */
+export interface HabitCompletionsSelect<T extends boolean = true> {
+  habitKey?: T;
+  date?: T;
+  completed?: T;
+  value?: T;
   notes?: T;
+  readingNote?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-logs_select".
+ */
+export interface ErrorLogsSelect<T extends boolean = true> {
+  level?: T;
+  source?: T;
+  message?: T;
+  stack?: T;
+  context?: T;
+  occurredAt?: T;
+  resolved?: T;
+  resolvedAt?: T;
+  resolutionNotes?: T;
   markdownInput?: T;
   content?: T;
   contentHtml?: T;

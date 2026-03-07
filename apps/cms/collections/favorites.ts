@@ -1,14 +1,17 @@
 import type { CollectionConfig } from "payload";
-import { isLoggedIn, slugs } from "./constants";
+import { slugs } from "./constants";
 
 export const favoritesCollection: CollectionConfig = {
   slug: slugs.favorites,
-  admin: { useAsTitle: "title" },
+  admin: {
+    useAsTitle: "title",
+    defaultColumns: ["type", "title", "source", "dateAdded", "updatedAt"],
+  },
   access: {
     read: () => true,
-    create: isLoggedIn,
-    update: isLoggedIn,
-    delete: isLoggedIn,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   fields: [
     {
@@ -24,7 +27,14 @@ export const favoritesCollection: CollectionConfig = {
     },
     { name: "title", type: "text", required: true },
     { name: "url", type: "text" },
+    { name: "thumbnailUrl", type: "text" },
     { name: "source", type: "text" },
-    { name: "notes", type: "textarea" },
+    { name: "thoughts", type: "textarea" },
+    {
+      name: "dateAdded",
+      type: "date",
+      required: true,
+      defaultValue: () => new Date().toISOString(),
+    },
   ],
 };

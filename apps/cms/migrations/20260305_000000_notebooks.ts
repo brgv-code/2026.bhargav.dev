@@ -7,10 +7,6 @@
  */
 import type { MigrateUpArgs, MigrateDownArgs } from "@payloadcms/db-sqlite";
 import { sql as sqliteSql } from "@payloadcms/db-sqlite";
-import type {
-  MigrateUpArgs as PgMigrateUpArgs,
-  MigrateDownArgs as PgMigrateDownArgs,
-} from "@payloadcms/db-postgres";
 import { sql as pgSql } from "@payloadcms/db-postgres";
 
 const NOW_SQLITE = "strftime('%Y-%m-%dT%H:%M:%fZ', 'now')";

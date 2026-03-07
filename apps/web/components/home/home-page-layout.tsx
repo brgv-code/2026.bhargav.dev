@@ -96,7 +96,7 @@ function groupFavoritesByType(
         id: f.id,
         title: f.title,
         url: f.url,
-        subtitle: f.source ?? f.notes ?? undefined,
+        subtitle: f.source ?? f.thoughts ?? undefined,
       })),
     }));
 }
