@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
+import { Navbar } from "@/components/shared/navbar";
+import { Footer } from "@/components/shared/footer";
 import {
   PixelVideo,
   PixelArticle,
@@ -13,7 +13,7 @@ import {
   PixelPlus,
   PixelClose,
   PixelNote,
-} from "@/components/pixel-icons";
+} from "@/components/shared/pixel-icons";
 import { useSound } from "@/components/providers/sound-provider";
 import { formatMonthDay } from "@/lib/format";
 
@@ -70,8 +70,18 @@ export default function FavoritesPage() {
       })(),
     ]);
 
-    const fromPayload: Favorite[] = (Array.isArray(payloadRes) ? payloadRes : []).map(
-      (doc: { id: number; type?: string | null; title: string; url?: string | null; source?: string | null; notes?: string | null; createdAt: string }) => ({
+    const fromPayload: Favorite[] = (
+      Array.isArray(payloadRes) ? payloadRes : []
+    ).map(
+      (doc: {
+        id: number;
+        type?: string | null;
+        title: string;
+        url?: string | null;
+        source?: string | null;
+        notes?: string | null;
+        createdAt: string;
+      }) => ({
         id: `payload-${doc.id}`,
         type: (doc.type ?? "article") as FavoriteType,
         title: doc.title,
@@ -84,19 +94,29 @@ export default function FavoritesPage() {
       })
     );
 
-    const fromSupabase: Favorite[] = (supabaseData as { id: string; type: string; title: string; url: string | null; thumbnail_url: string | null; source: string | null; thoughts: string | null; date_added: string; created_at: string }[]).map(
-      (row) => ({
-        id: row.id,
-        type: row.type as FavoriteType,
-        title: row.title,
-        url: row.url ?? null,
-        thumbnail_url: row.thumbnail_url ?? null,
-        source: row.source ?? null,
-        thoughts: row.thoughts ?? null,
-        date_added: row.date_added,
-        created_at: row.created_at,
-      })
-    );
+    const fromSupabase: Favorite[] = (
+      supabaseData as {
+        id: string;
+        type: string;
+        title: string;
+        url: string | null;
+        thumbnail_url: string | null;
+        source: string | null;
+        thoughts: string | null;
+        date_added: string;
+        created_at: string;
+      }[]
+    ).map((row) => ({
+      id: row.id,
+      type: row.type as FavoriteType,
+      title: row.title,
+      url: row.url ?? null,
+      thumbnail_url: row.thumbnail_url ?? null,
+      source: row.source ?? null,
+      thoughts: row.thoughts ?? null,
+      date_added: row.date_added,
+      created_at: row.created_at,
+    }));
 
     const merged = [...fromPayload, ...fromSupabase].sort(
       (a, b) =>
@@ -127,7 +147,10 @@ export default function FavoritesPage() {
   return (
     <>
       <Navbar />
-      <div data-theme="editorial" className="min-h-screen bg-[var(--editorial-bg)] flex flex-col">
+      <div
+        data-theme="editorial"
+        className="min-h-screen bg-[var(--editorial-bg)] flex flex-col"
+      >
         <main className="flex-1 max-w-4xl mx-auto w-full px-6 md:px-8 pt-28 pb-24">
           <header className="mb-14">
             <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--editorial-text-dim)] mb-4">
@@ -137,7 +160,8 @@ export default function FavoritesPage() {
               Favorites
             </h1>
             <p className="text-[var(--editorial-text-muted)] text-[15px] leading-relaxed max-w-md">
-              Videos, articles, podcasts, books, and tools that shaped my thinking.
+              Videos, articles, podcasts, books, and tools that shaped my
+              thinking.
             </p>
             <div className="mt-8 border-b border-dashed border-[var(--editorial-border)]" />
           </header>
@@ -190,7 +214,9 @@ export default function FavoritesPage() {
 
           <section>
             {loading ? (
-              <p className="text-sm text-[var(--editorial-text-muted)]">Loading...</p>
+              <p className="text-sm text-[var(--editorial-text-muted)]">
+                Loading...
+              </p>
             ) : filteredFavorites.length === 0 ? (
               <div className="text-center py-16">
                 <PixelNote className="w-8 h-8 text-[var(--editorial-text-muted)] mx-auto mb-3" />
@@ -352,7 +378,9 @@ function AddFavoriteModal({
             <p className="font-mono text-[10px] text-[var(--editorial-text-dim)] uppercase tracking-widest mb-2">
               add favorite
             </p>
-            <h2 className="font-serif text-lg text-[var(--editorial-text)]">New Entry</h2>
+            <h2 className="font-serif text-lg text-[var(--editorial-text)]">
+              New Entry
+            </h2>
           </div>
           <button
             onClick={handleClose}

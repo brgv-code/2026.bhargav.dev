@@ -1,8 +1,8 @@
 import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Navbar } from "@/components/navbar";
-import { RichText } from "@/components/rich-text";
+import { Navbar } from "@/components/shared/navbar";
+import { RichText } from "@/components/shared/rich-text";
 import {
   BlogPostBackLink,
   BlogPostTags,
@@ -14,7 +14,11 @@ import {
   BlogPostTOC,
   BlogPostFurtherReading,
 } from "@/components/blog";
-import { fetchPostBySlug, fetchRelatedPosts, type PayloadTocItem } from "@/lib/payload";
+import {
+  fetchPostBySlug,
+  fetchRelatedPosts,
+  type PayloadTocItem,
+} from "@/lib/data/cms";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -38,13 +42,14 @@ function normalizeTags(
   if (!tags?.length) return null;
   return tags.filter(
     (t): t is { id: number; name: string; slug: string } =>
-      typeof t === "object" && t != null && "name" in t && typeof t.name === "string"
+      typeof t === "object" &&
+      t != null &&
+      "name" in t &&
+      typeof t.name === "string"
   );
 }
 
-function normalizeTocItems(
-  raw: unknown
-): PayloadTocItem[] | null {
+function normalizeTocItems(raw: unknown): PayloadTocItem[] | null {
   if (!Array.isArray(raw) || raw.length === 0) return null;
   const out: PayloadTocItem[] = [];
   for (const x of raw) {
@@ -59,7 +64,10 @@ function normalizeTocItems(
       out.push({
         id: (x as PayloadTocItem).id,
         text: (x as PayloadTocItem).text,
-        level: typeof (x as PayloadTocItem).level === "number" ? (x as PayloadTocItem).level : 2,
+        level:
+          typeof (x as PayloadTocItem).level === "number"
+            ? (x as PayloadTocItem).level
+            : 2,
       });
     }
   }
@@ -81,7 +89,10 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <>
       <Navbar />
-      <div data-theme="editorial" className="min-h-screen bg-[var(--editorial-bg)]">
+      <div
+        data-theme="editorial"
+        className="min-h-screen bg-[var(--editorial-bg)]"
+      >
         <div className="max-w-[1060px] mx-auto px-6 sm:px-10 pt-28 pb-16 text-[var(--editorial-text)]">
           <BlogPostBackLink href={BLOG_INDEX_HREF} />
           <article>
@@ -92,13 +103,20 @@ export default async function BlogPostPage({ params }: Props) {
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-x-12 lg:gap-x-20 gap-y-8">
               <main className="min-w-0">
                 <BlogPostReadingMeta
-                  date={post.publishedAt ?? post.updatedAt ?? post.createdAt ?? undefined}
+                  date={
+                    post.publishedAt ??
+                    post.updatedAt ??
+                    post.createdAt ??
+                    undefined
+                  }
                   readingTimeMinutes={post.readingTime ?? undefined}
                   wordCount={post.wordCount ?? undefined}
                 />
                 <div className="mt-6">
                   <RichText
-                    data={post.content as SerializedEditorState | null | undefined}
+                    data={
+                      post.content as SerializedEditorState | null | undefined
+                    }
                     className="prose-editorial max-w-none"
                     headingIds={tocItems?.map((t) => t.id)}
                   />

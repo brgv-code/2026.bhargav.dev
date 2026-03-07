@@ -1,5 +1,5 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -38,19 +38,19 @@
   --sidebar-accent-foreground: oklch(0.82 0.01 60);
   --sidebar-border: oklch(0.22 0.005 60);
   --sidebar-ring: oklch(0.52 0.01 60);
-  
+
   /* Subtle accent colors */
   --link: oklch(0.68 0.06 220);
   --link-hover: oklch(0.75 0.08 220);
   --icon-accent: oklch(0.62 0.05 45);
   --highlight: oklch(0.65 0.06 80);
-  
+
   /* Streak colors - subtle warm tones */
   --streak-0: oklch(0.18 0.005 60);
   --streak-1: oklch(0.28 0.02 80);
   --streak-2: oklch(0.42 0.04 80);
   --streak-3: oklch(0.56 0.05 80);
-  --streak-4: oklch(0.70 0.06 80);
+  --streak-4: oklch(0.7 0.06 80);
 }
 
 .dark {
@@ -89,8 +89,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-space-mono), 'Geist Mono Fallback';
-  --font-mono: var(--font-space-mono), 'Geist Mono Fallback';
+  --font-sans: var(--font-space-mono), "Geist Mono Fallback";
+  --font-mono: var(--font-space-mono), "Geist Mono Fallback";
   --font-pixel: var(--font-vt323), monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -153,7 +153,8 @@
   --editorial-accent2: #2a6b4a;
   --editorial-font-serif: var(--font-newsreader), "Newsreader", Georgia, serif;
   --editorial-font-sans: var(--font-inter), "Inter", sans-serif;
-  --editorial-font-mono: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
+  --editorial-font-mono:
+    var(--font-jetbrains-mono), "JetBrains Mono", monospace;
   /* Override Tailwind semantic colors so RichText blocks use the warm palette */
   --background: var(--editorial-bg);
   --foreground: var(--editorial-text);
@@ -248,7 +249,10 @@
   list-style: none;
   margin-left: -1.5rem;
 }
-[data-theme="editorial"] .prose-editorial .task-list-item input[type="checkbox"] {
+[data-theme="editorial"]
+  .prose-editorial
+  .task-list-item
+  input[type="checkbox"] {
   margin-right: 0.5rem;
 }
 [data-theme="editorial"] .prose-editorial table {
@@ -312,7 +316,9 @@ header .font-mono {
   display: none;
   opacity: 0;
   transform: translateY(6px);
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
 }
 .tab-content.active {
   display: block;

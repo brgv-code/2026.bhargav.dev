@@ -2,8 +2,12 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { PixelBook, PixelClose, PixelNote } from "./pixel-icons";
-import { useSound } from "./providers/sound-provider";
+import {
+  PixelBook,
+  PixelClose,
+  PixelNote,
+} from "@/components/shared/pixel-icons";
+import { useSound } from "@/components/providers/sound-provider";
 import { formatWithWeekday } from "@/lib/format";
 
 interface Book {
@@ -86,9 +90,13 @@ export function ReadingJournal({ isOpen, onClose, book }: ReadingJournalProps) {
               <p className="text-[var(--editorial-text-dim)] font-mono text-[11px] uppercase tracking-widest mb-2">
                 reading journal
               </p>
-              <h2 className="text-lg font-serif font-semibold text-[var(--editorial-text)] mb-1">{book?.title}</h2>
+              <h2 className="text-lg font-serif font-semibold text-[var(--editorial-text)] mb-1">
+                {book?.title}
+              </h2>
               {book?.author && (
-                <p className="text-sm text-[var(--editorial-text-muted)]">{book.author}</p>
+                <p className="text-sm text-[var(--editorial-text-muted)]">
+                  {book.author}
+                </p>
               )}
             </div>
             <button
@@ -121,7 +129,9 @@ export function ReadingJournal({ isOpen, onClose, book }: ReadingJournalProps) {
         {/* Notes List */}
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
-            <p className="text-sm text-[var(--editorial-text-muted)]">Loading...</p>
+            <p className="text-sm text-[var(--editorial-text-muted)]">
+              Loading...
+            </p>
           ) : notes.length === 0 ? (
             <div className="text-center py-12">
               <PixelNote className="w-8 h-8 text-[var(--editorial-text-muted)] mx-auto mb-3" />
@@ -188,7 +198,10 @@ type ReadingProps = {
 };
 
 // Reading section component for homepage that opens journal
-export function Reading({ label = "Reading", variant = "default" }: ReadingProps) {
+export function Reading({
+  label = "Reading",
+  variant = "default",
+}: ReadingProps) {
   const [book, setBook] = useState<Book | null>(null);
   const [journalOpen, setJournalOpen] = useState(false);
   const { playClick } = useSound();

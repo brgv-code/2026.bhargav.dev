@@ -556,7 +556,7 @@ export interface Notebook {
          * Optional. Auto-generated if left blank (for permalinks).
          */
         blockId?: string | null;
-        type: 'thought' | 'code' | 'link' | 'learning' | 'quote';
+        type: 'thought' | 'code' | 'link' | 'learning' | 'quote' | 'bugs' | 'features' | 'reminders' | 'work';
         content: string;
         lang?: string | null;
         meta?: string | null;

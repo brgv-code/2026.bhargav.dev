@@ -107,9 +107,18 @@ export function CodeBlock({
 
   return (
     <Highlight theme={editorialTheme} code={code} language={safeLang}>
-      {({ className: innerClassName, style, tokens, getLineProps, getTokenProps }) => (
+      {({
+        className: innerClassName,
+        style,
+        tokens,
+        getLineProps,
+        getTokenProps,
+      }) => (
         <pre
-          className={[innerClassName, preClassName].filter(Boolean).join(" ") || undefined}
+          className={
+            [innerClassName, preClassName].filter(Boolean).join(" ") ||
+            undefined
+          }
           style={{
             ...style,
             backgroundColor: NOTE_CODE_BG,

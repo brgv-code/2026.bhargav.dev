@@ -3,8 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PixelCalendar, PixelHeart, PixelSound, PixelSoundOff } from "./pixel-icons";
-import { useSound } from "./providers/sound-provider";
+import {
+  PixelCalendar,
+  PixelHeart,
+  PixelSound,
+  PixelSoundOff,
+} from "@/components/shared/pixel-icons";
+import { useSound } from "@/components/providers/sound-provider";
 
 const LOCATION = "Berlin, DE";
 const TIMEZONE = "Europe/Berlin";

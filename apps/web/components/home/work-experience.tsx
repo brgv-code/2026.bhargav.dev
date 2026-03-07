@@ -1,4 +1,4 @@
-import { fetchWorkExperience } from "@/lib/payload";
+import { fetchWorkExperience } from "@/lib/data/cms";
 
 export async function WorkExperience() {
   const roles = await fetchWorkExperience();
@@ -10,7 +10,9 @@ export async function WorkExperience() {
       </h2>
 
       {roles.length === 0 ? (
-        <p className="text-sm text-[var(--editorial-text-muted)]">No work experience added yet.</p>
+        <p className="text-sm text-[var(--editorial-text-muted)]">
+          No work experience added yet.
+        </p>
       ) : (
         <div className="space-y-0">
           {roles.map((role) => (
@@ -20,7 +22,9 @@ export async function WorkExperience() {
             >
               <summary className="flex items-baseline justify-between gap-4 cursor-pointer list-none">
                 <div>
-                  <p className="text-sm text-[var(--editorial-text)]">{role.role}</p>
+                  <p className="text-sm text-[var(--editorial-text)]">
+                    {role.role}
+                  </p>
                   <p className="text-xs text-[var(--editorial-text-muted)]">
                     {role.company}
                   </p>
@@ -61,4 +65,3 @@ export async function WorkExperience() {
     </section>
   );
 }
-

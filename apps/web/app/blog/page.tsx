@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
-import { Navbar } from "@/components/navbar";
+import { Navbar } from "@/components/shared/navbar";
 import { BlogCard, BlogPostFooter } from "@/components/blog";
-import { fetchBlogListPosts, tagNames, type PayloadPostListItem } from "@/lib/payload";
+import {
+  fetchBlogListPosts,
+  tagNames,
+  type PayloadPostListItem,
+} from "@/lib/data/cms";
 import { formatPostDate, formatReadTime } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -11,7 +15,9 @@ export const metadata: Metadata = {
 };
 
 function postToCard(post: PayloadPostListItem, featured: boolean) {
-  const date = formatPostDate(post.publishedAt ?? post.updatedAt ?? post.createdAt);
+  const date = formatPostDate(
+    post.publishedAt ?? post.updatedAt ?? post.createdAt
+  );
   const readTime = formatReadTime(post.readingTime);
   return (
     <BlogCard
@@ -33,7 +39,10 @@ export default async function BlogIndexPage() {
   return (
     <>
       <Navbar />
-      <div data-theme="editorial" className="min-h-screen bg-[var(--editorial-bg)]">
+      <div
+        data-theme="editorial"
+        className="min-h-screen bg-[var(--editorial-bg)]"
+      >
         <main className="max-w-[720px] mx-auto w-full px-6 md:px-8 pt-28 pb-24">
           <header className="mb-14">
             <p className="font-serif italic text-[var(--editorial-text-muted)] text-[15px] mb-3">

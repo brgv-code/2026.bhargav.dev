@@ -1,18 +1,21 @@
+import {
+  NotebookDocumentSchema,
+  UpdateNotebookDocumentSchema,
+} from "@repo/types";
 import { NextRequest, NextResponse } from "next/server";
 
 const cmsUrl =
   process.env.PAYLOAD_PUBLIC_SERVER_URL ??
-  (process.env.NODE_ENV === "development" ? "http://localhost:3001" : undefined);
+  (process.env.NODE_ENV === "development"
+    ? "http://localhost:3001"
+    : undefined);
 
 export async function PATCH(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   if (!cmsUrl) {
-    return NextResponse.json(
-      { error: "CMS not configured" },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: "CMS not configured" }, { status: 503 });
   }
 
   const { id } = await params;
@@ -22,20 +25,39 @@ export async function PATCH(
 
   try {
     const body = await _request.json();
+    const parsed = UpdateNotebookDocumentSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid notebook payload", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+
     const res = await fetch(`${cmsUrl}/api/notebooks/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify(parsed.data),
     });
 
-    const data = await res.json().catch(() => ({}));
+    const data = await res.json().catch(() => null);
     if (!res.ok) {
       return NextResponse.json(
-        data?.errors ?? { error: res.statusText },
+        (data as { errors?: unknown } | null)?.errors ?? {
+          error: res.statusText,
+        },
         { status: res.status }
       );
     }
-    return NextResponse.json(data);
+
+    const parsedResponse = NotebookDocumentSchema.safeParse(data);
+    if (!parsedResponse.success) {
+      return NextResponse.json(
+        { error: "Invalid notebook response from CMS" },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json(parsedResponse.data);
   } catch (e) {
     console.error("[api/notebooks PATCH]", e);
     return NextResponse.json(
@@ -50,10 +72,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   if (!cmsUrl) {
-    return NextResponse.json(
-      { error: "CMS not configured" },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: "CMS not configured" }, { status: 503 });
   }
 
   const { id } = await params;
@@ -68,10 +87,9 @@ export async function DELETE(
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      return NextResponse.json(
-        data?.errors ?? { error: res.statusText },
-        { status: res.status }
-      );
+      return NextResponse.json(data?.errors ?? { error: res.statusText }, {
+        status: res.status,
+      });
     }
     return new NextResponse(null, { status: 204 });
   } catch (e) {

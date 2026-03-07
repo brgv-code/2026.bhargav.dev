@@ -2,8 +2,8 @@ import {
   PixelGithub,
   PixelTwitter,
   PixelLinkedIn,
-} from "./pixel-icons";
-import { fetchProfile } from "@/lib/payload";
+} from "@/components/shared/pixel-icons";
+import { fetchProfile } from "@/lib/data/cms";
 
 export async function Hero() {
   const profile = await fetchProfile();
@@ -58,7 +58,9 @@ export async function Hero() {
               <PixelLinkedIn className="w-5 h-5" />
             </a>
           )}
-          {(process.env.NEXT_PUBLIC_GITHUB_URL ?? process.env.NEXT_PUBLIC_TWITTER_URL ?? process.env.NEXT_PUBLIC_LINKEDIN_URL) && (
+          {(process.env.NEXT_PUBLIC_GITHUB_URL ??
+            process.env.NEXT_PUBLIC_TWITTER_URL ??
+            process.env.NEXT_PUBLIC_LINKEDIN_URL) && (
             <span className="w-px h-4 bg-[var(--editorial-border)]" />
           )}
           <span className="inline-flex items-center gap-2 text-xs text-[var(--editorial-text-muted)]">
