@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
 import {
   PixelBook,
   PixelClose,
@@ -11,21 +10,23 @@ import { useSound } from "@/components/providers/sound-provider";
 import { formatWithWeekday } from "@/lib/format";
 
 interface Book {
-  id: string;
+  id: number;
   title: string;
   author: string | null;
-  total_pages: number | null;
-  current_page: number;
-  status: string;
+  totalPages: number | null;
+  currentPage: number | null;
+  status: string | null;
+  latestThought?: string | null;
 }
 
 interface ReadingNote {
-  id: string;
-  book_id: string;
+  id: number;
   date: string;
-  pages_read: number;
-  notes: string | null;
-  created_at: string;
+  pageStart: number;
+  pageEnd: number;
+  pagesRead: number | null;
+  thoughts: string | null;
+  createdAt?: string;
 }
 
 interface ReadingJournalProps {
@@ -43,17 +44,28 @@ export function ReadingJournal({ isOpen, onClose, book }: ReadingJournalProps) {
   const fetchNotes = useCallback(async () => {
     if (!book) return;
     setLoading(true);
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("reading_notes")
-      .select("*")
-      .eq("book_id", book.id)
-      .order("date", { ascending: false });
-
-    if (data) {
-      setNotes(data);
+    try {
+      const res = await fetch(`/api/reading-notes?bookId=${book.id}`, {
+        cache: "no-store",
+      });
+      const data = res.ok ? await res.json() : [];
+      if (Array.isArray(data)) {
+        setNotes(
+          data.map((note: ReadingNote) => ({
+            ...note,
+            thoughts: note.thoughts ?? null,
+            pagesRead:
+              typeof note.pagesRead === "number"
+                ? note.pagesRead
+                : Math.max(0, note.pageEnd - note.pageStart + 1),
+          })),
+        );
+      } else {
+        setNotes([]);
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [book]);
 
   useEffect(() => {
@@ -69,8 +81,8 @@ export function ReadingJournal({ isOpen, onClose, book }: ReadingJournalProps) {
 
   if (!isOpen) return null;
 
-  const progress = book?.total_pages
-    ? Math.round((book.current_page / book.total_pages) * 100)
+  const progress = book?.totalPages
+    ? Math.round(((book.currentPage ?? 0) / book.totalPages) * 100)
     : 0;
 
   return (
@@ -108,12 +120,12 @@ export function ReadingJournal({ isOpen, onClose, book }: ReadingJournalProps) {
           </div>
 
           {/* Progress bar */}
-          {book?.total_pages && (
+          {book?.totalPages && (
             <div className="mt-4">
               <div className="flex items-center justify-between text-xs text-[var(--editorial-text-muted)] mb-1">
                 <span>progress</span>
                 <span>
-                  {book.current_page} / {book.total_pages} pages
+                  {book.currentPage ?? 0} / {book.totalPages} pages
                 </span>
               </div>
               <div className="h-2 bg-[var(--editorial-surface2)]">
@@ -161,22 +173,22 @@ export function ReadingJournal({ isOpen, onClose, book }: ReadingJournalProps) {
                       <span className="text-xs text-[var(--editorial-text-muted)]">
                         {formatWithWeekday(note.date, false)}
                       </span>
-                      {note.pages_read > 0 && (
+                      {(note.pagesRead ?? 0) > 0 && (
                         <span className="text-xs text-[var(--editorial-accent)]">
-                          +{note.pages_read} pages
+                          p.{note.pageStart}-{note.pageEnd}
                         </span>
                       )}
                     </div>
 
-                    {isExpanded && note.notes && (
+                    {isExpanded && note.thoughts && (
                       <p className="text-sm text-[var(--editorial-text)] mt-2 whitespace-pre-wrap">
-                        {note.notes}
+                        {note.thoughts}
                       </p>
                     )}
 
-                    {!isExpanded && note.notes && (
+                    {!isExpanded && note.thoughts && (
                       <p className="text-xs text-[var(--editorial-text-muted)] truncate">
-                        {note.notes}
+                        {note.thoughts}
                       </p>
                     )}
                   </button>
@@ -203,38 +215,31 @@ export function Reading({
   variant = "default",
 }: ReadingProps) {
   const [book, setBook] = useState<Book | null>(null);
+  const [loading, setLoading] = useState(true);
   const [journalOpen, setJournalOpen] = useState(false);
   const { playClick } = useSound();
 
   useEffect(() => {
-    fetchCurrentBook();
+    void fetchCurrentBook();
   }, []);
 
-  const fetchCurrentBook = async () => {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("books")
-      .select("*")
-      .eq("status", "reading")
-      .limit(1)
-      .single();
-
-    if (data) {
-      setBook(data);
+  const fetchCurrentBook = async (): Promise<void> => {
+    try {
+      const res = await fetch("/api/books/current", { cache: "no-store" });
+      const data = res.ok ? await res.json() : null;
+      setBook(data && typeof data === "object" ? (data as Book) : null);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleBookClick = () => {
+    if (!book) return;
     playClick();
     setJournalOpen(true);
   };
 
   if (variant === "aside") {
-    const title = "The Alignment Problem";
-    const author = "Brian Christian";
-    const note =
-      "Stepping back from the codebase to understand the long-term stakes of the models we deploy into production.";
-
     return (
       <>
         <div className="border-t border-[var(--editorial-border)] pt-8">
@@ -246,16 +251,20 @@ export function Reading({
           <button
             type="button"
             onClick={handleBookClick}
-            className="group cursor-default w-full text-left"
+            className="group w-full text-left disabled:cursor-default"
+            disabled={!book}
           >
             <h4 className="font-serif text-2xl leading-tight mb-1 text-[var(--editorial-text)] group-hover:text-[var(--editorial-accent)] transition-colors">
-              {title}
+              {book?.title ?? (loading ? "Loading..." : "No current book")}
             </h4>
             <p className="text-[10px] font-mono uppercase text-[var(--editorial-text-dim)] mb-3">
-              {author}
+              {book?.author ?? "Add a reading book in CMS"}
             </p>
             <p className="text-xs font-serif italic text-[var(--editorial-text-muted)] leading-relaxed border-l-2 border-[var(--editorial-accent)] pl-3">
-              &quot;{note}&quot;
+              &quot;
+              {book?.latestThought ??
+                "Open the reading habit and log today’s page range and notes to see it here."}
+              &quot;
             </p>
           </button>
         </div>
@@ -284,9 +293,9 @@ export function Reading({
             <span className="text-sm text-[var(--editorial-text-muted)] group-hover:text-[var(--editorial-text)] transition-colors">
               {book.title}
             </span>
-            {book.total_pages && (
+            {book.totalPages && (
               <span className="text-xs text-[var(--editorial-text-dim)]">
-                {Math.round((book.current_page / book.total_pages) * 100)}%
+                {Math.round(((book.currentPage ?? 0) / book.totalPages) * 100)}%
               </span>
             )}
           </button>

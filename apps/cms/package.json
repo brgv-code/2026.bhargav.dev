@@ -11,7 +11,13 @@
     "typecheck": "tsc --noEmit",
     "generate:importmap": "NODE_OPTIONS='--no-experimental-strip-types --no-experimental-require-module ' payload generate:importmap",
     "generate:types": " payload generate:types",
-    "migrate": "payload migrate"
+    "migrate": "payload migrate",
+    "seed:projects": "payload run ./scripts/seed-projects.ts",
+    "seed:books": "payload run ./scripts/seed-books.ts",
+    "seed:favorites": "payload run ./scripts/seed-favorites.ts",
+    "seed:habit-completions": "payload run ./scripts/seed-habit-completions.ts",
+    "seed:runtime": "pnpm run seed:projects && pnpm run seed:books && pnpm run seed:favorites && pnpm run seed:habit-completions",
+    "seed:runtime:dry-run": "pnpm run seed:projects -- --dry-run && pnpm run seed:books -- --dry-run && pnpm run seed:favorites -- --dry-run && pnpm run seed:habit-completions -- --dry-run"
   },
   "dependencies": {
     "@lexical/headless": "^0.41.0",

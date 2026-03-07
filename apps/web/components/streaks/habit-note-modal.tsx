@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
 import {
   PixelClose,
   PixelBook,
@@ -19,6 +18,12 @@ interface HabitNoteModalProps {
   onSave: () => void;
 }
 
+type CurrentBook = {
+  id: number;
+  title: string;
+  currentPage?: number | null;
+};
+
 export function HabitNoteModal({
   isOpen,
   onClose,
@@ -28,60 +33,76 @@ export function HabitNoteModal({
   onSave,
 }: HabitNoteModalProps) {
   const [notes, setNotes] = useState("");
-  const [pagesRead, setPagesRead] = useState<number>(0);
+  const [pageStart, setPageStart] = useState<number>(1);
+  const [pageEnd, setPageEnd] = useState<number>(1);
+  const [book, setBook] = useState<CurrentBook | null>(null);
   const [saving, setSaving] = useState(false);
   const { playClick, playSuccess } = useSound();
 
   const isReading = habitKey === "reading";
+  const pagesRead = Math.max(0, pageEnd - pageStart + 1);
+
+  useEffect(() => {
+    if (!isOpen || !isReading) return;
+
+    const loadCurrentBook = async () => {
+      const res = await fetch("/api/books/current", { cache: "no-store" });
+      const data = res.ok ? await res.json() : null;
+      if (!data || typeof data !== "object") {
+        setBook(null);
+        setPageStart(1);
+        setPageEnd(1);
+        return;
+      }
+
+      const currentBook = data as CurrentBook;
+      const nextPage = Math.max(1, (currentBook.currentPage ?? 0) + 1);
+      setBook(currentBook);
+      setPageStart(nextPage);
+      setPageEnd(nextPage);
+    };
+
+    void loadCurrentBook();
+  }, [isOpen, isReading]);
 
   const handleSave = async () => {
     playClick();
     setSaving(true);
-    const supabase = createClient();
 
-    // Save habit completion
-    await supabase.from("habit_completions").upsert(
-      {
-        habit_key: habitKey,
-        date: date,
-        completed: true,
-        notes: isReading ? null : notes || null,
-      },
-      { onConflict: "habit_key,date" }
-    );
+    const payload = {
+      habitKey,
+      date,
+      completed: true,
+      value: isReading ? pagesRead : 1,
+      notes: isReading ? null : notes || null,
+      reading: isReading
+        ? {
+            pageStart: Math.max(1, Math.min(pageStart, pageEnd)),
+            pageEnd: Math.max(1, Math.max(pageStart, pageEnd)),
+            thoughts: notes || null,
+            bookId: book?.id,
+          }
+        : undefined,
+    };
 
-    // If reading, also save to reading_notes
-    if (isReading && (notes || pagesRead > 0)) {
-      // Get current reading book
-      const { data: book } = await supabase
-        .from("books")
-        .select("id, current_page")
-        .eq("status", "reading")
-        .limit(1)
-        .single();
+    const res = await fetch("/api/habit-completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-      if (book) {
-        await supabase.from("reading_notes").insert({
-          book_id: book.id,
-          date: date,
-          pages_read: pagesRead,
-          notes: notes || null,
-        });
-
-        // Update book progress
-        if (pagesRead > 0) {
-          await supabase
-            .from("books")
-            .update({ current_page: book.current_page + pagesRead })
-            .eq("id", book.id);
-        }
-      }
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      console.error("[habit-note-modal] failed to save completion", detail);
+      setSaving(false);
+      return;
     }
 
     setSaving(false);
     playSuccess();
     setNotes("");
-    setPagesRead(0);
+    setPageStart(1);
+    setPageEnd(1);
     onSave();
     onClose();
   };
@@ -89,7 +110,8 @@ export function HabitNoteModal({
   const handleClose = () => {
     playClick();
     setNotes("");
-    setPagesRead(0);
+    setPageStart(1);
+    setPageEnd(1);
     onClose();
   };
 
@@ -124,18 +146,33 @@ export function HabitNoteModal({
 
         {/* Pages read (for reading habit) */}
         {isReading && (
-          <div className="mb-4">
-            <label className="text-xs text-muted-foreground block mb-2">
-              pages read today
+          <div className="mb-4 space-y-3">
+            <label className="text-xs text-muted-foreground block">
+              page range read today
             </label>
-            <input
-              type="number"
-              min="0"
-              value={pagesRead}
-              onChange={(e) => setPagesRead(Number(e.target.value))}
-              className="w-full bg-secondary text-foreground px-3 py-2 text-sm border-0 focus:ring-1 focus:ring-foreground"
-              placeholder="0"
-            />
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="number"
+                min="1"
+                value={pageStart}
+                onChange={(e) => setPageStart(Number(e.target.value))}
+                className="w-full bg-secondary text-foreground px-3 py-2 text-sm border-0 focus:ring-1 focus:ring-foreground"
+                placeholder="from"
+              />
+              <input
+                type="number"
+                min="1"
+                value={pageEnd}
+                onChange={(e) => setPageEnd(Number(e.target.value))}
+                className="w-full bg-secondary text-foreground px-3 py-2 text-sm border-0 focus:ring-1 focus:ring-foreground"
+                placeholder="to"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {book
+                ? `${book.title}: +${pagesRead} page${pagesRead === 1 ? "" : "s"}`
+                : `+${pagesRead} page${pagesRead === 1 ? "" : "s"} logged`}
+            </p>
           </div>
         )}
 

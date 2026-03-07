@@ -131,8 +131,10 @@ export const FavoriteItemSchema = z.object({
     .optional(),
   title: z.string(),
   url: z.string().nullable().optional(),
+  thumbnailUrl: z.string().nullable().optional(),
   source: z.string().nullable().optional(),
-  notes: z.string().nullable().optional(),
+  thoughts: z.string().nullable().optional(),
+  dateAdded: z.string().nullable().optional(),
   updatedAt: z.string(),
   createdAt: z.string(),
 });
@@ -141,8 +143,87 @@ export type FavoriteItem = z.infer<typeof FavoriteItemSchema>;
 
 export const FavoritesListSchema = z.array(FavoriteItemSchema);
 
-export const FavoriteSchema = z.object({
-  postId: z.string(),
+export const CreateFavoriteItemSchema = z.object({
+  type: z.enum(["article", "video", "podcast", "book", "tool"]),
+  title: z.string().min(1),
+  url: z.string().url().optional().or(z.literal("")).or(z.null()),
+  source: z.string().optional().or(z.literal("")).or(z.null()),
+  thoughts: z.string().optional().or(z.literal("")).or(z.null()),
 });
 
-export type Favorite = z.infer<typeof FavoriteSchema>;
+export type CreateFavoriteItem = z.infer<typeof CreateFavoriteItemSchema>;
+
+export const BookSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  author: z.string().nullable().optional(),
+  totalPages: z.number().nullable().optional(),
+  currentPage: z.number().nullable().optional(),
+  status: z
+    .enum(["reading", "completed", "paused", "wishlist"])
+    .nullable()
+    .optional(),
+  summary: z.string().nullable().optional(),
+});
+
+export type Book = z.infer<typeof BookSchema>;
+
+export const ReadingNoteSchema = z.object({
+  id: z.number(),
+  book: z.union([z.number(), BookSchema]),
+  date: z.string(),
+  pageStart: z.number(),
+  pageEnd: z.number(),
+  pagesRead: z.number().nullable().optional(),
+  thoughts: z.string().nullable().optional(),
+  updatedAt: z.string().optional(),
+  createdAt: z.string().optional(),
+});
+
+export type ReadingNote = z.infer<typeof ReadingNoteSchema>;
+
+export const ReadingNotesListSchema = z.array(ReadingNoteSchema);
+
+export const HabitKeySchema = z.enum([
+  "reading",
+  "workout",
+  "steps",
+  "eating",
+  "sleep",
+  "coding",
+  "editing",
+]);
+
+export const HabitCompletionSchema = z.object({
+  id: z.number(),
+  habitKey: HabitKeySchema,
+  date: z.string(),
+  completed: z.boolean().nullable().optional(),
+  value: z.number().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  readingNote: z.union([z.number(), ReadingNoteSchema]).nullable().optional(),
+  updatedAt: z.string().optional(),
+  createdAt: z.string().optional(),
+});
+
+export type HabitCompletion = z.infer<typeof HabitCompletionSchema>;
+
+export const HabitCompletionsListSchema = z.array(HabitCompletionSchema);
+
+export const CreateHabitCompletionSchema = z.object({
+  habitKey: HabitKeySchema,
+  date: z.string().min(1),
+  completed: z.boolean().default(true),
+  value: z.number().optional(),
+  notes: z.string().optional().or(z.null()),
+  reading: z
+    .object({
+      pageStart: z.number().int().min(1),
+      pageEnd: z.number().int().min(1),
+      thoughts: z.string().optional().or(z.null()),
+      bookId: z.number().optional(),
+    })
+    .optional(),
+});
+
+export type CreateHabitCompletion = z.infer<typeof CreateHabitCompletionSchema>;

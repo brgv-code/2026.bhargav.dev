@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { Navbar } from "@/components/shared/navbar";
 import { Footer } from "@/components/shared/footer";
 import {
@@ -20,15 +19,15 @@ import { formatMonthDay } from "@/lib/format";
 type FavoriteType = "video" | "article" | "podcast" | "book" | "tool";
 
 interface Favorite {
-  id: string;
+  id: number;
   type: FavoriteType;
   title: string;
   url: string | null;
-  thumbnail_url: string | null;
+  thumbnailUrl: string | null;
   source: string | null;
   thoughts: string | null;
-  date_added: string;
-  created_at: string;
+  dateAdded: string;
+  createdAt: string;
 }
 
 const typeConfig: Record<
@@ -58,72 +57,42 @@ export default function FavoritesPage() {
 
   const fetchFavorites = async () => {
     setLoading(true);
-    const [payloadRes, supabaseData] = await Promise.all([
-      fetch("/api/favorites").then((r) => (r.ok ? r.json() : [])),
-      (async () => {
-        const supabase = createClient();
-        const { data } = await supabase
-          .from("favorites")
-          .select("*")
-          .order("date_added", { ascending: false });
-        return data ?? [];
-      })(),
-    ]);
+    try {
+      const payloadRes = await fetch("/api/favorites", { cache: "no-store" });
+      const json = payloadRes.ok ? await payloadRes.json() : [];
+      const nextFavorites: Favorite[] = (Array.isArray(json) ? json : []).map(
+        (doc: {
+          id: number;
+          type?: string | null;
+          title: string;
+          url?: string | null;
+          thumbnailUrl?: string | null;
+          source?: string | null;
+          thoughts?: string | null;
+          dateAdded?: string | null;
+          createdAt: string;
+        }) => ({
+          id: doc.id,
+          type: (doc.type ?? "article") as FavoriteType,
+          title: doc.title,
+          url: doc.url ?? null,
+          thumbnailUrl: doc.thumbnailUrl ?? null,
+          source: doc.source ?? null,
+          thoughts: doc.thoughts ?? null,
+          dateAdded: doc.dateAdded ?? doc.createdAt,
+          createdAt: doc.createdAt,
+        }),
+      );
 
-    const fromPayload: Favorite[] = (
-      Array.isArray(payloadRes) ? payloadRes : []
-    ).map(
-      (doc: {
-        id: number;
-        type?: string | null;
-        title: string;
-        url?: string | null;
-        source?: string | null;
-        notes?: string | null;
-        createdAt: string;
-      }) => ({
-        id: `payload-${doc.id}`,
-        type: (doc.type ?? "article") as FavoriteType,
-        title: doc.title,
-        url: doc.url ?? null,
-        thumbnail_url: null,
-        source: doc.source ?? null,
-        thoughts: doc.notes ?? null,
-        date_added: doc.createdAt,
-        created_at: doc.createdAt,
-      })
-    );
+      nextFavorites.sort(
+        (a, b) =>
+          new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime(),
+      );
 
-    const fromSupabase: Favorite[] = (
-      supabaseData as {
-        id: string;
-        type: string;
-        title: string;
-        url: string | null;
-        thumbnail_url: string | null;
-        source: string | null;
-        thoughts: string | null;
-        date_added: string;
-        created_at: string;
-      }[]
-    ).map((row) => ({
-      id: row.id,
-      type: row.type as FavoriteType,
-      title: row.title,
-      url: row.url ?? null,
-      thumbnail_url: row.thumbnail_url ?? null,
-      source: row.source ?? null,
-      thoughts: row.thoughts ?? null,
-      date_added: row.date_added,
-      created_at: row.created_at,
-    }));
-
-    const merged = [...fromPayload, ...fromSupabase].sort(
-      (a, b) =>
-        new Date(b.date_added).getTime() - new Date(a.date_added).getTime()
-    );
-    setFavorites(merged);
-    setLoading(false);
+      setFavorites(nextFavorites);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTypeClick = (type: FavoriteType | "all") => {
@@ -253,8 +222,8 @@ export default function FavoritesPage() {
                             <Icon className="w-4 h-4 shrink-0 text-[var(--editorial-text-muted)]" />
                             {favorite.title}
                           </h3>
-                          <span className="font-mono text-[10px] text-[var(--editorial-text-dim)] shrink-0 mt-1 sm:mt-0">
-                            {formatMonthDay(favorite.date_added)}
+                            <span className="font-mono text-[10px] text-[var(--editorial-text-dim)] shrink-0 mt-1 sm:mt-0">
+                            {formatMonthDay(favorite.dateAdded)}
                           </span>
                         </div>
                         {favorite.source && (
@@ -332,15 +301,24 @@ function AddFavoriteModal({
 
     playClick();
     setSaving(true);
-    const supabase = createClient();
-
-    await supabase.from("favorites").insert({
-      type,
-      title: title.trim(),
-      url: url.trim() || null,
-      source: source.trim() || null,
-      thoughts: thoughts.trim() || null,
+    const response = await fetch("/api/favorites", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type,
+        title: title.trim(),
+        url: url.trim() || null,
+        source: source.trim() || null,
+        thoughts: thoughts.trim() || null,
+      }),
     });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      console.error("[favorites] create failed", detail);
+      setSaving(false);
+      return;
+    }
 
     setSaving(false);
     playSuccess();

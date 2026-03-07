@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navbar } from "@/components/shared/navbar";
 import { Footer } from "@/components/shared/footer";
 import { StreakCalendar } from "@/components/streaks/streak-calendar";
@@ -18,57 +18,78 @@ import {
 type ViewMode = "daily" | "weekly";
 
 const habitConfig = [
-  { key: "reading", name: "Reading 50 pages", icon: PixelBook },
-  { key: "workout", name: "Workout", icon: PixelWorkout },
-  { key: "steps", name: "10K Steps", icon: PixelSteps },
-  { key: "eating", name: "Eating Goal", icon: PixelFood },
-  { key: "sleep", name: "Sleep Score", icon: PixelSleep },
-  { key: "coding", name: "Coding", icon: PixelCode },
-  { key: "editing", name: "Editing/Motion Graphics", icon: PixelEdit },
+  { key: "reading", name: "Reading 50 pages", icon: PixelBook, target: 50 },
+  { key: "workout", name: "Workout", icon: PixelWorkout, target: 1 },
+  { key: "steps", name: "10K Steps", icon: PixelSteps, target: 10000 },
+  { key: "eating", name: "Eating Goal", icon: PixelFood, target: 1 },
+  { key: "sleep", name: "Sleep Score", icon: PixelSleep, target: 85 },
+  { key: "coding", name: "Coding", icon: PixelCode, target: 1 },
+  { key: "editing", name: "Editing/Motion Graphics", icon: PixelEdit, target: 1 },
 ];
 
-function generateMockData() {
+function createEmptyHabitData(): Record<string, Record<string, number>> {
   const data: Record<string, Record<string, number>> = {};
-
-  habitConfig.forEach((habit) => {
+  for (const habit of habitConfig) {
     data[habit.key] = {};
-    const today = new Date();
-
-    for (let i = 0; i < 365; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
-      const dateStr = date.toISOString().split("T")[0];
-
-      // Generate random completion levels with some patterns
-      const dayOfWeek = date.getDay();
-      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-
-      // Higher chance of completion on weekdays for work habits
-      const baseChance = isWeekend ? 0.5 : 0.75;
-      const random = Math.random();
-
-      if (random < baseChance * 0.3) {
-        data[habit.key][dateStr] = 4;
-      } else if (random < baseChance * 0.5) {
-        data[habit.key][dateStr] = 3;
-      } else if (random < baseChance * 0.7) {
-        data[habit.key][dateStr] = 2;
-      } else if (random < baseChance * 0.85) {
-        data[habit.key][dateStr] = 1;
-      } else {
-        data[habit.key][dateStr] = 0;
-      }
-    }
-  });
-
+  }
   return data;
+}
+
+type HabitCompletion = {
+  habitKey: string;
+  date: string;
+  value?: number | null;
+  completed?: boolean | null;
+};
+
+function toHabitData(rows: HabitCompletion[]): Record<string, Record<string, number>> {
+  const next = createEmptyHabitData();
+  const targets = new Map(habitConfig.map((habit) => [habit.key, habit.target]));
+
+  for (const row of rows) {
+    if (!row || typeof row.habitKey !== "string") continue;
+    if (!next[row.habitKey]) continue;
+    if (typeof row.date !== "string") continue;
+
+    const dateKey = row.date.slice(0, 10);
+    if (!dateKey) continue;
+
+    const target = targets.get(row.habitKey) ?? 1;
+    const value =
+      typeof row.value === "number"
+        ? row.value
+        : row.completed
+          ? target
+          : 0;
+
+    next[row.habitKey][dateKey] = Math.max(0, value);
+  }
+
+  return next;
 }
 
 export default function StreaksPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("weekly");
   const [selectedHabit, setSelectedHabit] = useState<string>("all");
+  const [habitData, setHabitData] = useState<Record<string, Record<string, number>>>(
+    createEmptyHabitData(),
+  );
+  const [loading, setLoading] = useState(true);
 
-  const habitData = useMemo(() => generateMockData(), []);
+  const fetchHabitData = useCallback(async (): Promise<void> => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/habit-completions", { cache: "no-store" });
+      const data = res.ok ? await res.json() : [];
+      setHabitData(toHabitData(Array.isArray(data) ? data : []));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchHabitData();
+  }, [fetchHabitData]);
 
   // Calculate total stats
   const stats = useMemo(() => {
@@ -201,8 +222,10 @@ export default function StreaksPage() {
           </section>
 
           {/* Main Content */}
-          {viewMode === "weekly" ? (
-            <WeeklyView habitData={habitData} />
+          {loading ? (
+            <p className="text-sm text-[var(--editorial-text-muted)]">Loading streaks...</p>
+          ) : viewMode === "weekly" ? (
+            <WeeklyView habitData={habitData} onDataUpdate={fetchHabitData} />
           ) : (
             <div className="space-y-6">
               {selectedHabit === "all" ? (

@@ -245,13 +245,62 @@ export async function fetchWorkExperience(): Promise<PayloadWorkExperience[]> {
   }
 }
 
+export type PayloadProject = {
+  id: number;
+  name: string;
+  title?: string | null;
+  description: string;
+  url: string;
+  status?: "active" | "wip" | "archived" | null;
+  year?: string | null;
+  tech?:
+    | {
+        id?: string;
+        label: string;
+      }[]
+    | null;
+  github?: string | null;
+};
+
+export async function fetchProjectsFromPayload(): Promise<PayloadProject[]> {
+  if (!cmsUrl) {
+    logCmsWarning("PAYLOAD_PUBLIC_SERVER_URL not set; projects will be empty.");
+    return [];
+  }
+
+  try {
+    const url = new URL(`${cmsUrl}/api/projects`);
+    url.searchParams.set("limit", "200");
+    url.searchParams.set("sort", "-updatedAt");
+    url.searchParams.set("depth", "0");
+
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) {
+      logCmsWarning(
+        `Projects fetch failed: ${res.status} ${res.statusText}`,
+        await res.text().catch(() => ""),
+      );
+      return [];
+    }
+    const data = (await res.json()) as PayloadListResult<PayloadProject>;
+    return data.docs ?? [];
+  } catch (e) {
+    logCmsWarning("Projects fetch error (is the CMS running?)", e);
+    return [];
+  }
+}
+
 export type PayloadFavorite = {
   id: number;
   type?: "article" | "video" | "podcast" | "book" | "tool" | null;
   title: string;
   url?: string | null;
+  thumbnailUrl?: string | null;
   source?: string | null;
-  notes?: string | null;
+  thoughts?: string | null;
+  dateAdded?: string | null;
   updatedAt: string;
   createdAt: string;
 };
@@ -284,6 +333,148 @@ export async function fetchFavoritesFromPayload(): Promise<PayloadFavorite[]> {
     return data.docs ?? [];
   } catch (e) {
     logCmsWarning("Favorites fetch error (is the CMS running?)", e);
+    return [];
+  }
+}
+
+// ─── Reading tracker (books + notes) ─────────────────────────────────────────
+
+export type PayloadBookStatus = "reading" | "completed" | "paused" | "wishlist";
+
+export type PayloadBook = {
+  id: number;
+  title: string;
+  author?: string | null;
+  totalPages?: number | null;
+  currentPage?: number | null;
+  status?: PayloadBookStatus | null;
+  summary?: string | null;
+  updatedAt?: string;
+  createdAt?: string;
+};
+
+export type PayloadReadingNote = {
+  id: number;
+  book: number | PayloadBook;
+  date: string;
+  pageStart: number;
+  pageEnd: number;
+  pagesRead?: number | null;
+  thoughts?: string | null;
+  updatedAt?: string;
+  createdAt?: string;
+};
+
+export async function fetchCurrentBookFromPayload(): Promise<PayloadBook | null> {
+  if (!cmsUrl) {
+    logCmsWarning("PAYLOAD_PUBLIC_SERVER_URL not set; current book will be empty.");
+    return null;
+  }
+
+  try {
+    const url = new URL(`${cmsUrl}/api/books`);
+    url.searchParams.set("limit", "1");
+    url.searchParams.set("sort", "-updatedAt");
+    url.searchParams.set("where[status][equals]", "reading");
+    url.searchParams.set("depth", "0");
+
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 30 },
+    });
+    if (!res.ok) {
+      logCmsWarning(
+        `Current book fetch failed: ${res.status} ${res.statusText}`,
+        await res.text().catch(() => ""),
+      );
+      return null;
+    }
+    const data = (await res.json()) as PayloadListResult<PayloadBook>;
+    return data.docs?.[0] ?? null;
+  } catch (e) {
+    logCmsWarning("Current book fetch error (is the CMS running?)", e);
+    return null;
+  }
+}
+
+export async function fetchReadingNotesFromPayload(
+  bookId: number,
+): Promise<PayloadReadingNote[]> {
+  if (!cmsUrl) {
+    logCmsWarning(
+      "PAYLOAD_PUBLIC_SERVER_URL not set; reading notes will be empty.",
+    );
+    return [];
+  }
+
+  try {
+    const url = new URL(`${cmsUrl}/api/reading-notes`);
+    url.searchParams.set("limit", "365");
+    url.searchParams.set("sort", "-date");
+    url.searchParams.set("depth", "0");
+    url.searchParams.set("where[book][equals]", String(bookId));
+
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 15 },
+    });
+    if (!res.ok) {
+      logCmsWarning(
+        `Reading notes fetch failed: ${res.status} ${res.statusText}`,
+        await res.text().catch(() => ""),
+      );
+      return [];
+    }
+
+    const data = (await res.json()) as PayloadListResult<PayloadReadingNote>;
+    return data.docs ?? [];
+  } catch (e) {
+    logCmsWarning("Reading notes fetch error (is the CMS running?)", e);
+    return [];
+  }
+}
+
+export type PayloadHabitCompletion = {
+  id: number;
+  habitKey: "reading" | "workout" | "steps" | "eating" | "sleep" | "coding" | "editing";
+  date: string;
+  completed?: boolean | null;
+  value?: number | null;
+  notes?: string | null;
+  readingNote?: number | PayloadReadingNote | null;
+  updatedAt?: string;
+  createdAt?: string;
+};
+
+export async function fetchHabitCompletionsFromPayload(
+  limit = 1000,
+): Promise<PayloadHabitCompletion[]> {
+  if (!cmsUrl) {
+    logCmsWarning(
+      "PAYLOAD_PUBLIC_SERVER_URL not set; habit completions will be empty.",
+    );
+    return [];
+  }
+
+  try {
+    const url = new URL(`${cmsUrl}/api/habit-completions`);
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("sort", "-date");
+    url.searchParams.set("depth", "0");
+
+    const res = await fetch(url.toString(), {
+      next: { revalidate: 15 },
+    });
+    if (!res.ok) {
+      logCmsWarning(
+        `Habit completions fetch failed: ${res.status} ${res.statusText}`,
+        await res.text().catch(() => ""),
+      );
+      return [];
+    }
+
+    const data = (await res.json()) as PayloadListResult<PayloadHabitCompletion>;
+    return data.docs ?? [];
+  } catch (e) {
+    logCmsWarning("Habit completions fetch error (is the CMS running?)", e);
     return [];
   }
 }
