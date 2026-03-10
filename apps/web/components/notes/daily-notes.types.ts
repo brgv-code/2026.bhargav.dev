@@ -1,8 +1,10 @@
 import type { NotebookBlockType } from "@repo/types";
 
-export type BlockKind = NotebookBlockType;
+// UI supports a narrow set of block kinds.
+export type BlockKind = "note" | "task" | "code" | "reference";
 
-export type PersistedBlockType = BlockKind;
+// CMS / persisted types can be any NotebookBlockType from Payload.
+export type PersistedBlockType = NotebookBlockType;
 
 export type BlockStatus =
   | "todo"
