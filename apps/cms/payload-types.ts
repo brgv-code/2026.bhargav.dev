@@ -777,6 +777,30 @@ export interface Streak {
   date: string;
   completed?: boolean | null;
   /**
+   * Per-day contribution breakdown: githubCommits, blogsPublished, notesCreated, readingNotesCreated, favoritesAdded, errorLogsCreated.
+   */
+  sources?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Optional arrays of URLs/IDs per source for deep linking.
+   */
+  links?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
    * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
    */
   markdownInput?: string | null;
@@ -1269,6 +1293,8 @@ export interface StreaksSelect<T extends boolean = true> {
   label?: T;
   date?: T;
   completed?: T;
+  sources?: T;
+  links?: T;
   markdownInput?: T;
   content?: T;
   contentHtml?: T;
