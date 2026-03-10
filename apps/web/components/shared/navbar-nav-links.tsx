@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  PixelCalendar,
   PixelHeart,
+  PixelNote,
   PixelSound,
   PixelSoundOff,
 } from "@/components/shared/pixel-icons";
@@ -47,6 +47,15 @@ export function NavbarNavLinks({ onNavClick }: NavbarNavLinksProps) {
           Blog
         </Link>
         <Link
+          href="/notes"
+          onClick={onNavClick}
+          className={`flex items-center gap-2 ${pathname === "/notes" || pathname?.startsWith("/notes/") ? "text-[var(--editorial-text)]" : "hover:text-[var(--editorial-text)] transition-colors"}`}
+        >
+          <PixelNote className="w-3.5 h-3.5" />
+          <span>Notes</span>
+        </Link>
+        {/* Streaks — commented out for now
+        <Link
           href="/streaks"
           onClick={onNavClick}
           className={`flex items-center gap-2 ${pathname === "/streaks" ? "text-[var(--editorial-text)]" : "hover:text-[var(--editorial-text)] transition-colors"}`}
@@ -54,6 +63,7 @@ export function NavbarNavLinks({ onNavClick }: NavbarNavLinksProps) {
           <PixelCalendar className="w-3.5 h-3.5" />
           <span>Streaks</span>
         </Link>
+        */}
         <Link
           href="/favorites"
           onClick={onNavClick}
