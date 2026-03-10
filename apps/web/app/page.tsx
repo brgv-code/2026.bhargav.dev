@@ -6,23 +6,32 @@ import {
   fetchBlogListPosts,
   fetchWorkExperience,
   fetchFavoritesFromPayload,
-  fetchActivityFromPayload,
   fetchProjectsFromPayload,
 } from "@/lib/data/cms";
+import {
+  getActivityLogForGrid,
+  fetchWeeklyContributions,
+} from "@/lib/data/activity";
 import type { ProjectItem } from "@/lib/projects-data";
-import { getCommitsThisWeek } from "@/lib/github";
 
 export default async function Home() {
-  const [profile, posts, work, favorites, commitsThisWeek, activityLog, projects] =
-    await Promise.all([
-      fetchProfile(),
-      fetchBlogListPosts(10),
-      fetchWorkExperience(),
-      fetchFavoritesFromPayload(),
-      getCommitsThisWeek(),
-      fetchActivityFromPayload(),
-      fetchProjectsFromPayload(),
-    ]);
+  const [
+    profile,
+    posts,
+    work,
+    favorites,
+    weeklyContributions,
+    activityLog,
+    projects,
+  ] = await Promise.all([
+    fetchProfile(),
+    fetchBlogListPosts(10),
+    fetchWorkExperience(),
+    fetchFavoritesFromPayload(),
+    fetchWeeklyContributions(),
+    getActivityLogForGrid(),
+    fetchProjectsFromPayload(),
+  ]);
 
   const projectItems: ProjectItem[] = projects.map((project) => ({
     name: project.name,
@@ -41,7 +50,7 @@ export default async function Home() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      <Navbar commitCount={commitsThisWeek ?? undefined} />
+      <Navbar contributionCount={weeklyContributions} />
       <div
         data-theme="editorial"
         className="flex-1 min-h-0 bg-[var(--editorial-bg)] flex flex-col overflow-hidden"

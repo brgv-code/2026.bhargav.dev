@@ -479,11 +479,22 @@ export async function fetchHabitCompletionsFromPayload(
   }
 }
 
-/** Activity log day for the streak grid (date, intensity 0–1, summary). */
+/** Per-day contribution counts for tooltip. */
+export type PayloadActivitySources = {
+  githubCommits: number;
+  blogsPublished: number;
+  notesCreated: number;
+  readingNotesCreated: number;
+  favoritesAdded: number;
+  errorLogsCreated: number;
+};
+
+/** Activity log day for the streak grid (date, intensity 0–1, summary, optional sources). */
 export type PayloadActivityDay = {
   date: string;
   intensity: number;
   summary: string;
+  sources?: PayloadActivitySources;
 };
 
 export type PayloadStreak = {

@@ -4,6 +4,7 @@ import * as migration_20260301_200000_add_content_column_markdown_tables from '.
 import * as migration_20260301_220000_ensure_markdown_columns_sqlite from './20260301_220000_ensure_markdown_columns_sqlite';
 import * as migration_20260305_000000_notebooks from './20260305_000000_notebooks';
 import * as migration_20260307_220000_runtime_collections from './20260307_220000_runtime_collections';
+import * as migration_20260310_000000_streaks_sources_links from './20260310_000000_streaks_sources_links';
 
 export const migrations = [
   {
@@ -35,5 +36,10 @@ export const migrations = [
     up: migration_20260307_220000_runtime_collections.up,
     down: migration_20260307_220000_runtime_collections.down,
     name: '20260307_220000_runtime_collections'
+  },
+  {
+    up: migration_20260310_000000_streaks_sources_links.up,
+    down: migration_20260310_000000_streaks_sources_links.down,
+    name: '20260310_000000_streaks_sources_links'
   },
 ];
