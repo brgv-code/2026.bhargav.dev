@@ -10,6 +10,22 @@ const cmsUrl =
     ? "http://localhost:3001"
     : undefined);
 
+const NOTES_ADMIN_TOKEN = process.env.NOTES_ADMIN_TOKEN;
+
+function requireNotesToken(request: NextRequest) {
+  if (!NOTES_ADMIN_TOKEN) {
+    console.warn(
+      "[api/notebooks/[id]] NOTES_ADMIN_TOKEN is not set; write routes are effectively open.",
+    );
+    return null;
+  }
+
+  const headerToken = request.headers.get("x-notes-admin-token");
+  if (!headerToken || headerToken !== NOTES_ADMIN_TOKEN) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  return null;
+}
 export async function PATCH(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -17,7 +33,8 @@ export async function PATCH(
   if (!cmsUrl) {
     return NextResponse.json({ error: "CMS not configured" }, { status: 503 });
   }
-
+  const authError = requireNotesToken(_request);
+  if (authError) return authError;
   const { id } = await params;
   if (!id) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
@@ -49,7 +66,6 @@ export async function PATCH(
       );
     }
 
-    // Payload wraps the updated doc in { doc, message }
     const data = (raw as { doc?: unknown } | null)?.doc ?? raw;
 
     const parsedResponse = NotebookDocumentSchema.safeParse(data);
@@ -84,6 +100,8 @@ export async function DELETE(
   if (!cmsUrl) {
     return NextResponse.json({ error: "CMS not configured" }, { status: 503 });
   }
+  const authError = requireNotesToken(_request);
+  if (authError) return authError;
 
   const { id } = await params;
   if (!id) {
