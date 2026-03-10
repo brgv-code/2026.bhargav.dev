@@ -45,20 +45,30 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(parsed.data),
     });
 
-    const data = await res.json().catch(() => null);
+    const raw = await res.json().catch(() => null);
     if (!res.ok) {
       return NextResponse.json(
-        (data as { errors?: unknown } | null)?.errors ?? {
+        (raw as { errors?: unknown } | null)?.errors ?? {
           error: res.statusText,
         },
         { status: res.status }
       );
     }
 
+    // Payload wraps the updated/created doc in { doc, message }
+    const data = (raw as { doc?: unknown } | null)?.doc ?? raw;
+
     const parsedResponse = NotebookDocumentSchema.safeParse(data);
     if (!parsedResponse.success) {
+      console.error("[api/notebooks POST] invalid CMS response", {
+        issues: parsedResponse.error.issues,
+        data,
+      });
       return NextResponse.json(
-        { error: "Invalid notebook response from CMS" },
+        {
+          error: "Invalid notebook response from CMS",
+          details: parsedResponse.error.flatten(),
+        },
         { status: 502 }
       );
     }
