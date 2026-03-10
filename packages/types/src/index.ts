@@ -53,14 +53,21 @@ export const NotebookBlockTypeSchema = z.enum([
   "link",
   "learning",
   "quote",
+  // Legacy / CMS-only variants
+  "bugs",
+  "features",
+  "reminders",
   "bug",
   "feature",
   "todo",
+  // Canonical UI kinds (mapped on write)
   "work",
   "note",
   "task",
   "reference",
 ]);
+
+export type NotebookBlockType = z.infer<typeof NotebookBlockTypeSchema>;
 
 export const NotebookBlockStatusSchema = z.enum([
   "open",

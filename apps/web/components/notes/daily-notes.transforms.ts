@@ -91,6 +91,24 @@ export function notebookToEntry(doc: NotebookDoc): Entry {
   };
 }
 
+function blockKindToCmsType(
+  type: BlockKind,
+):
+  | "thought"
+  | "code"
+  | "link"
+  | "learning"
+  | "quote"
+  | "bugs"
+  | "features"
+  | "reminders"
+  | "work" {
+  if (type === "code") return "code";
+  if (type === "reference") return "link";
+  if (type === "task") return "work";
+  return "thought";
+}
+
 export function entryToNotebookPayload(entry: Entry) {
   return {
     date: entry.date,
@@ -98,7 +116,7 @@ export function entryToNotebookPayload(entry: Entry) {
     pinned: entry.pinned ?? false,
     blocks: entry.blocks.map((b) => ({
       blockId: b.id,
-      type: b.type,
+      type: blockKindToCmsType(b.type),
       content: b.content,
       lang: b.lang ?? undefined,
       meta: b.meta ?? undefined,

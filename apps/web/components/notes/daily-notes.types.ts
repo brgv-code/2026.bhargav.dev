@@ -1,16 +1,8 @@
-export type BlockKind = "note" | "task" | "code" | "reference";
+import type { NotebookBlockType } from "@repo/types";
 
-export type LegacyBlockType =
-  | "thought"
-  | "link"
-  | "learning"
-  | "quote"
-  | "bug"
-  | "feature"
-  | "todo"
-  | "work";
+export type BlockKind = NotebookBlockType;
 
-export type PersistedBlockType = BlockKind | LegacyBlockType;
+export type PersistedBlockType = BlockKind;
 
 export type BlockStatus =
   | "todo"
