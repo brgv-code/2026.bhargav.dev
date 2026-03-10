@@ -405,7 +405,7 @@ export function BlockRenderer({
       <div className="flex-1 min-w-0 space-y-2">
         <BlockContent block={block} />
 
-        {block.type === "task" && onStatusChange && (
+        {block.type === "task" && onStatusChange && isEditable && (
           <div className="flex gap-1 mt-1">
             {TASK_STATUSES.map((s) => (
               <button
@@ -503,12 +503,14 @@ export type BlockFocusModalProps = {
   entryDate: string;
   onSave: (payload: BlockSavePayload) => void;
   onDelete: () => void;
+  canEdit: boolean;
 };
 
 export function BlockFocusModal({
   isOpen,
   onClose,
   block,
+  canEdit,
   entryDate,
   onSave,
   onDelete,
@@ -589,7 +591,7 @@ export function BlockFocusModal({
             </span>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            {!editing && (
+            {!editing && canEdit && (
               <>
                 <button
                   type="button"
@@ -621,7 +623,7 @@ export function BlockFocusModal({
           </div>
         </div>
 
-        {editing ? (
+        {editing && canEdit ? (
           <BlockEditForm
             block={block}
             onSave={handleSave}
