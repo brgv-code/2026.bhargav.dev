@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@repo/ui";
 import type { PayloadActivityDay } from "@/lib/data/cms";
 
@@ -11,7 +12,10 @@ function buildEmptyActivityGrid(): PayloadActivityDay[] {
     const date = new Date(today);
     date.setDate(today.getDate() - offset);
     days.push({
-      date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      date: date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      }),
       intensity: 0,
       summary: "No activity logged",
     });
@@ -24,6 +28,82 @@ type Props = {
   /** Activity from Payload (e.g. streaks). If empty, an empty 14-day grid is shown. */
   activityLog?: PayloadActivityDay[] | null;
 };
+
+type ActivityBucket = "none" | "one" | "few" | "many" | "today";
+
+function getTotalContributions(day: PayloadActivityDay): number {
+  if (day.sources) {
+    const sources = day.sources;
+
+    return (
+      (sources.githubCommits ?? 0) +
+      (sources.blogsPublished ?? 0) +
+      (sources.notesCreated ?? 0) +
+      (sources.readingNotesCreated ?? 0) +
+      (sources.favoritesAdded ?? 0) +
+      (sources.errorLogsCreated ?? 0)
+    );
+  }
+
+  const approximateTotal = Math.round((day.intensity ?? 0) * 5);
+  return Number.isFinite(approximateTotal) ? approximateTotal : 0;
+}
+
+function isTodayLabel(day: PayloadActivityDay): boolean {
+  return day.date === "Today";
+}
+
+function getActivityBucket(day: PayloadActivityDay): ActivityBucket {
+  const total = getTotalContributions(day);
+
+  if (total === 0) return "none";
+  if (isTodayLabel(day)) return "today";
+  if (total === 1) return "one";
+  if (total > 5) return "many";
+
+  return "few";
+}
+
+function getTileStyle(day: PayloadActivityDay): CSSProperties {
+  const bucket = getActivityBucket(day);
+
+  const base: CSSProperties = {
+    backgroundColor: "transparent",
+    borderRadius: 2,
+  };
+
+  switch (bucket) {
+    case "none":
+      return {
+        ...base,
+        borderWidth: 1,
+        borderStyle: "solid",
+        borderColor: "var(--border)",
+      };
+    case "today":
+      return {
+        ...base,
+        backgroundColor: "var(--primary)",
+      };
+    case "one":
+      return {
+        ...base,
+        backgroundColor: "var(--accent)",
+      };
+    case "many":
+      return {
+        ...base,
+        backgroundColor: "var(--highlight)",
+      };
+    case "few":
+    default:
+      // 2–5 contributions — mid accent
+      return {
+        ...base,
+        backgroundColor: "var(--icon-accent)",
+      };
+  }
+}
 
 export function ActivityStreakGrid({ activityLog }: Props) {
   const days = activityLog?.length ? activityLog : buildEmptyActivityGrid();
@@ -44,13 +124,8 @@ export function ActivityStreakGrid({ activityLog }: Props) {
           <Tooltip key={i}>
             <TooltipTrigger asChild>
               <div
-                className="aspect-square rounded-[2px] cursor-pointer transition-transform duration-150 ease-out hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--editorial-accent)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--editorial-bg)]"
-                style={{
-                  backgroundColor:
-                    i === days.length - 1
-                      ? "var(--editorial-accent)"
-                      : `color-mix(in srgb, var(--editorial-text) ${Math.max(8, day.intensity * 70)}%, transparent)`,
-                }}
+                className="aspect-square rounded-[2px] cursor-pointer transition-transform duration-150 ease-out hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--editorial-accent)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--editorial-bg)] flex items-center justify-center text-[10px]"
+                style={getTileStyle(day)}
               />
             </TooltipTrigger>
             <TooltipContent
