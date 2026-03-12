@@ -207,6 +207,10 @@ export type PayloadWorkExperience = {
   company: string;
   role: string;
   date_range?: string;
+
+  markdownInput?: string | null;
+
+  contentHtml?: string | null;
   bullets?: {
     id: string;
     label: string;
