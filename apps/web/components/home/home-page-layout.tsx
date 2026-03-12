@@ -426,6 +426,17 @@ export function HomePageLayout({
             aria-hidden={activeTab !== "experience"}
           >
             <div className="flex flex-col pl-0 lg:pl-6">
+              <div className="flex items-center justify-between mb-4">
+                <p className="font-mono text-[10px] uppercase tracking-widest text-[var(--editorial-text-dim)]">
+                  Recent roles
+                </p>
+                <a
+                  href="/experience"
+                  className="font-mono text-[10px] uppercase tracking-widest text-[var(--editorial-accent)] hover:text-[var(--editorial-text)] transition-colors"
+                >
+                  View full experience →
+                </a>
+              </div>
               {work.length === 0 ? (
                 <p className="text-sm text-[var(--editorial-text-muted)]">
                   No work experience added yet.
@@ -491,6 +502,13 @@ export function HomePageLayout({
                           </li>
                         ))}
                       </ul>
+                    )}
+
+                    {exp.contentHtml && (
+                      <div
+                        className="mt-3 text-[13px] leading-relaxed text-[var(--editorial-text-muted)] space-y-2"
+                        dangerouslySetInnerHTML={{ __html: exp.contentHtml }}
+                      />
                     )}
                   </motion.div>
                 ))

@@ -54,16 +54,15 @@ export function NavbarNavLinks({ onNavClick }: NavbarNavLinksProps) {
           <PixelNote className="w-3.5 h-3.5" />
           <span>Notes</span>
         </Link>
-        {/* Streaks — commented out for now
-        <Link
+        {/* <Link
           href="/streaks"
           onClick={onNavClick}
           className={`flex items-center gap-2 ${pathname === "/streaks" ? "text-[var(--editorial-text)]" : "hover:text-[var(--editorial-text)] transition-colors"}`}
         >
           <PixelCalendar className="w-3.5 h-3.5" />
           <span>Streaks</span>
-        </Link>
-        */}
+        </Link> */}
+
         <Link
           href="/favorites"
           onClick={onNavClick}

@@ -58,6 +58,13 @@ export async function WorkExperience() {
                   ))}
                 </ul>
               )}
+
+              {role.contentHtml && (
+                <div
+                  className="mt-3 prose prose-invert max-w-none text-[var(--editorial-text-muted)] prose-a:text-[var(--editorial-accent)] prose-a:no-underline hover:prose-a:underline"
+                  dangerouslySetInnerHTML={{ __html: role.contentHtml }}
+                />
+              )}
             </details>
           ))}
         </div>

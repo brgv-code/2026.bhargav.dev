@@ -19,7 +19,6 @@ interface SoundContextType {
 
 const SoundContext = createContext<SoundContextType | undefined>(undefined);
 
-// Simple oscillator-based sounds
 function createOscillatorSound(
   frequency: number,
   duration: number,
@@ -52,9 +51,9 @@ function createOscillatorSound(
 }
 
 export function SoundProvider({ children }: { children: ReactNode }) {
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(false);
 
-  // Load preference from localStorage
+  // TODO: improve this in future
   useEffect(() => {
     const stored = localStorage.getItem("soundEnabled");
     if (stored !== null) {
