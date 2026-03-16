@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
 
-const remotePatterns: NonNullable<NextConfig["images"]>["remotePatterns"] = [];
+type RemotePattern = {
+  protocol?: "http" | "https";
+  hostname: string;
+  port?: string;
+  pathname?: string;
+  search?: string;
+};
+
+const remotePatterns: RemotePattern[] = [];
 const payloadUrl = process.env.PAYLOAD_PUBLIC_SERVER_URL;
 
 if (payloadUrl) {
@@ -8,12 +16,11 @@ if (payloadUrl) {
     const parsed = new URL(payloadUrl);
     const protocol: "http" | "https" =
       parsed.protocol === "https:" ? "https" : "http";
-    const pattern = {
+    remotePatterns.push({
       protocol,
       hostname: parsed.hostname,
       ...(parsed.port ? { port: parsed.port } : {}),
-    } satisfies NonNullable<NextConfig["images"]>["remotePatterns"][number];
-    remotePatterns.push(pattern);
+    });
   } catch {
     // Ignore invalid URL and fall back to defaults.
   }

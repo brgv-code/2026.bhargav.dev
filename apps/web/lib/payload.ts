@@ -275,6 +275,8 @@ export type PayloadWorkExperience = {
   company: string;
   role: string;
   date_range?: string;
+  logo?: PayloadMedia | number | null;
+  tech_stack?: string | null;
 
   markdownInput?: string | null;
 
@@ -326,6 +328,8 @@ export type PayloadProject = {
   url: string;
   status?: "active" | "wip" | "archived" | null;
   year?: string | null;
+  markdownInput?: string | null;
+  contentHtml?: string | null;
   tech?:
     | {
         id?: string;

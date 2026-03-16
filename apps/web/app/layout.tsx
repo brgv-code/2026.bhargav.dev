@@ -1,5 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import {
   Lora,
   Space_Mono,
@@ -13,6 +14,7 @@ import { TooltipProvider } from "@repo/ui";
 import { SoundProvider } from "@/components/providers/sound-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { fetchProfile } from "@/lib/data/cms";
+import { BioBlock } from "@/components/aside/bio-block";
 import "./globals.css";
 
 const spaceMono = Space_Mono({
@@ -80,10 +82,9 @@ export default async function RootLayout({
 }>) {
   const profile = await fetchProfile();
   const name = profile?.name ?? "Bhargav";
-  const bio =
-    profile?.bio ??
-    profile?.tagline ??
-    "Product-focused developer building intentional interfaces.";
+  const tagline =
+    profile?.tagline ?? "Product-focused developer building intentional interfaces.";
+  const bio = profile?.bio ?? null;
   const resumeUrl = process.env.NEXT_PUBLIC_RESUME_URL ?? "/resume.pdf";
   const githubUrl = profile?.github ?? process.env.NEXT_PUBLIC_GITHUB_URL;
   const twitterUrl = profile?.x ?? process.env.NEXT_PUBLIC_TWITTER_URL;
@@ -98,76 +99,62 @@ export default async function RootLayout({
           <TooltipProvider delayDuration={80} skipDelayDuration={500}>
             <SoundProvider>
               <div className="min-h-screen bg-background text-primary">
-                <div className="mx-auto w-full max-w-6xl px-6 py-12 md:px-10 md:py-16">
-                  <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-16">
-                    <aside className="md:col-span-4">
-                      <div className="flex flex-col gap-8 md:sticky md:top-24 md:min-h-[calc(100vh-6rem)]">
+                <div className="mx-auto w-full max-w-6xl px-6 py-12 md:h-screen md:overflow-hidden md:px-10 md:py-16">
+                  <div className="grid grid-cols-1 gap-12 md:h-full md:grid-cols-12 md:gap-16">
+                    <aside className="md:col-span-4 md:h-full">
+                      <div className="flex flex-col gap-8 md:h-full md:overflow-hidden">
                         <div className="flex flex-col gap-6">
-                          <div className="flex flex-col gap-3">
-                            <h1 className="text-4xl font-semibold tracking-tight text-primary">
-                              {name}
-                            </h1>
-                            <p className="text-base leading-relaxed text-secondary">
-                              {bio}
-                            </p>
-                          </div>
+                          <BioBlock name={name} tagline={tagline} bio={bio} />
 
                           <nav aria-label="Primary" className="flex flex-col gap-3">
-                            <a className="text-base text-primary" href="#writing">
+                            <Link className="text-base text-primary" href="/writing">
                               Writing
-                            </a>
-                            <a className="text-base text-primary" href="#projects">
+                            </Link>
+                            <Link className="text-base text-primary" href="/projects">
                               Projects
-                            </a>
-                            <a className="text-base text-primary" href="#experience">
+                            </Link>
+                            <Link className="text-base text-primary" href="/experience">
                               Experience
-                            </a>
+                            </Link>
                           </nav>
                         </div>
 
-                        <div className="mt-auto flex flex-col gap-6">
-                          <div className="flex flex-wrap items-center gap-4 text-base text-primary">
-                            {githubUrl ? (
-                              <a
-                                href={githubUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                GitHub
-                              </a>
-                            ) : null}
-                            {twitterUrl ? (
-                              <a
-                                href={twitterUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                X
-                              </a>
-                            ) : null}
-                            {linkedinUrl ? (
-                              <a
-                                href={linkedinUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                LinkedIn
-                              </a>
-                            ) : null}
-                          </div>
-
-                          <a
-                            className="inline-flex items-center justify-between border border-border px-4 py-3 text-base font-medium text-primary"
-                            href={resumeUrl}
-                          >
-                            Download Resume
-                            <span aria-hidden>↓</span>
-                          </a>
+                        <div className="mt-auto flex flex-wrap items-center gap-4 text-base text-primary">
+                          {githubUrl ? (
+                            <a
+                              href={githubUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              GitHub
+                            </a>
+                          ) : null}
+                          {twitterUrl ? (
+                            <a
+                              href={twitterUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              X
+                            </a>
+                          ) : null}
+                          {linkedinUrl ? (
+                            <a
+                              href={linkedinUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              LinkedIn
+                            </a>
+                          ) : null}
+                          <a href={resumeUrl}>Resume</a>
                         </div>
                       </div>
                     </aside>
 
-                    <main className="md:col-span-8">{children}</main>
+                    <main className="md:col-span-8 md:h-full md:overflow-y-auto">
+                      {children}
+                    </main>
                   </div>
                 </div>
               </div>

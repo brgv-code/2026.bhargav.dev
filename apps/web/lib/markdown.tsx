@@ -1,5 +1,7 @@
 import React from "react";
 import Image from "next/image";
+import * as production from "react/jsx-runtime";
+import * as development from "react/jsx-dev-runtime";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
@@ -8,7 +10,9 @@ import rehypeRaw from "rehype-raw";
 import rehypePrettyCode from "rehype-pretty-code";
 import rehypeReact from "rehype-react";
 
-type ImgProps = React.ImgHTMLAttributes<HTMLImageElement>;
+type ImgProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, "src"> & {
+  src?: string | null;
+};
 
 type HeadingProps = React.HTMLAttributes<HTMLHeadingElement>;
 
@@ -127,6 +131,8 @@ function MarkdownCode({ className, ...props }: CodeProps) {
   );
 }
 
+const isDevelopment = process.env.NODE_ENV !== "production";
+
 const processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
@@ -137,8 +143,11 @@ const processor = unified()
     keepBackground: false,
   })
   .use(rehypeReact, {
-    createElement: React.createElement,
-    Fragment: React.Fragment,
+    Fragment: production.Fragment,
+    jsx: production.jsx,
+    jsxs: production.jsxs,
+    jsxDEV: development.jsxDEV,
+    development: isDevelopment,
     components: {
       img: MarkdownImage,
       h2: MarkdownHeading,
@@ -150,7 +159,7 @@ const processor = unified()
       pre: MarkdownPre,
       code: MarkdownCode,
     },
-  });
+  } as unknown as Parameters<typeof rehypeReact>[0]);
 
 export async function renderMarkdown(markdown: string): Promise<React.ReactNode> {
   const file = await processor.process(markdown);
