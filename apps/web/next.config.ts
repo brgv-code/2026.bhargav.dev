@@ -6,11 +6,14 @@ const payloadUrl = process.env.PAYLOAD_PUBLIC_SERVER_URL;
 if (payloadUrl) {
   try {
     const parsed = new URL(payloadUrl);
-    remotePatterns.push({
-      protocol: parsed.protocol.replace(":", ""),
+    const protocol: "http" | "https" =
+      parsed.protocol === "https:" ? "https" : "http";
+    const pattern = {
+      protocol,
       hostname: parsed.hostname,
-      port: parsed.port || undefined,
-    });
+      ...(parsed.port ? { port: parsed.port } : {}),
+    } satisfies NonNullable<NextConfig["images"]>["remotePatterns"][number];
+    remotePatterns.push(pattern);
   } catch {
     // Ignore invalid URL and fall back to defaults.
   }
