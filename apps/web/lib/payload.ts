@@ -75,6 +75,14 @@ export type PayloadPostSummary = {
   updatedAt?: string;
 };
 
+export type PayloadMedia = {
+  id?: number;
+  url?: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+};
+
 export type PayloadTag = {
   id: number;
   name: string;
@@ -171,6 +179,9 @@ export type PayloadTocItem = {
 export type PayloadPost = PayloadPostSummary & {
   description?: string | null;
   content?: unknown;
+  markdownInput?: string | null;
+  contentHtml?: string | null;
+  coverImage?: PayloadMedia | number | null;
   readingTime?: number | null;
   wordCount?: number | null;
   tags?: PayloadTag[] | null;
@@ -190,7 +201,7 @@ export async function fetchPostBySlug(
     url.searchParams.set("where[slug][equals]", slug);
     url.searchParams.set("where[status][equals]", "published");
     url.searchParams.set("limit", "1");
-    url.searchParams.set("depth", "1");
+    url.searchParams.set("depth", "2");
 
     const res = await fetch(
       url.toString(),
@@ -203,6 +214,31 @@ export async function fetchPostBySlug(
   } catch (e) {
     logCmsWarning("Post fetch error (is the CMS running?)", e);
     return null;
+  }
+}
+
+export async function fetchPostSlugs(): Promise<string[]> {
+  if (!cmsUrl) {
+    logCmsWarning("PAYLOAD_PUBLIC_SERVER_URL not set; post slugs empty.");
+    return [];
+  }
+
+  try {
+    const url = new URL(`${cmsUrl}/api/posts`);
+    url.searchParams.set("limit", "500");
+    url.searchParams.set("sort", "-publishedAt");
+    url.searchParams.set("where[status][equals]", "published");
+    url.searchParams.set("depth", "0");
+    const res = await fetch(
+      url.toString(),
+      payloadFetchOptions({ tags: [TAGS.posts], revalidate: 60 }),
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as PayloadListResult<PayloadPostSummary>;
+    return (data.docs ?? []).map((doc) => doc.slug).filter(Boolean);
+  } catch (e) {
+    logCmsWarning("Post slugs fetch error (is the CMS running?)", e);
+    return [];
   }
 }
 
