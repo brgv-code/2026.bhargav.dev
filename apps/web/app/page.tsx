@@ -1,72 +1,22 @@
-import { Navbar } from "@/components/shared/navbar";
-import { HomePageLayout } from "@/components/home/home-page-layout";
-import { Footer } from "@/components/shared/footer";
-import {
-  fetchProfile,
-  fetchBlogListPosts,
-  fetchWorkExperience,
-  fetchFavoritesFromPayload,
-  fetchProjectsFromPayload,
-} from "@/lib/data/cms";
-import {
-  getActivityLogForGrid,
-  fetchWeeklyContributions,
-} from "@/lib/data/activity";
-import type { ProjectItem } from "@/lib/projects-data";
+import { fetchBlogListPosts, fetchProjectsFromPayload, fetchWorkExperience } from "@/lib/data/cms";
+import { WritingSection } from "@/components/sections/writing-section";
+import { ProjectsSection } from "@/components/sections/projects-section";
+import { ExperienceSection } from "@/components/sections/experience-section";
+
+export const dynamic = "force-static";
 
 export default async function Home() {
-  const [
-    profile,
-    posts,
-    work,
-    favorites,
-    weeklyContributions,
-    activityLog,
-    projects,
-  ] = await Promise.all([
-    fetchProfile(),
+  const [posts, projects, work] = await Promise.all([
     fetchBlogListPosts(10),
-    fetchWorkExperience(),
-    fetchFavoritesFromPayload(),
-    fetchWeeklyContributions(),
-    getActivityLogForGrid(),
     fetchProjectsFromPayload(),
+    fetchWorkExperience(),
   ]);
 
-  const projectItems: ProjectItem[] = projects.map((project) => ({
-    name: project.name,
-    title: project.title ?? undefined,
-    description: project.description,
-    url: project.url,
-    status: project.status ?? undefined,
-    year: project.year ?? undefined,
-    tech: Array.isArray(project.tech)
-      ? project.tech
-          .map((entry) => entry?.label)
-          .filter((label): label is string => typeof label === "string")
-      : undefined,
-    github: project.github ?? undefined,
-  }));
-
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
-      <Navbar contributionCount={weeklyContributions} />
-      <div
-        data-theme="editorial"
-        className="flex-1 min-h-0 bg-[var(--editorial-bg)] flex flex-col overflow-hidden"
-      >
-        <div className="max-w-7xl mx-auto px-6 py-12 lg:py-20 flex-1 min-h-0 w-full flex flex-col overflow-hidden">
-          <HomePageLayout
-            profile={profile}
-            posts={posts}
-            projects={projectItems}
-            work={work}
-            favorites={favorites}
-            activityLog={activityLog}
-          />
-        </div>
-        <Footer />
-      </div>
+    <div className="flex flex-col pb-24">
+      <WritingSection posts={posts} />
+      <ProjectsSection projects={projects} />
+      <ExperienceSection work={work} />
     </div>
   );
 }

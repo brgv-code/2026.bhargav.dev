@@ -80,7 +80,8 @@ export default async function RootLayout({
 }>) {
   const profile = await fetchProfile();
   const name = profile?.name ?? "Bhargav";
-  const tagline =
+  const bio =
+    profile?.bio ??
     profile?.tagline ??
     "Product-focused developer building intentional interfaces.";
   const resumeUrl = process.env.NEXT_PUBLIC_RESUME_URL ?? "/resume.pdf";
@@ -107,7 +108,7 @@ export default async function RootLayout({
                               {name}
                             </h1>
                             <p className="text-base leading-relaxed text-secondary">
-                              {tagline}
+                              {bio}
                             </p>
                           </div>
 
