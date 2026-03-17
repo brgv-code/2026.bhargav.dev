@@ -32,6 +32,9 @@ const geistMono = Geist_Mono({
   preload: true,
 });
 
+const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
+const bingVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION;
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: defaultTitle,
@@ -63,6 +66,10 @@ export const metadata: Metadata = {
     description: defaultDescription,
     images: ["/og.svg"],
   },
+  verification: {
+    google: googleVerification || undefined,
+    other: bingVerification ? { "msvalidate.01": bingVerification } : undefined,
+  },
   icons: {
     icon: [
       {
@@ -93,7 +100,6 @@ export default async function RootLayout({
   const name = profile?.name ?? "Bhargav";
   const tagline =
     profile?.tagline ?? "Product-focused developer building intentional interfaces.";
-  const bio = profile?.bio ?? null;
   const resumeUrl = process.env.NEXT_PUBLIC_RESUME_URL ?? "/resume.pdf";
   const githubUrl = profile?.github ?? process.env.NEXT_PUBLIC_GITHUB_URL;
   const twitterUrl = profile?.x ?? process.env.NEXT_PUBLIC_TWITTER_URL;
@@ -139,7 +145,7 @@ export default async function RootLayout({
                     <aside className="md:col-span-4 md:h-full">
                       <div className="flex flex-col gap-8 md:h-full md:overflow-hidden">
                         <div className="flex flex-col gap-6 md:flex-1 md:justify-center">
-                          <BioBlock name={name} tagline={tagline} bio={bio} />
+                          <BioBlock name={name} tagline={tagline} />
 
                           <nav aria-label="Primary" className="flex flex-col gap-3">
                             <Link className="text-base text-primary" href="/">

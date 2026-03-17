@@ -1,10 +1,9 @@
 type Props = {
   name: string;
   tagline: string;
-  bio?: string | null;
 };
 
-export function BioBlock({ name, tagline, bio }: Props) {
+export function BioBlock({ name, tagline }: Props) {
   return (
     <div className="flex flex-col gap-3">
       <h1 className="text-4xl font-semibold tracking-tight text-primary">
