@@ -17,11 +17,20 @@ export const metadata: Metadata = {
     description: "All published writing and essays.",
     url: absoluteUrl("/writing"),
     siteName,
+    images: [
+      {
+        url: "/og-writing.svg",
+        width: 1200,
+        height: 630,
+        alt: "Writing",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Writing",
     description: "All published writing and essays.",
+    images: ["/og-writing.svg"],
   },
 };
 
@@ -41,6 +50,9 @@ export default async function WritingIndexPage() {
               "@type": "BlogPosting",
               name: post.title,
               url: absoluteUrl(`/writing/${post.slug}`),
+              datePublished: post.publishedAt ?? post.createdAt,
+              dateModified: post.updatedAt ?? post.publishedAt ?? post.createdAt,
+              description: post.description ?? undefined,
             },
           })),
         }

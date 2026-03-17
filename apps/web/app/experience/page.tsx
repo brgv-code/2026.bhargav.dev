@@ -22,11 +22,20 @@ export const metadata: Metadata = {
     description: "Roles, responsibilities, and work highlights.",
     url: absoluteUrl("/experience"),
     siteName,
+    images: [
+      {
+        url: "/og-experience.svg",
+        width: 1200,
+        height: 630,
+        alt: "Experience",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Experience",
     description: "Roles, responsibilities, and work highlights.",
+    images: ["/og-experience.svg"],
   },
 };
 
@@ -42,6 +51,17 @@ function resolveMediaUrl(
   return {
     ...media,
     url: resolvedUrl,
+  };
+}
+
+function parseDateRange(range?: string | null) {
+  if (!range) return {};
+  const years = range.match(/\d{4}/g) ?? [];
+  const start = years[0];
+  const end = years[1];
+  return {
+    startDate: start ? `${start}-01-01` : undefined,
+    endDate: end ? `${end}-01-01` : undefined,
   };
 }
 
@@ -76,9 +96,15 @@ export default async function ExperiencePage() {
       "@type": "ListItem",
       position: index + 1,
       item: {
-        "@type": "Thing",
-        name: `${item.role ?? "Role"} — ${item.company ?? "Company"}`,
+        "@type": "OrganizationRole",
+        name: `${item.role ?? "Role"} at ${item.company ?? "Company"}`,
+        roleName: item.role ?? undefined,
+        memberOf: {
+          "@type": "Organization",
+          name: item.company ?? "Company",
+        },
         description: item.date_range ?? undefined,
+        ...parseDateRange(item.date_range),
       },
     })),
   };

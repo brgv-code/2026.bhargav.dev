@@ -20,11 +20,20 @@ export const metadata: Metadata = {
     description: "About Bhargav and the work he does.",
     url: absoluteUrl("/about"),
     siteName,
+    images: [
+      {
+        url: "/og-about.svg",
+        width: 1200,
+        height: 630,
+        alt: "About Bhargav",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "About",
     description: "About Bhargav and the work he does.",
+    images: ["/og-about.svg"],
   },
 };
 

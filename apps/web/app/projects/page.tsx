@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { fetchProjectsFromPayload } from "@/lib/data/cms";
 import { renderMarkdown } from "@/lib/markdown";
 import { BackButton } from "@/components/shared/back-button";
-import { absoluteUrl, siteName } from "@/lib/seo";
+import { absoluteUrl, siteName, siteUrl } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/jsonld";
 
 export const metadata: Metadata = {
@@ -18,11 +18,20 @@ export const metadata: Metadata = {
     description: "Selected projects and case notes.",
     url: absoluteUrl("/projects"),
     siteName,
+    images: [
+      {
+        url: "/og-projects.svg",
+        width: 1200,
+        height: 630,
+        alt: "Projects",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Projects",
     description: "Selected projects and case notes.",
+    images: ["/og-projects.svg"],
   },
 };
 
@@ -31,6 +40,12 @@ export const dynamic = "force-static";
 function formatStatus(status?: string | null) {
   if (!status) return null;
   return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function toYearDate(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  if (/^\d{4}$/.test(value)) return `${value}-01-01`;
+  return undefined;
 }
 
 export default async function ProjectsPage() {
@@ -63,6 +78,10 @@ export default async function ProjectsPage() {
     itemListElement: projects.map((project, index) => {
       const title = project.title ?? project.name;
       const url = project.url || absoluteUrl("/projects");
+      const keywords = project.tech
+        ?.map((entry) => entry?.label?.trim())
+        .filter((label): label is string => Boolean(label))
+        .join(", ");
 
       return {
         "@type": "ListItem",
@@ -72,6 +91,9 @@ export default async function ProjectsPage() {
           name: title,
           url,
           description: project.description,
+          creator: { "@id": `${siteUrl}#person` },
+          dateCreated: toYearDate(project.year),
+          keywords: keywords || undefined,
         },
       };
     }),

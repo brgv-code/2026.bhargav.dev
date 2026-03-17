@@ -5,6 +5,7 @@ import {
   fetchWorkExperience,
 } from "@/lib/data/cms";
 import { absoluteUrl, defaultDescription, siteName } from "@/lib/seo";
+import { tagNames } from "@/lib/data/cms";
 
 export const dynamic = "force-static";
 export const revalidate = 3600;
@@ -14,6 +15,13 @@ function formatDate(value?: string | null): string | null {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
   return date.toISOString().slice(0, 10);
+}
+
+function toTimestamp(value?: string | null): number | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.getTime();
 }
 
 export async function GET() {
@@ -26,19 +34,57 @@ export async function GET() {
 
   const tagline = profile?.tagline ?? defaultDescription;
   const name = profile?.name ?? siteName;
+  const postTopics = Array.from(
+    new Set(
+      posts.flatMap((post) => tagNames(post.tags)).filter(Boolean),
+    ),
+  );
+  const projectTech = Array.from(
+    new Set(
+      projects
+        .flatMap((project) =>
+          project.tech?.map((entry) => entry?.label?.trim()).filter(Boolean),
+        )
+        .filter(Boolean),
+    ),
+  );
+  const updatedCandidates = [
+    profile?.updatedAt,
+    ...posts.map((post) => post.updatedAt ?? post.publishedAt ?? post.createdAt),
+  ]
+    .map((value) => toTimestamp(value))
+    .filter((value): value is number => typeof value === "number");
+  const lastUpdated =
+    updatedCandidates.length > 0
+      ? new Date(Math.max(...updatedCandidates)).toISOString().slice(0, 10)
+      : null;
 
   const lines: string[] = [];
   lines.push(`# ${name} — Developer Portfolio`);
   lines.push(`URL: ${absoluteUrl("/")}`);
-  lines.push(`Description: ${tagline}`);
+  lines.push(`Summary: ${tagline}`);
+  if (profile?.available_for_work != null) {
+    lines.push(
+      `Availability: ${profile.available_for_work ? "Open to work" : "Unavailable"}`,
+    );
+  }
+  if (postTopics.length) {
+    lines.push(`Topics: ${postTopics.join(", ")}`);
+  }
+  if (projectTech.length) {
+    lines.push(`Tools: ${projectTech.join(", ")}`);
+  }
+  if (lastUpdated) {
+    lines.push(`Last updated: ${lastUpdated}`);
+  }
   lines.push("");
-  lines.push("Pages:");
+  lines.push("## Pages");
   lines.push(`- About: ${absoluteUrl("/about")}`);
   lines.push(`- Writing: ${absoluteUrl("/writing")}`);
   lines.push(`- Projects: ${absoluteUrl("/projects")}`);
   lines.push(`- Experience: ${absoluteUrl("/experience")}`);
   lines.push("");
-  lines.push("Writing:");
+  lines.push("## Writing");
   if (posts.length) {
     posts.forEach((post) => {
       const date =
@@ -55,7 +101,7 @@ export async function GET() {
     lines.push("- None published yet.");
   }
   lines.push("");
-  lines.push("Projects:");
+  lines.push("## Projects");
   if (projects.length) {
     projects.slice(0, 20).forEach((project) => {
       const title = project.title ?? project.name;
@@ -71,7 +117,7 @@ export async function GET() {
     lines.push("- None listed yet.");
   }
   lines.push("");
-  lines.push("Experience:");
+  lines.push("## Experience");
   if (work.length) {
     work.slice(0, 20).forEach((item) => {
       const role = item.role ?? "Role";
@@ -83,7 +129,7 @@ export async function GET() {
     lines.push("- None listed yet.");
   }
   lines.push("");
-  lines.push("Contact:");
+  lines.push("## Contact");
   if (profile?.email) lines.push(`- Email: ${profile.email}`);
   if (profile?.github) lines.push(`- GitHub: ${profile.github}`);
   if (profile?.linkedin) lines.push(`- LinkedIn: ${profile.linkedin}`);

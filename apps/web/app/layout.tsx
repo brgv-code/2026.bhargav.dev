@@ -44,11 +44,20 @@ export const metadata: Metadata = {
     description: defaultDescription,
     url: absoluteUrl("/"),
     siteName,
+    images: [
+      {
+        url: "/og.svg",
+        width: 1200,
+        height: 630,
+        alt: "Bhargav — Developer Portfolio",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: defaultTitle,
     description: defaultDescription,
+    images: ["/og.svg"],
   },
   icons: {
     icon: [

@@ -1,5 +1,5 @@
-import { fetchBlogListPosts } from "@/lib/data/cms";
-import { absoluteUrl, siteName } from "@/lib/seo";
+import { fetchBlogListPosts, fetchProfile } from "@/lib/data/cms";
+import { absoluteUrl, defaultDescription, siteName } from "@/lib/seo";
 
 export const dynamic = "force-static";
 export const revalidate = 3600;
@@ -21,10 +21,16 @@ function toRfc822(dateValue?: string | null): string {
 }
 
 export async function GET() {
-  const posts = await fetchBlogListPosts(200);
+  const [posts, profile] = await Promise.all([
+    fetchBlogListPosts(200),
+    fetchProfile(),
+  ]);
   const siteLink = absoluteUrl("/writing");
   const latestDate =
     posts[0]?.updatedAt ?? posts[0]?.publishedAt ?? posts[0]?.createdAt;
+  const description =
+    profile?.tagline ?? profile?.bio ?? defaultDescription;
+  const feedUrl = absoluteUrl("/rss.xml");
 
   const items = posts
     .filter((post) => post.slug && post.title)
@@ -52,13 +58,15 @@ export async function GET() {
 
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<rss version="2.0">',
+    '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
     "<channel>",
     `<title>${escapeXml(siteName)} Writing</title>`,
     `<link>${siteLink}</link>`,
-    "<description>All published writing and essays.</description>",
-    "<language>en</language>",
+    `<atom:link href="${feedUrl}" rel="self" type="application/rss+xml" />`,
+    `<description>${escapeXml(description)}</description>`,
+    "<language>en-US</language>",
     `<lastBuildDate>${toRfc822(latestDate)}</lastBuildDate>`,
+    "<generator>Next.js App Router</generator>",
     items,
     "</channel>",
     "</rss>",

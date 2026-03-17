@@ -41,6 +41,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const description = post.description ?? defaultDescription;
   const url = absoluteUrl(`/writing/${slug}`);
+  const cover =
+    post.coverImage && typeof post.coverImage === "object"
+      ? post.coverImage
+      : null;
+  const coverUrl =
+    cover?.url && cover.url.startsWith("http")
+      ? cover.url
+      : cover?.url
+        ? `${process.env.PAYLOAD_PUBLIC_SERVER_URL ?? ""}${cover.url}`
+        : null;
+  const ogImages = coverUrl
+    ? [
+        {
+          url: coverUrl,
+          width: cover?.width ?? 1200,
+          height: cover?.height ?? 630,
+          alt: post.title,
+        },
+      ]
+    : [
+        {
+          url: "/og-writing.svg",
+          width: 1200,
+          height: 630,
+          alt: "Writing",
+        },
+      ];
 
   return {
     title: post.title,
@@ -54,11 +81,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       url,
       siteName,
+      images: ogImages,
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: post.title,
       description,
+      images: ogImages.map((image) => image.url),
     },
   };
 }
