@@ -153,7 +153,7 @@ export default async function ExperiencePage() {
             <article
               key={item.id}
               id={`experience-${item.id}`}
-              className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto] md:gap-6"
+              className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto] md:gap-6 content-visibility-auto"
             >
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-2">

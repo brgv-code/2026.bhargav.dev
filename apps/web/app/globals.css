@@ -37,3 +37,10 @@
     @apply text-link-hover;
   }
 }
+
+@layer utilities {
+  .content-visibility-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 600px;
+  }
+}

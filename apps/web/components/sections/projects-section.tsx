@@ -29,7 +29,10 @@ export function ProjectsSection({ projects }: Props) {
             ].filter(Boolean);
 
             return (
-              <article key={project.id} className="flex flex-col gap-2">
+              <article
+                key={project.id}
+                className="flex flex-col gap-2 content-visibility-auto"
+              >
                 <a
                   className="text-base font-semibold text-primary"
                   href={project.url}

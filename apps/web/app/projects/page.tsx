@@ -43,6 +43,12 @@ function formatStatus(status?: string | null) {
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
+function caseStudyAnchor(title: string): string {
+  const normalized = title.toLowerCase();
+  if (normalized.includes("case study")) return title;
+  return `${title} case study`;
+}
+
 function toYearDate(value?: string | null): string | undefined {
   if (!value) return undefined;
   if (/^\d{4}$/.test(value)) return `${value}-01-01`;
@@ -175,7 +181,7 @@ export default async function ProjectsPage() {
               <article
                 key={project.id}
                 id={`project-${project.id}`}
-                className="flex flex-col gap-3"
+                className="flex flex-col gap-3 content-visibility-auto"
               >
                 <a
                   className="text-base font-semibold text-primary"
@@ -227,7 +233,7 @@ export default async function ProjectsPage() {
             <div className="flex flex-col gap-2 text-base text-primary">
               {posts.map((post) => (
                 <Link key={post.id} href={`/writing/${post.slug}`}>
-                  {post.title}
+                  {caseStudyAnchor(post.title)}
                 </Link>
               ))}
               <Link href="/writing">View all writing</Link>

@@ -6,8 +6,10 @@ import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical
 import type { ReactNode } from "react";
 import {
   fetchPostBySlug,
+  fetchProjectsFromPayload,
   fetchRelatedPosts,
   fetchPostSlugs,
+  tagNames,
   type PayloadMedia,
 } from "@/lib/data/cms";
 import { formatPostDate, formatReadTime } from "@/lib/format";
@@ -21,6 +23,7 @@ import {
 import { RichText } from "@/components/shared/rich-text";
 import { JsonLd } from "@/components/seo/jsonld";
 import { BackButton } from "@/components/shared/back-button";
+import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
 
 export const dynamic = "force-static";
 export const dynamicParams = false;
@@ -95,6 +98,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+function caseStudyAnchor(title: string): string {
+  const normalized = title.toLowerCase();
+  if (normalized.includes("case study")) return title;
+  return `${title} case study`;
+}
+
 function resolveCoverImage(
   media: PayloadMedia | number | null | undefined,
 ): PayloadMedia | null {
@@ -111,9 +120,10 @@ function resolveCoverImage(
 
 export default async function WritingPostPage({ params }: Props) {
   const { slug } = await params;
-  const [post, relatedPosts] = await Promise.all([
+  const [post, relatedPosts, projects] = await Promise.all([
     fetchPostBySlug(slug),
     fetchRelatedPosts(slug, 3),
+    fetchProjectsFromPayload(),
   ]);
 
   if (!post) notFound();
@@ -126,6 +136,26 @@ export default async function WritingPostPage({ params }: Props) {
   const postUrl = absoluteUrl(`/writing/${slug}`);
   const postDescription = post.description ?? defaultDescription;
   const blogId = `${absoluteUrl("/writing")}#blog`;
+  const postTagSet = new Set(
+    tagNames(post.tags).map((tag) => tag.toLowerCase()),
+  );
+  const scoredProjects = projects.map((project) => {
+    const techLabels =
+      project.tech
+        ?.map((entry) => entry?.label?.toLowerCase())
+        .filter((label): label is string => Boolean(label)) ?? [];
+    const score = techLabels.filter((label) => postTagSet.has(label)).length;
+    return { project, score };
+  });
+  const hasMatch = scoredProjects.some((entry) => entry.score > 0);
+  const relatedProjects = (hasMatch
+    ? scoredProjects
+        .filter((entry) => entry.score > 0)
+        .sort((a, b) => b.score - a.score)
+    : scoredProjects
+  )
+    .slice(0, 3)
+    .map((entry) => entry.project);
 
   let body: ReactNode = null;
   if (post.markdownInput) {
@@ -173,32 +203,13 @@ export default async function WritingPostPage({ params }: Props) {
           },
         }}
       />
-      <JsonLd
+      <BreadcrumbsJsonLd
         id={`post-breadcrumbs-${slug}`}
-        data={{
-          "@context": "https://schema.org",
-          "@type": "BreadcrumbList",
-          itemListElement: [
-            {
-              "@type": "ListItem",
-              position: 1,
-              name: "Home",
-              item: absoluteUrl("/"),
-            },
-            {
-              "@type": "ListItem",
-              position: 2,
-              name: "Writing",
-              item: absoluteUrl("/writing"),
-            },
-            {
-              "@type": "ListItem",
-              position: 3,
-              name: post.title,
-              item: postUrl,
-            },
-          ],
-        }}
+        items={[
+          { name: "Home", href: absoluteUrl("/") },
+          { name: "Writing", href: absoluteUrl("/writing") },
+          { name: post.title, href: postUrl },
+        ]}
       />
       <header className="flex flex-col gap-4">
         <div className="flex items-baseline justify-between gap-6">
@@ -224,6 +235,7 @@ export default async function WritingPostPage({ params }: Props) {
             height={cover.height ?? 900}
             sizes="100vw"
             className="h-auto w-full"
+            priority
           />
         </div>
       ) : null}
@@ -243,10 +255,31 @@ export default async function WritingPostPage({ params }: Props) {
             <div className="flex flex-col gap-2 text-base text-primary">
               {relatedPosts.map((related) => (
                 <Link key={related.id} href={`/writing/${related.slug}`}>
-                  {related.title}
+                  {caseStudyAnchor(related.title)}
                 </Link>
               ))}
               <Link href="/writing">View all writing</Link>
+            </div>
+          </div>
+        ) : null}
+        {relatedProjects.length ? (
+          <div className="flex flex-col gap-3">
+            <h2 className="text-xs uppercase tracking-[0.35em] text-muted">
+              Related projects
+            </h2>
+            <div className="flex flex-col gap-2 text-base text-primary">
+              {relatedProjects.map((project) => {
+                const title = project.title ?? project.name;
+                return (
+                  <Link
+                    key={project.id}
+                    href={`/projects#project-${project.id}`}
+                  >
+                    {caseStudyAnchor(title)}
+                  </Link>
+                );
+              })}
+              <Link href="/projects">View all projects</Link>
             </div>
           </div>
         ) : null}

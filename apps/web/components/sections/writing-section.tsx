@@ -27,7 +27,10 @@ export function WritingSection({ posts, showTitle = true }: Props) {
             const metaParts = [dateLabel, readTime].filter(Boolean);
 
             return (
-              <article key={post.id} className="flex flex-col gap-2">
+              <article
+                key={post.id}
+                className="flex flex-col gap-2 content-visibility-auto"
+              >
                 <Link
                   href={`/writing/${post.slug}`}
                   className="text-base font-semibold text-primary"
