@@ -1,7 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { TooltipProvider } from "@repo/ui";
 import { SoundProvider } from "@/components/providers/sound-provider";
@@ -18,19 +17,6 @@ import {
 } from "@/lib/seo";
 import { BioBlock } from "@/components/aside/bio-block";
 import "./globals.css";
-
-const geistSans = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist-sans",
-  display: "swap",
-  preload: true,
-});
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
-  display: "swap",
-  preload: true,
-});
 
 const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
 const bingVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION;
@@ -110,9 +96,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body
-        className={`font-sans antialiased ${geistSans.variable} ${geistMono.variable}`}
-      >
+      <body className="font-sans antialiased">
         <ThemeProvider>
           <TooltipProvider delayDuration={80} skipDelayDuration={500}>
             <SoundProvider>

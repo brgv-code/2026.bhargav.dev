@@ -12,6 +12,7 @@
     "generate:importmap": "NODE_OPTIONS='--no-experimental-strip-types --no-experimental-require-module ' payload generate:importmap",
     "generate:types": " payload generate:types",
     "migrate": "payload migrate",
+    "migrate:create": "payload migrate:create",
     "seed:projects": "payload run ./scripts/seed-projects.ts",
     "seed:books": "payload run ./scripts/seed-books.ts",
     "seed:favorites": "payload run ./scripts/seed-favorites.ts",
