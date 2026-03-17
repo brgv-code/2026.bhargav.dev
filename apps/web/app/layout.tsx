@@ -126,6 +126,9 @@ export default async function RootLayout({
                           <BioBlock name={name} tagline={tagline} bio={bio} />
 
                           <nav aria-label="Primary" className="flex flex-col gap-3">
+                            <Link className="text-base text-primary" href="/about">
+                              About
+                            </Link>
                             <Link className="text-base text-primary" href="/writing">
                               Writing
                             </Link>

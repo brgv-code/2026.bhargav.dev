@@ -39,7 +39,20 @@ function logCmsWarning(message: string, detail?: unknown) {
   }
 }
 
-export async function fetchProfile() {
+export type PayloadProfile = {
+  name: string;
+  tagline?: string | null;
+  bio?: string | null;
+  available_for_work?: boolean | null;
+  github?: string | null;
+  x?: string | null;
+  linkedin?: string | null;
+  email?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+};
+
+export async function fetchProfile(): Promise<PayloadProfile | null> {
   if (!cmsUrl) {
     logCmsWarning(
       "PAYLOAD_PUBLIC_SERVER_URL not set; profile will be fallback.",
@@ -59,7 +72,7 @@ export async function fetchProfile() {
       );
       return null;
     }
-    return res.json();
+    return (await res.json()) as PayloadProfile;
   } catch (e) {
     logCmsWarning("Profile fetch error (is the CMS running?)", e);
     return null;

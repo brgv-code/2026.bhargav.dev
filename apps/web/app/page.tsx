@@ -1,9 +1,35 @@
-import { fetchBlogListPosts, fetchProjectsFromPayload, fetchWorkExperience } from "@/lib/data/cms";
+import type { Metadata } from "next";
+import {
+  fetchBlogListPosts,
+  fetchProjectsFromPayload,
+  fetchWorkExperience,
+} from "@/lib/data/cms";
 import { WritingSection } from "@/components/sections/writing-section";
 import { ProjectsSection } from "@/components/sections/projects-section";
 import { ExperienceSection } from "@/components/sections/experience-section";
+import { absoluteUrl, defaultDescription, defaultTitle, siteName } from "@/lib/seo";
 
 export const dynamic = "force-static";
+
+export const metadata: Metadata = {
+  title: defaultTitle,
+  description: defaultDescription,
+  alternates: {
+    canonical: absoluteUrl("/"),
+  },
+  openGraph: {
+    type: "website",
+    title: defaultTitle,
+    description: defaultDescription,
+    url: absoluteUrl("/"),
+    siteName,
+  },
+  twitter: {
+    card: "summary",
+    title: defaultTitle,
+    description: defaultDescription,
+  },
+};
 
 export default async function Home() {
   const [posts, projects, work] = await Promise.all([

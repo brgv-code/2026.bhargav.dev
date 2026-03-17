@@ -46,6 +46,7 @@ export type {
   PayloadPostSummary,
   PayloadProject,
   PayloadMedia,
+  PayloadProfile,
   PayloadReadingNote,
   PayloadTag,
   PayloadTocItem,

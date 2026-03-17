@@ -7,7 +7,7 @@ export const revalidate = 3600;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await fetchBlogListPosts(1000);
 
-  const staticRoutes = ["/", "/writing", "/projects", "/experience"].map(
+  const staticRoutes = ["/", "/about", "/writing", "/projects", "/experience"].map(
     (route) => ({
       url: absoluteUrl(route),
       lastModified: new Date(),
