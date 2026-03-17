@@ -24,6 +24,66 @@ function toTimestamp(value?: string | null): number | null {
   return date.getTime();
 }
 
+const researchKeywords = {
+  roles: [
+    "Software Engineer",
+    "Software Developer",
+    "Full Stack Developer",
+    "Front-End Engineer",
+    "Application Developer",
+    "Application Integration Engineer",
+    "Software Architect",
+    "DevOps Engineer",
+    "Systems Engineer",
+    "Ai Engineer",
+  ],
+  coreWork: [
+    "requirements analysis",
+    "software design",
+    "system integration",
+    "software testing",
+    "performance optimization",
+    "maintenance and upgrades",
+    "technical documentation",
+  ],
+  qualities: [
+    "analytical skills",
+    "communication skills",
+    "creativity",
+    "detail oriented",
+    "interpersonal skills",
+    "problem-solving",
+  ],
+  languagesAndWeb: [
+    "JavaScript",
+    "TypeScript",
+    "HTML",
+    "CSS",
+    "SQL",
+    "Python",
+    "Java",
+    "Node.js",
+    "React",
+    "Next.js",
+    "Angular",
+    "Vue.js",
+  ],
+  cloudAndTools: [
+    "AWS",
+    "Azure",
+    "Docker",
+    "Kubernetes",
+    "Git",
+    "GitHub",
+    "Jira",
+    "GitLab",
+    "PostgreSQL",
+    "MySQL",
+    "NoSQL",
+  ],
+  aiTools: ["ChatGPT", "GitHub Copilot", "Google Gemini", "Claude"],
+};
+
 export async function GET() {
   const [profile, posts, projects, work] = await Promise.all([
     fetchProfile(),
@@ -35,22 +95,22 @@ export async function GET() {
   const tagline = profile?.tagline ?? defaultDescription;
   const name = profile?.name ?? siteName;
   const postTopics = Array.from(
-    new Set(
-      posts.flatMap((post) => tagNames(post.tags)).filter(Boolean),
-    ),
+    new Set(posts.flatMap((post) => tagNames(post.tags)).filter(Boolean))
   );
   const projectTech = Array.from(
     new Set(
       projects
         .flatMap((project) =>
-          project.tech?.map((entry) => entry?.label?.trim()).filter(Boolean),
+          project.tech?.map((entry) => entry?.label?.trim()).filter(Boolean)
         )
-        .filter(Boolean),
-    ),
+        .filter(Boolean)
+    )
   );
   const updatedCandidates = [
     profile?.updatedAt,
-    ...posts.map((post) => post.updatedAt ?? post.publishedAt ?? post.createdAt),
+    ...posts.map(
+      (post) => post.updatedAt ?? post.publishedAt ?? post.createdAt
+    ),
   ]
     .map((value) => toTimestamp(value))
     .filter((value): value is number => typeof value === "number");
@@ -65,18 +125,26 @@ export async function GET() {
   lines.push(`Summary: ${tagline}`);
   if (profile?.available_for_work != null) {
     lines.push(
-      `Availability: ${profile.available_for_work ? "Open to work" : "Unavailable"}`,
+      `Availability: ${profile.available_for_work ? "Open to work" : "Unavailable"}`
     );
   }
   if (postTopics.length) {
     lines.push(`Topics: ${postTopics.join(", ")}`);
   }
   if (projectTech.length) {
-    lines.push(`Tools: ${projectTech.join(", ")}`);
+    lines.push(`Project tech: ${projectTech.join(", ")}`);
   }
   if (lastUpdated) {
     lines.push(`Last updated: ${lastUpdated}`);
   }
+  lines.push("");
+  lines.push("## Research-backed keywords");
+  lines.push(`Roles: ${researchKeywords.roles.join(", ")}`);
+  lines.push(`Core work: ${researchKeywords.coreWork.join(", ")}`);
+  lines.push(`Qualities: ${researchKeywords.qualities.join(", ")}`);
+  lines.push(`Languages & web: ${researchKeywords.languagesAndWeb.join(", ")}`);
+  lines.push(`Cloud & tools: ${researchKeywords.cloudAndTools.join(", ")}`);
+  lines.push(`AI tools: ${researchKeywords.aiTools.join(", ")}`);
   lines.push("");
   lines.push("## Pages");
   lines.push(`- About: ${absoluteUrl("/about")}`);
@@ -94,7 +162,7 @@ export async function GET() {
         "";
       const suffix = date ? ` (${date})` : "";
       lines.push(
-        `- ${post.title}${suffix}: ${absoluteUrl(`/writing/${post.slug}`)}`,
+        `- ${post.title}${suffix}: ${absoluteUrl(`/writing/${post.slug}`)}`
       );
     });
   } else {
@@ -110,7 +178,7 @@ export async function GET() {
       lines.push(
         description
           ? `- ${title}: ${url} — ${description}`
-          : `- ${title}: ${url}`,
+          : `- ${title}: ${url}`
       );
     });
   } else {
