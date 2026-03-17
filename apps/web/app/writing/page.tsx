@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { fetchBlogListPosts } from "@/lib/data/cms";
 import { WritingSection } from "@/components/sections/writing-section";
 import { BackButton } from "@/components/shared/back-button";
@@ -38,6 +39,7 @@ export const dynamic = "force-static";
 
 export default async function WritingIndexPage() {
   const posts = await fetchBlogListPosts(500);
+  const blogId = `${absoluteUrl("/writing")}#blog`;
   const listJsonLd =
     posts.length > 0
       ? {
@@ -53,6 +55,13 @@ export default async function WritingIndexPage() {
               datePublished: post.publishedAt ?? post.createdAt,
               dateModified: post.updatedAt ?? post.publishedAt ?? post.createdAt,
               description: post.description ?? undefined,
+              inLanguage: "en",
+              isPartOf: {
+                "@type": "Blog",
+                "@id": blogId,
+                name: "Writing",
+                url: absoluteUrl("/writing"),
+              },
             },
           })),
         }
@@ -70,8 +79,39 @@ export default async function WritingIndexPage() {
             <BackButton className="text-base font-medium text-muted hover:text-primary transition-colors" />
           </div>
         </div>
+        <JsonLd
+          id="writing-breadcrumbs"
+          data={{
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: absoluteUrl("/"),
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Writing",
+                item: absoluteUrl("/writing"),
+              },
+            ],
+          }}
+        />
         {listJsonLd ? <JsonLd id="writing-list" data={listJsonLd} /> : null}
         <WritingSection posts={posts} showTitle={false} />
+        <div className="mt-16 flex flex-col gap-3">
+          <h2 className="text-xs uppercase tracking-[0.35em] text-muted">
+            Explore
+          </h2>
+          <div className="flex flex-col gap-2 text-base text-primary">
+            <Link href="/about">About</Link>
+            <Link href="/projects">Projects</Link>
+            <Link href="/experience">Experience</Link>
+          </div>
+        </div>
       </div>
     </div>
   );

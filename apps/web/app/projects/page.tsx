@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { fetchProjectsFromPayload } from "@/lib/data/cms";
+import Link from "next/link";
+import { fetchBlogListPosts, fetchProjectsFromPayload } from "@/lib/data/cms";
 import { renderMarkdown } from "@/lib/markdown";
 import { BackButton } from "@/components/shared/back-button";
 import { absoluteUrl, siteName, siteUrl } from "@/lib/seo";
@@ -49,7 +50,10 @@ function toYearDate(value?: string | null): string | undefined {
 }
 
 export default async function ProjectsPage() {
-  const projects = await fetchProjectsFromPayload();
+  const [projects, posts] = await Promise.all([
+    fetchProjectsFromPayload(),
+    fetchBlogListPosts(3),
+  ]);
 
   if (!projects || projects.length === 0) return null;
 
@@ -82,18 +86,38 @@ export default async function ProjectsPage() {
         ?.map((entry) => entry?.label?.trim())
         .filter((label): label is string => Boolean(label))
         .join(", ");
+      const offer =
+        project.offers &&
+        (project.offers.price ||
+          project.offers.priceCurrency ||
+          project.offers.availability ||
+          project.offers.url)
+          ? {
+              "@type": "Offer",
+              price: project.offers.price ?? undefined,
+              priceCurrency: project.offers.priceCurrency ?? undefined,
+              availability: project.offers.availability ?? undefined,
+              url: project.offers.url ?? undefined,
+            }
+          : undefined;
+      const hasAppFields = Boolean(
+        project.applicationCategory || project.operatingSystem || offer,
+      );
 
       return {
         "@type": "ListItem",
         position: index + 1,
         item: {
-          "@type": "CreativeWork",
+          "@type": hasAppFields ? "SoftwareApplication" : "CreativeWork",
           name: title,
           url,
           description: project.description,
           creator: { "@id": `${siteUrl}#person` },
           dateCreated: toYearDate(project.year),
           keywords: keywords || undefined,
+          applicationCategory: project.applicationCategory ?? undefined,
+          operatingSystem: project.operatingSystem ?? undefined,
+          offers: offer,
         },
       };
     }),
@@ -111,6 +135,27 @@ export default async function ProjectsPage() {
             <BackButton className="text-base font-medium text-muted hover:text-primary transition-colors" />
           </div>
         </div>
+        <JsonLd
+          id="projects-breadcrumbs"
+          data={{
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: absoluteUrl("/"),
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Projects",
+                item: absoluteUrl("/projects"),
+              },
+            ],
+          }}
+        />
         <JsonLd id="projects-list" data={listJsonLd} />
         <div className="flex flex-col gap-12">
           {entries.map(({ project, detail }) => {
@@ -127,7 +172,11 @@ export default async function ProjectsPage() {
             ].filter(Boolean);
 
             return (
-              <article key={project.id} className="flex flex-col gap-3">
+              <article
+                key={project.id}
+                id={`project-${project.id}`}
+                className="flex flex-col gap-3"
+              >
                 <a
                   className="text-base font-semibold text-primary"
                   href={project.url}
@@ -170,6 +219,21 @@ export default async function ProjectsPage() {
             );
           })}
         </div>
+        {posts.length ? (
+          <div className="mt-16 flex flex-col gap-3">
+            <h2 className="text-xs uppercase tracking-[0.35em] text-muted">
+              Related writing
+            </h2>
+            <div className="flex flex-col gap-2 text-base text-primary">
+              {posts.map((post) => (
+                <Link key={post.id} href={`/writing/${post.slug}`}>
+                  {post.title}
+                </Link>
+              ))}
+              <Link href="/writing">View all writing</Link>
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );

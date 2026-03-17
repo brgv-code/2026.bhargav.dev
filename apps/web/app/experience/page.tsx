@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import type { ReactNode } from "react";
+import Link from "next/link";
 import {
+  fetchProjectsFromPayload,
   fetchWorkExperience,
   type PayloadMedia,
 } from "@/lib/data/cms";
@@ -66,7 +68,10 @@ function parseDateRange(range?: string | null) {
 }
 
 export default async function ExperiencePage() {
-  const work = await fetchWorkExperience();
+  const [work, projects] = await Promise.all([
+    fetchWorkExperience(),
+    fetchProjectsFromPayload(),
+  ]);
 
   if (!work || work.length === 0) return null;
 
@@ -121,11 +126,33 @@ export default async function ExperiencePage() {
             <BackButton className="text-base font-medium text-muted hover:text-primary transition-colors" />
           </div>
         </div>
+        <JsonLd
+          id="experience-breadcrumbs"
+          data={{
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: absoluteUrl("/"),
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Experience",
+                item: absoluteUrl("/experience"),
+              },
+            ],
+          }}
+        />
         <JsonLd id="experience-list" data={listJsonLd} />
         <div className="flex flex-col gap-12">
           {entries.map(({ item, detail, logo }) => (
             <article
               key={item.id}
+              id={`experience-${item.id}`}
               className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto] md:gap-6"
             >
               <div className="flex flex-col gap-3">
@@ -178,6 +205,27 @@ export default async function ExperiencePage() {
             </article>
           ))}
         </div>
+        {projects.length ? (
+          <div className="mt-16 flex flex-col gap-3">
+            <h2 className="text-xs uppercase tracking-[0.35em] text-muted">
+              Selected projects
+            </h2>
+            <div className="flex flex-col gap-2 text-base text-primary">
+              {projects.slice(0, 3).map((project) => {
+                const title = project.title ?? project.name;
+                return (
+                  <Link
+                    key={project.id}
+                    href={`/projects#project-${project.id}`}
+                  >
+                    {title}
+                  </Link>
+                );
+              })}
+              <Link href="/projects">View all projects</Link>
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );

@@ -7,7 +7,14 @@ import {
 import { WritingSection } from "@/components/sections/writing-section";
 import { ProjectsSection } from "@/components/sections/projects-section";
 import { ExperienceSection } from "@/components/sections/experience-section";
-import { absoluteUrl, defaultDescription, defaultTitle, siteName } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/jsonld";
+import {
+  absoluteUrl,
+  defaultDescription,
+  defaultTitle,
+  siteName,
+  siteUrl,
+} from "@/lib/seo";
 
 export const dynamic = "force-static";
 
@@ -49,6 +56,19 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col pb-24">
+      <JsonLd
+        id="home-webpage"
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "@id": `${siteUrl}#home`,
+          url: absoluteUrl("/"),
+          name: defaultTitle,
+          description: defaultDescription,
+          isPartOf: { "@id": `${siteUrl}#website` },
+          about: { "@id": `${siteUrl}#person` },
+        }}
+      />
       <WritingSection posts={posts} />
       <ProjectsSection projects={projects} />
       <ExperienceSection work={work} />

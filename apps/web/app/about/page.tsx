@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { BackButton } from "@/components/shared/back-button";
 import { JsonLd } from "@/components/seo/jsonld";
 import { fetchProfile } from "@/lib/data/cms";
@@ -6,6 +7,7 @@ import {
   absoluteUrl,
   defaultDescription,
   siteName,
+  siteUrl,
 } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -85,6 +87,41 @@ export default async function AboutPage() {
         </div>
 
         <div className="flex flex-col gap-12">
+          <JsonLd
+            id="about-profile"
+            data={{
+              "@context": "https://schema.org",
+              "@type": "ProfilePage",
+              "@id": `${absoluteUrl("/about")}#profile`,
+              url: absoluteUrl("/about"),
+              name: `About ${name}`,
+              description: aboutText,
+              isPartOf: { "@id": `${siteUrl}#website` },
+              about: { "@id": `${siteUrl}#person` },
+              mainEntity: { "@id": `${siteUrl}#person` },
+            }}
+          />
+          <JsonLd
+            id="about-breadcrumbs"
+            data={{
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Home",
+                  item: absoluteUrl("/"),
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "About",
+                  item: absoluteUrl("/about"),
+                },
+              ],
+            }}
+          />
           <JsonLd id="faq-about" data={faqJsonLd} />
 
           <div className="flex flex-col gap-3">
@@ -92,6 +129,16 @@ export default async function AboutPage() {
             <p className="text-base text-secondary leading-relaxed">
               {aboutText}
             </p>
+            <div className="mt-6 flex flex-col gap-3">
+              <h2 className="text-xs uppercase tracking-[0.35em] text-muted">
+                Explore
+              </h2>
+              <div className="flex flex-col gap-2 text-base text-primary">
+                <Link href="/writing">Writing</Link>
+                <Link href="/projects">Projects</Link>
+                <Link href="/experience">Experience</Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>

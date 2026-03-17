@@ -290,6 +290,8 @@ export type PayloadWorkExperience = {
   date_range?: string;
   logo?: PayloadMedia | number | null;
   tech_stack?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
 
   markdownInput?: string | null;
 
@@ -343,6 +345,16 @@ export type PayloadProject = {
   year?: string | null;
   markdownInput?: string | null;
   contentHtml?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+  applicationCategory?: string | null;
+  operatingSystem?: string | string[] | null;
+  offers?: {
+    price?: string | null;
+    priceCurrency?: string | null;
+    availability?: string | null;
+    url?: string | null;
+  } | null;
   tech?:
     | {
         id?: string;
