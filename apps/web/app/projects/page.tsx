@@ -4,6 +4,7 @@ import { fetchProjectsFromPayload } from "@/lib/data/cms";
 import { renderMarkdown } from "@/lib/markdown";
 import { BackButton } from "@/components/shared/back-button";
 import { absoluteUrl, siteName } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/jsonld";
 
 export const metadata: Metadata = {
   title: "Projects",
@@ -56,6 +57,26 @@ export default async function ProjectsPage() {
     }),
   );
 
+  const listJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: projects.map((project, index) => {
+      const title = project.title ?? project.name;
+      const url = project.url || absoluteUrl("/projects");
+
+      return {
+        "@type": "ListItem",
+        position: index + 1,
+        item: {
+          "@type": "CreativeWork",
+          name: title,
+          url,
+          description: project.description,
+        },
+      };
+    }),
+  };
+
   return (
     <section className="pb-24">
       <div className="mx-auto w-full max-w-xl">
@@ -68,6 +89,7 @@ export default async function ProjectsPage() {
             <BackButton className="text-base font-medium text-muted hover:text-primary transition-colors" />
           </div>
         </div>
+        <JsonLd id="projects-list" data={listJsonLd} />
         <div className="flex flex-col gap-12">
           {entries.map(({ project, detail }) => {
             const title = project.title ?? project.name;

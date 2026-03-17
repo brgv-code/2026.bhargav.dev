@@ -3,6 +3,7 @@ import { fetchBlogListPosts } from "@/lib/data/cms";
 import { WritingSection } from "@/components/sections/writing-section";
 import { BackButton } from "@/components/shared/back-button";
 import { absoluteUrl, siteName } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/jsonld";
 
 export const metadata: Metadata = {
   title: "Writing",
@@ -28,6 +29,22 @@ export const dynamic = "force-static";
 
 export default async function WritingIndexPage() {
   const posts = await fetchBlogListPosts(500);
+  const listJsonLd =
+    posts.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          itemListElement: posts.map((post, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            item: {
+              "@type": "BlogPosting",
+              name: post.title,
+              url: absoluteUrl(`/writing/${post.slug}`),
+            },
+          })),
+        }
+      : null;
 
   return (
     <div className="flex flex-col gap-16 pb-24">
@@ -41,6 +58,7 @@ export default async function WritingIndexPage() {
             <BackButton className="text-base font-medium text-muted hover:text-primary transition-colors" />
           </div>
         </div>
+        {listJsonLd ? <JsonLd id="writing-list" data={listJsonLd} /> : null}
         <WritingSection posts={posts} showTitle={false} />
       </div>
     </div>

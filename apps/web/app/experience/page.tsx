@@ -8,6 +8,7 @@ import {
 import { renderMarkdown } from "@/lib/markdown";
 import { BackButton } from "@/components/shared/back-button";
 import { absoluteUrl, siteName } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/jsonld";
 
 export const metadata: Metadata = {
   title: "Experience",
@@ -68,6 +69,20 @@ export default async function ExperiencePage() {
     }),
   );
 
+  const listJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: work.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Thing",
+        name: `${item.role ?? "Role"} — ${item.company ?? "Company"}`,
+        description: item.date_range ?? undefined,
+      },
+    })),
+  };
+
   return (
     <section className="pb-24">
       <div className="mx-auto w-full max-w-xl">
@@ -80,6 +95,7 @@ export default async function ExperiencePage() {
             <BackButton className="text-base font-medium text-muted hover:text-primary transition-colors" />
           </div>
         </div>
+        <JsonLd id="experience-list" data={listJsonLd} />
         <div className="flex flex-col gap-12">
           {entries.map(({ item, detail, logo }) => (
             <article
