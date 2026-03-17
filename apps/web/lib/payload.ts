@@ -8,13 +8,51 @@ const cmsUrl =
     ? "http://localhost:3001"
     : undefined);
 
+const TAGS = {
+  posts: "posts",
+  projects: "projects",
+  experience: "experience",
+  profile: "profile",
+  favorites: "favorites",
+  reading: "reading",
+} as const;
+
+type PayloadFetchOptions = {
+  tags?: string[];
+  revalidate?: number;
+};
+
+function payloadFetchOptions(options: PayloadFetchOptions = {}) {
+  const { tags, revalidate } = options;
+  return {
+    cache: "force-cache" as const,
+    next: {
+      tags,
+      revalidate,
+    },
+  };
+}
+
 function logCmsWarning(message: string, detail?: unknown) {
   if (process.env.NODE_ENV === "development") {
     console.warn("[Payload CMS]", message, detail ?? "");
   }
 }
 
-export async function fetchProfile() {
+export type PayloadProfile = {
+  name: string;
+  tagline?: string | null;
+  bio?: string | null;
+  available_for_work?: boolean | null;
+  github?: string | null;
+  x?: string | null;
+  linkedin?: string | null;
+  email?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+};
+
+export async function fetchProfile(): Promise<PayloadProfile | null> {
   if (!cmsUrl) {
     logCmsWarning(
       "PAYLOAD_PUBLIC_SERVER_URL not set; profile will be fallback.",
@@ -23,9 +61,10 @@ export async function fetchProfile() {
   }
 
   try {
-    const res = await fetch(`${cmsUrl}/api/globals/profile`, {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(
+      `${cmsUrl}/api/globals/profile`,
+      payloadFetchOptions({ tags: [TAGS.profile], revalidate: 60 }),
+    );
     if (!res.ok) {
       logCmsWarning(
         `Profile fetch failed: ${res.status} ${res.statusText}`,
@@ -33,7 +72,7 @@ export async function fetchProfile() {
       );
       return null;
     }
-    return res.json();
+    return (await res.json()) as PayloadProfile;
   } catch (e) {
     logCmsWarning("Profile fetch error (is the CMS running?)", e);
     return null;
@@ -47,6 +86,14 @@ export type PayloadPostSummary = {
   publishedAt?: string;
   createdAt?: string;
   updatedAt?: string;
+};
+
+export type PayloadMedia = {
+  id?: number;
+  url?: string;
+  alt?: string;
+  width?: number;
+  height?: number;
 };
 
 export type PayloadTag = {
@@ -78,9 +125,10 @@ export async function fetchLatestPosts(
     url.searchParams.set("sort", "-publishedAt");
     url.searchParams.set("where[status][equals]", "published");
     url.searchParams.set("depth", "0");
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(
+      url.toString(),
+      payloadFetchOptions({ tags: [TAGS.posts], revalidate: 60 }),
+    );
     if (!res.ok) {
       logCmsWarning(
         `Posts fetch failed: ${res.status} ${res.statusText}`,
@@ -116,9 +164,10 @@ export async function fetchBlogListPosts(
     url.searchParams.set("sort", "-publishedAt");
     url.searchParams.set("where[status][equals]", "published");
     url.searchParams.set("depth", "1");
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(
+      url.toString(),
+      payloadFetchOptions({ tags: [TAGS.posts], revalidate: 60 }),
+    );
     if (!res.ok) {
       logCmsWarning(
         `Blog list fetch failed: ${res.status} ${res.statusText}`,
@@ -143,6 +192,9 @@ export type PayloadTocItem = {
 export type PayloadPost = PayloadPostSummary & {
   description?: string | null;
   content?: unknown;
+  markdownInput?: string | null;
+  contentHtml?: string | null;
+  coverImage?: PayloadMedia | number | null;
   readingTime?: number | null;
   wordCount?: number | null;
   tags?: PayloadTag[] | null;
@@ -162,11 +214,12 @@ export async function fetchPostBySlug(
     url.searchParams.set("where[slug][equals]", slug);
     url.searchParams.set("where[status][equals]", "published");
     url.searchParams.set("limit", "1");
-    url.searchParams.set("depth", "1");
+    url.searchParams.set("depth", "2");
 
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(
+      url.toString(),
+      payloadFetchOptions({ tags: [TAGS.posts], revalidate: 60 }),
+    );
     if (!res.ok) return null;
     const data = (await res.json()) as PayloadListResult<PayloadPost>;
     const post = data.docs?.[0] ?? null;
@@ -174,6 +227,31 @@ export async function fetchPostBySlug(
   } catch (e) {
     logCmsWarning("Post fetch error (is the CMS running?)", e);
     return null;
+  }
+}
+
+export async function fetchPostSlugs(): Promise<string[]> {
+  if (!cmsUrl) {
+    logCmsWarning("PAYLOAD_PUBLIC_SERVER_URL not set; post slugs empty.");
+    return [];
+  }
+
+  try {
+    const url = new URL(`${cmsUrl}/api/posts`);
+    url.searchParams.set("limit", "500");
+    url.searchParams.set("sort", "-publishedAt");
+    url.searchParams.set("where[status][equals]", "published");
+    url.searchParams.set("depth", "0");
+    const res = await fetch(
+      url.toString(),
+      payloadFetchOptions({ tags: [TAGS.posts], revalidate: 60 }),
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as PayloadListResult<PayloadPostSummary>;
+    return (data.docs ?? []).map((doc) => doc.slug).filter(Boolean);
+  } catch (e) {
+    logCmsWarning("Post slugs fetch error (is the CMS running?)", e);
+    return [];
   }
 }
 
@@ -191,7 +269,10 @@ export async function fetchRelatedPosts(
     url.searchParams.set("sort", "-publishedAt");
     url.searchParams.set("where[status][equals]", "published");
     url.searchParams.set("depth", "0");
-    const res = await fetch(url.toString(), { next: { revalidate: 60 } });
+    const res = await fetch(
+      url.toString(),
+      payloadFetchOptions({ tags: [TAGS.posts], revalidate: 60 }),
+    );
     if (!res.ok) return [];
     const data = (await res.json()) as PayloadListResult<PayloadPostSummary>;
     const docs = data.docs ?? [];
@@ -207,6 +288,10 @@ export type PayloadWorkExperience = {
   company: string;
   role: string;
   date_range?: string;
+  logo?: PayloadMedia | number | null;
+  tech_stack?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
 
   markdownInput?: string | null;
 
@@ -231,9 +316,10 @@ export async function fetchWorkExperience(): Promise<PayloadWorkExperience[]> {
     url.searchParams.set("limit", "100");
     url.searchParams.set("depth", "1");
 
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 300 },
-    });
+    const res = await fetch(
+      url.toString(),
+      payloadFetchOptions({ tags: [TAGS.experience], revalidate: 300 }),
+    );
     if (!res.ok) {
       logCmsWarning(
         `Work experience fetch failed: ${res.status} ${res.statusText}`,
@@ -257,6 +343,18 @@ export type PayloadProject = {
   url: string;
   status?: "active" | "wip" | "archived" | null;
   year?: string | null;
+  markdownInput?: string | null;
+  contentHtml?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+  applicationCategory?: string | null;
+  operatingSystem?: string | string[] | null;
+  offers?: {
+    price?: string | null;
+    priceCurrency?: string | null;
+    availability?: string | null;
+    url?: string | null;
+  } | null;
   tech?:
     | {
         id?: string;
@@ -278,9 +376,10 @@ export async function fetchProjectsFromPayload(): Promise<PayloadProject[]> {
     url.searchParams.set("sort", "-updatedAt");
     url.searchParams.set("depth", "0");
 
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 300 },
-    });
+    const res = await fetch(
+      url.toString(),
+      payloadFetchOptions({ tags: [TAGS.projects], revalidate: 300 }),
+    );
     if (!res.ok) {
       logCmsWarning(
         `Projects fetch failed: ${res.status} ${res.statusText}`,
@@ -323,9 +422,10 @@ export async function fetchFavoritesFromPayload(): Promise<PayloadFavorite[]> {
     url.searchParams.set("sort", "-createdAt");
     url.searchParams.set("depth", "0");
 
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(
+      url.toString(),
+      payloadFetchOptions({ tags: [TAGS.favorites], revalidate: 60 }),
+    );
     if (!res.ok) {
       logCmsWarning(
         `Favorites fetch failed: ${res.status} ${res.statusText}`,
@@ -382,9 +482,10 @@ export async function fetchCurrentBookFromPayload(): Promise<PayloadBook | null>
     url.searchParams.set("where[status][equals]", "reading");
     url.searchParams.set("depth", "0");
 
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 30 },
-    });
+    const res = await fetch(
+      url.toString(),
+      payloadFetchOptions({ tags: [TAGS.reading], revalidate: 30 }),
+    );
     if (!res.ok) {
       logCmsWarning(
         `Current book fetch failed: ${res.status} ${res.statusText}`,

@@ -35,11 +35,11 @@ export const migrations = [
   {
     up: migration_20260307_220000_runtime_collections.up,
     down: migration_20260307_220000_runtime_collections.down,
-    name: '20260307_220000_runtime_collections'
+    name: '20260307_220000_runtime_collections',
   },
   {
     up: migration_20260310_000000_streaks_sources_links.up,
     down: migration_20260310_000000_streaks_sources_links.down,
-    name: '20260310_000000_streaks_sources_links'
+    name: '20260310_000000_streaks_sources_links',
   },
 ];

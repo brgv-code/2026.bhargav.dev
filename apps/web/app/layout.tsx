@@ -1,56 +1,61 @@
 import React from "react";
 import type { Metadata } from "next";
-import {
-  Lora,
-  Space_Mono,
-  VT323,
-  Inter,
-  Newsreader,
-  JetBrains_Mono,
-} from "next/font/google";
+import Link from "next/link";
 import { Analytics } from "@vercel/analytics/next";
 import { TooltipProvider } from "@repo/ui";
 import { SoundProvider } from "@/components/providers/sound-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { JsonLd } from "@/components/seo/jsonld";
+import { fetchProfile } from "@/lib/data/cms";
+import {
+  absoluteUrl,
+  buildSameAs,
+  defaultDescription,
+  defaultTitle,
+  siteName,
+  siteUrl,
+} from "@/lib/seo";
+import { BioBlock } from "@/components/aside/bio-block";
 import "./globals.css";
 
-const spaceMono = Space_Mono({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-space-mono",
-});
-const vt323 = VT323({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-vt323",
-});
-const lora = Lora({
-  subsets: ["latin"],
-  weight: ["400", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-lora",
-});
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
-  variable: "--font-inter",
-});
-const newsreader = Newsreader({
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
-  style: ["normal", "italic"],
-  variable: "--font-newsreader",
-});
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-jetbrains-mono",
-});
+const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
+const bingVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION;
 
 export const metadata: Metadata = {
-  title: "Bhargav | Developer Portfolio",
-  description:
-    "Product focused developer turning coffee into code with Sutra and bringing ideas to life.",
+  metadataBase: new URL(siteUrl),
+  title: defaultTitle,
+  description: defaultDescription,
+  alternates: {
+    canonical: "/",
+    types: {
+      "application/rss+xml": "/rss.xml",
+    },
+  },
+  openGraph: {
+    type: "website",
+    title: defaultTitle,
+    description: defaultDescription,
+    url: absoluteUrl("/"),
+    siteName,
+    images: [
+      {
+        url: "/og.svg",
+        width: 1200,
+        height: 630,
+        alt: "Bhargav — Developer Portfolio",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: defaultTitle,
+    description: defaultDescription,
+    images: ["/og.svg"],
+  },
+  verification: {
+    google: googleVerification || undefined,
+    other: bingVerification ? { "msvalidate.01": bingVerification } : undefined,
+  },
   icons: {
     icon: [
       {
@@ -70,19 +75,122 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export const dynamic = "force-static";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const profile = await fetchProfile();
+  const name = profile?.name ?? "Bhargav";
+  const tagline =
+    profile?.tagline ?? "Product-focused developer building intentional interfaces.";
+  const resumeUrl = process.env.NEXT_PUBLIC_RESUME_URL ?? "/resume.pdf";
+  const githubUrl = profile?.github ?? process.env.NEXT_PUBLIC_GITHUB_URL;
+  const twitterUrl = profile?.x ?? process.env.NEXT_PUBLIC_TWITTER_URL;
+  const linkedinUrl = profile?.linkedin ?? process.env.NEXT_PUBLIC_LINKEDIN_URL;
+  const sameAs = buildSameAs([githubUrl, linkedinUrl, twitterUrl]);
+  const personId = `${siteUrl}#person`;
+  const websiteId = `${siteUrl}#website`;
+
   return (
-    <html lang="en" className="dark">
-      <body
-        className={`font-sans antialiased ${spaceMono.variable} ${vt323.variable} ${lora.variable} ${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable}`}
-      >
+    <html lang="en">
+      <body className="font-sans antialiased">
         <ThemeProvider>
           <TooltipProvider delayDuration={80} skipDelayDuration={500}>
-            <SoundProvider>{children}</SoundProvider>
+            <SoundProvider>
+              <div className="min-h-screen bg-background text-primary">
+                <JsonLd
+                  id="structured-data"
+                  data={{
+                    "@context": "https://schema.org",
+                    "@graph": [
+                      {
+                        "@type": "Person",
+                        "@id": personId,
+                        name,
+                        description: tagline,
+                        url: absoluteUrl("/"),
+                        sameAs,
+                      },
+                      {
+                        "@type": "WebSite",
+                        "@id": websiteId,
+                        url: absoluteUrl("/"),
+                        name: siteName,
+                        publisher: { "@id": personId },
+                      },
+                    ],
+                  }}
+                />
+                <div className="mx-auto w-full max-w-6xl px-6 py-12 md:h-screen md:overflow-hidden md:px-10 md:py-16">
+                  <div className="grid grid-cols-1 gap-12 md:h-full md:grid-cols-12 md:gap-16">
+                    <aside className="md:col-span-4 md:h-full">
+                      <div className="flex flex-col gap-8 md:h-full md:overflow-hidden">
+                        <div className="flex flex-col gap-6 md:flex-1 md:justify-center">
+                          <BioBlock name={name} tagline={tagline} />
+
+                          <nav aria-label="Primary" className="flex flex-col gap-3">
+                            <Link className="text-base text-primary" href="/">
+                              Home
+                            </Link>
+                            <Link className="text-base text-primary" href="/about">
+                              About
+                            </Link>
+                            <Link className="text-base text-primary" href="/writing">
+                              Writing
+                            </Link>
+                            <Link className="text-base text-primary" href="/projects">
+                              Projects
+                            </Link>
+                            <Link className="text-base text-primary" href="/experience">
+                              Experience
+                            </Link>
+                          </nav>
+                        </div>
+
+                        <div className="mt-auto flex flex-wrap items-center gap-4 text-base text-primary">
+                          {githubUrl ? (
+                            <a
+                              href={githubUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              GitHub
+                            </a>
+                          ) : null}
+                          {twitterUrl ? (
+                            <a
+                              href={twitterUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              X
+                            </a>
+                          ) : null}
+                          {linkedinUrl ? (
+                            <a
+                              href={linkedinUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              LinkedIn
+                            </a>
+                          ) : null}
+                          <a href="/rss.xml">RSS</a>
+                          <a href={resumeUrl}>Resume</a>
+                        </div>
+                      </div>
+                    </aside>
+
+                    <main className="md:col-span-8 md:h-full md:overflow-y-auto">
+                      {children}
+                    </main>
+                  </div>
+                </div>
+              </div>
+            </SoundProvider>
           </TooltipProvider>
         </ThemeProvider>
         <Analytics />

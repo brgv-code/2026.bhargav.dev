@@ -10,7 +10,6 @@ import {
   BlogPostSubtitle,
   BlogPostDivider,
   BlogPostReadingMeta,
-  BlogPostFooter,
   BlogPostTOC,
   BlogPostFurtherReading,
 } from "@/components/blog";
@@ -129,7 +128,6 @@ export default async function BlogPostPage({ params }: Props) {
             </div>
           </article>
         </div>
-        <BlogPostFooter className="mt-12 w-full" />
       </div>
     </>
   );

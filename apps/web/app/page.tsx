@@ -1,72 +1,77 @@
-import { Navbar } from "@/components/shared/navbar";
-import { HomePageLayout } from "@/components/home/home-page-layout";
-import { Footer } from "@/components/shared/footer";
+import type { Metadata } from "next";
 import {
-  fetchProfile,
   fetchBlogListPosts,
-  fetchWorkExperience,
-  fetchFavoritesFromPayload,
   fetchProjectsFromPayload,
+  fetchWorkExperience,
 } from "@/lib/data/cms";
+import { WritingSection } from "@/components/sections/writing-section";
+import { ProjectsSection } from "@/components/sections/projects-section";
+import { ExperienceSection } from "@/components/sections/experience-section";
+import { JsonLd } from "@/components/seo/jsonld";
 import {
-  getActivityLogForGrid,
-  fetchWeeklyContributions,
-} from "@/lib/data/activity";
-import type { ProjectItem } from "@/lib/projects-data";
+  absoluteUrl,
+  defaultDescription,
+  defaultTitle,
+  siteName,
+  siteUrl,
+} from "@/lib/seo";
+
+export const dynamic = "force-static";
+
+export const metadata: Metadata = {
+  title: defaultTitle,
+  description: defaultDescription,
+  alternates: {
+    canonical: absoluteUrl("/"),
+  },
+  openGraph: {
+    type: "website",
+    title: defaultTitle,
+    description: defaultDescription,
+    url: absoluteUrl("/"),
+    siteName,
+    images: [
+      {
+        url: "/og.svg",
+        width: 1200,
+        height: 630,
+        alt: "Bhargav — Developer Portfolio",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: defaultTitle,
+    description: defaultDescription,
+    images: ["/og.svg"],
+  },
+};
 
 export default async function Home() {
-  const [
-    profile,
-    posts,
-    work,
-    favorites,
-    weeklyContributions,
-    activityLog,
-    projects,
-  ] = await Promise.all([
-    fetchProfile(),
+  const [posts, projects, work] = await Promise.all([
     fetchBlogListPosts(10),
-    fetchWorkExperience(),
-    fetchFavoritesFromPayload(),
-    fetchWeeklyContributions(),
-    getActivityLogForGrid(),
     fetchProjectsFromPayload(),
+    fetchWorkExperience(),
   ]);
 
-  const projectItems: ProjectItem[] = projects.map((project) => ({
-    name: project.name,
-    title: project.title ?? undefined,
-    description: project.description,
-    url: project.url,
-    status: project.status ?? undefined,
-    year: project.year ?? undefined,
-    tech: Array.isArray(project.tech)
-      ? project.tech
-          .map((entry) => entry?.label)
-          .filter((label): label is string => typeof label === "string")
-      : undefined,
-    github: project.github ?? undefined,
-  }));
-
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
-      <Navbar contributionCount={weeklyContributions} />
-      <div
-        data-theme="editorial"
-        className="flex-1 min-h-0 bg-[var(--editorial-bg)] flex flex-col overflow-hidden"
-      >
-        <div className="max-w-7xl mx-auto px-6 py-12 lg:py-20 flex-1 min-h-0 w-full flex flex-col overflow-hidden">
-          <HomePageLayout
-            profile={profile}
-            posts={posts}
-            projects={projectItems}
-            work={work}
-            favorites={favorites}
-            activityLog={activityLog}
-          />
-        </div>
-        <Footer />
-      </div>
+    <div className="flex flex-col pb-24">
+      <JsonLd
+        id="home-webpage"
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "@id": `${siteUrl}#home`,
+          url: absoluteUrl("/"),
+          name: defaultTitle,
+          description: defaultDescription,
+          isPartOf: { "@id": `${siteUrl}#website` },
+          about: { "@id": `${siteUrl}#person` },
+        }}
+      />
+      <WritingSection posts={posts} />
+      <ProjectsSection projects={projects} />
+      <ExperienceSection work={work} />
     </div>
   );
 }

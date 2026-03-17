@@ -1,106 +1,232 @@
 import type { Metadata } from "next";
-import { Navbar } from "@/components/shared/navbar";
-import { Footer } from "@/components/shared/footer";
-import { fetchWorkExperience } from "@/lib/data/cms";
+import Image from "next/image";
+import type { ReactNode } from "react";
+import Link from "next/link";
+import {
+  fetchProjectsFromPayload,
+  fetchWorkExperience,
+  type PayloadMedia,
+} from "@/lib/data/cms";
+import { renderMarkdown } from "@/lib/markdown";
+import { BackButton } from "@/components/shared/back-button";
+import { absoluteUrl, siteName } from "@/lib/seo";
+import { JsonLd } from "@/components/seo/jsonld";
 
 export const metadata: Metadata = {
   title: "Experience",
-  description:
-    "Work experience, roles, and projects I've worked on over the years.",
+  description: "Roles, responsibilities, and work highlights.",
+  alternates: {
+    canonical: absoluteUrl("/experience"),
+  },
+  openGraph: {
+    type: "website",
+    title: "Experience",
+    description: "Roles, responsibilities, and work highlights.",
+    url: absoluteUrl("/experience"),
+    siteName,
+    images: [
+      {
+        url: "/og-experience.svg",
+        width: 1200,
+        height: 630,
+        alt: "Experience",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Experience",
+    description: "Roles, responsibilities, and work highlights.",
+    images: ["/og-experience.svg"],
+  },
 };
 
-export default async function ExperiencePage() {
-  const work = await fetchWorkExperience();
+export const dynamic = "force-static";
 
-  return (
-    <>
-      <Navbar />
-      <div
-        data-theme="editorial"
-        className="min-h-screen bg-[var(--editorial-bg)] flex flex-col"
-      >
-        <main className="flex-1 max-w-4xl mx-auto w-full px-6 md:px-8 pt-28 pb-24">
-          <header className="mb-12">
-            <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--editorial-text-dim)] mb-4">
-              work
-            </p>
-            <h1 className="font-serif text-4xl md:text-[3rem] text-[var(--editorial-text)] leading-[1.1] mb-3">
-              Experience
-            </h1>
-            <p className="text-[var(--editorial-text-muted)] text-[15px] leading-relaxed max-w-md">
-              A timeline of roles, responsibilities, and things I&apos;ve shipped.
-            </p>
-            <div className="mt-8 border-b border-dashed border-[var(--editorial-border)]" />
-          </header>
-
-          <section>
-            {work.length === 0 ? (
-              <p className="text-sm text-[var(--editorial-text-muted)]">
-                No work experience added yet.
-              </p>
-            ) : (
-              <div className="space-y-10">
-                {work.map((exp) => (
-                  <article
-                    key={exp.id}
-                    className="border-b border-dashed border-[var(--editorial-border)] pb-8"
-                  >
-                    <div className="flex items-start justify-between gap-4 mb-2">
-                      <div>
-                        <h2 className="font-serif text-[1.4rem] text-[var(--editorial-text)] leading-snug">
-                          {exp.role}
-                        </h2>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="font-mono text-[12px] text-[var(--editorial-accent)] font-medium">
-                            {exp.company}
-                          </span>
-                        </div>
-                      </div>
-                      <span className="font-mono text-[11px] text-[var(--editorial-text-muted)] whitespace-nowrap shrink-0 pt-1">
-                        {exp.date_range ?? "—"}
-                      </span>
-                    </div>
-
-                    {Array.isArray(exp.bullets) && exp.bullets.length > 0 && (
-                      <ul className="flex flex-col gap-1.5 mt-3 list-none pl-0">
-                        {exp.bullets.map((bullet, idx) => (
-                          <li
-                            key={bullet.id ?? `${exp.id}-b-${idx}`}
-                            className="flex items-start gap-2 text-[13px] text-[var(--editorial-text-muted)] leading-relaxed"
-                          >
-                            <span className="text-[var(--editorial-accent)] mt-0.5 shrink-0">
-                              —
-                            </span>
-                            {bullet.href ? (
-                              <a
-                                href={bullet.href}
-                                className="underline-offset-2 hover:text-[var(--editorial-accent)] hover:underline"
-                              >
-                                {bullet.label}
-                              </a>
-                            ) : (
-                              <span>{bullet.label}</span>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
-                    {exp.contentHtml && (
-                      <div
-                        className="mt-3 text-[13px] leading-relaxed text-[var(--editorial-text-muted)] space-y-2"
-                        dangerouslySetInnerHTML={{ __html: exp.contentHtml }}
-                      />
-                    )}
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
-        </main>
-        <Footer />
-      </div>
-    </>
-  );
+function resolveMediaUrl(
+  media: PayloadMedia | number | null | undefined,
+): PayloadMedia | null {
+  if (!media || typeof media !== "object" || !media.url) return null;
+  const baseUrl = process.env.PAYLOAD_PUBLIC_SERVER_URL ?? "";
+  const resolvedUrl =
+    media.url.startsWith("http") || !baseUrl ? media.url : `${baseUrl}${media.url}`;
+  return {
+    ...media,
+    url: resolvedUrl,
+  };
 }
 
+function parseDateRange(range?: string | null) {
+  if (!range) return {};
+  const years = range.match(/\d{4}/g) ?? [];
+  const start = years[0];
+  const end = years[1];
+  return {
+    startDate: start ? `${start}-01-01` : undefined,
+    endDate: end ? `${end}-01-01` : undefined,
+  };
+}
+
+export default async function ExperiencePage() {
+  const [work, projects] = await Promise.all([
+    fetchWorkExperience(),
+    fetchProjectsFromPayload(),
+  ]);
+
+  if (!work || work.length === 0) return null;
+
+  const entries = await Promise.all(
+    work.map(async (item) => {
+      let detail: ReactNode = null;
+
+      if (item.markdownInput) {
+        detail = await renderMarkdown(item.markdownInput);
+      } else if (item.contentHtml) {
+        detail = (
+          <div
+            className="flex flex-col gap-4 text-base text-secondary leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: item.contentHtml }}
+          />
+        );
+      }
+
+      return { item, detail, logo: resolveMediaUrl(item.logo) };
+    }),
+  );
+
+  const listJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: work.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "OrganizationRole",
+        name: `${item.role ?? "Role"} at ${item.company ?? "Company"}`,
+        roleName: item.role ?? undefined,
+        memberOf: {
+          "@type": "Organization",
+          name: item.company ?? "Company",
+        },
+        description: item.date_range ?? undefined,
+        ...parseDateRange(item.date_range),
+      },
+    })),
+  };
+
+  return (
+    <section className="pb-24">
+      <div className="mx-auto w-full max-w-xl">
+        <div className="grid grid-cols-3 items-center pt-24 mb-10">
+          <span />
+          <h2 className="text-xs uppercase tracking-[0.35em] text-muted text-center">
+            Experience
+          </h2>
+          <div className="justify-self-end">
+            <BackButton className="text-base font-medium text-muted hover:text-primary transition-colors" />
+          </div>
+        </div>
+        <JsonLd
+          id="experience-breadcrumbs"
+          data={{
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: absoluteUrl("/"),
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Experience",
+                item: absoluteUrl("/experience"),
+              },
+            ],
+          }}
+        />
+        <JsonLd id="experience-list" data={listJsonLd} />
+        <div className="flex flex-col gap-12">
+          {entries.map(({ item, detail, logo }) => (
+            <article
+              key={item.id}
+              id={`experience-${item.id}`}
+              className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto] md:gap-6 content-visibility-auto"
+            >
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2">
+                  {logo ? (
+                    <Image
+                      src={logo.url ?? ""}
+                      alt={logo.alt ?? item.company}
+                      width={logo.width ?? 48}
+                      height={logo.height ?? 48}
+                      className="h-12 w-12 object-cover"
+                    />
+                  ) : null}
+                  {item.role ? (
+                    <h3 className="text-base font-semibold text-primary">
+                      {item.role}
+                    </h3>
+                  ) : null}
+                  <div className="flex flex-col gap-1 text-sm text-muted">
+                    <span>{item.company}</span>
+                    {item.tech_stack ? <span>{item.tech_stack}</span> : null}
+                  </div>
+                </div>
+                {item.bullets?.length ? (
+                  <ul className="list-none pl-0 flex flex-col gap-1 text-base text-secondary">
+                    {item.bullets.map((bullet) => (
+                      <li key={bullet.id}>
+                        {bullet.href ? (
+                          <a
+                            href={bullet.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {bullet.label}
+                          </a>
+                        ) : (
+                          bullet.label
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {detail ? <div className="flex flex-col gap-4">{detail}</div> : null}
+              </div>
+              {item.date_range ? (
+                <div className="text-sm text-muted md:text-right">
+                  {item.date_range}
+                </div>
+              ) : null}
+            </article>
+          ))}
+        </div>
+        {projects.length ? (
+          <div className="mt-16 flex flex-col gap-3">
+            <h2 className="text-xs uppercase tracking-[0.35em] text-muted">
+              Selected projects
+            </h2>
+            <div className="flex flex-col gap-2 text-base text-primary">
+              {projects.slice(0, 3).map((project) => {
+                const title = project.title ?? project.name;
+                return (
+                  <Link
+                    key={project.id}
+                    href={`/projects#project-${project.id}`}
+                  >
+                    {title}
+                  </Link>
+                );
+              })}
+              <Link href="/projects">View all projects</Link>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
