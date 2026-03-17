@@ -1,14 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  Lora,
-  Space_Mono,
-  VT323,
-  Inter,
-  Newsreader,
-  JetBrains_Mono,
-} from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { TooltipProvider } from "@repo/ui";
 import { SoundProvider } from "@/components/providers/sound-provider";
@@ -17,37 +10,13 @@ import { fetchProfile } from "@/lib/data/cms";
 import { BioBlock } from "@/components/aside/bio-block";
 import "./globals.css";
 
-const spaceMono = Space_Mono({
+const geistSans = Geist({
   subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-space-mono",
+  variable: "--font-geist-sans",
 });
-const vt323 = VT323({
+const geistMono = Geist_Mono({
   subsets: ["latin"],
-  weight: "400",
-  variable: "--font-vt323",
-});
-const lora = Lora({
-  subsets: ["latin"],
-  weight: ["400", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-lora",
-});
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
-  variable: "--font-inter",
-});
-const newsreader = Newsreader({
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
-  style: ["normal", "italic"],
-  variable: "--font-newsreader",
-});
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-jetbrains-mono",
+  variable: "--font-geist-mono",
 });
 
 export const metadata: Metadata = {
@@ -93,7 +62,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`font-sans antialiased ${spaceMono.variable} ${vt323.variable} ${lora.variable} ${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable}`}
+        className={`font-sans antialiased ${geistSans.variable} ${geistMono.variable}`}
       >
         <ThemeProvider>
           <TooltipProvider delayDuration={80} skipDelayDuration={500}>
@@ -103,7 +72,7 @@ export default async function RootLayout({
                   <div className="grid grid-cols-1 gap-12 md:h-full md:grid-cols-12 md:gap-16">
                     <aside className="md:col-span-4 md:h-full">
                       <div className="flex flex-col gap-8 md:h-full md:overflow-hidden">
-                        <div className="flex flex-col gap-6">
+                        <div className="flex flex-col gap-6 md:flex-1 md:justify-center">
                           <BioBlock name={name} tagline={tagline} bio={bio} />
 
                           <nav aria-label="Primary" className="flex flex-col gap-3">

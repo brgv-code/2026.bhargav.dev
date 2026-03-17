@@ -11,6 +11,7 @@ import {
 import { formatPostDate, formatReadTime } from "@/lib/format";
 import { renderMarkdown } from "@/lib/markdown";
 import { RichText } from "@/components/shared/rich-text";
+import { BackButton } from "@/components/shared/back-button";
 
 export const dynamic = "force-static";
 export const dynamicParams = false;
@@ -86,12 +87,15 @@ export default async function WritingPostPage({ params }: Props) {
   return (
     <article className="flex flex-col gap-10 pb-24">
       <header className="flex flex-col gap-4">
+        <div className="flex items-baseline justify-between gap-6">
+          <h1 className="text-4xl font-semibold tracking-tight text-primary">
+            {post.title}
+          </h1>
+          <BackButton className="text-base font-medium text-muted hover:text-primary transition-colors" />
+        </div>
         <div className="text-base text-muted">
           {[dateLabel, readTime].filter(Boolean).join(" / ")}
         </div>
-        <h1 className="text-4xl font-semibold tracking-tight text-primary">
-          {post.title}
-        </h1>
         {post.description ? (
           <p className="text-base text-secondary">{post.description}</p>
         ) : null}

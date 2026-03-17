@@ -23,10 +23,10 @@ const config = {
         highlight: "var(--color-highlight)",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        serif: ["var(--font-newsreader)", "Georgia", "serif"],
+        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        serif: ["var(--font-geist-sans)", "Georgia", "serif"],
         mono: [
-          "var(--font-space-mono)",
+          "var(--font-geist-mono)",
           "ui-monospace",
           "SFMono-Regular",
           "monospace",

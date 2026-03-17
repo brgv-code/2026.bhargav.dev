@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { fetchProjectsFromPayload } from "@/lib/data/cms";
 import { renderMarkdown } from "@/lib/markdown";
+import { BackButton } from "@/components/shared/back-button";
 
 export const metadata: Metadata = {
   title: "Projects",
@@ -40,64 +41,75 @@ export default async function ProjectsPage() {
   );
 
   return (
-    <section className="flex flex-col gap-10 pb-24">
-      <h2 className="text-3xl font-bold tracking-tight text-primary mt-24 mb-10">
-        Projects
-      </h2>
-      <div className="flex flex-col gap-12">
-        {entries.map(({ project, detail }) => {
-          const title = project.title ?? project.name;
-          const techLabels = Array.isArray(project.tech)
-            ? project.tech
-                .map((entry) => entry?.label)
-                .filter((label): label is string => Boolean(label))
-            : [];
-          const statusLabel = formatStatus(project.status ?? null);
+    <section className="pb-24">
+      <div className="mx-auto w-full max-w-xl">
+        <div className="grid grid-cols-3 items-center pt-24 mb-10">
+          <span />
+          <h2 className="text-xs uppercase tracking-[0.35em] text-muted text-center">
+            Projects
+          </h2>
+          <div className="justify-self-end">
+            <BackButton className="text-base font-medium text-muted hover:text-primary transition-colors" />
+          </div>
+        </div>
+        <div className="flex flex-col gap-12">
+          {entries.map(({ project, detail }) => {
+            const title = project.title ?? project.name;
+            const techLabels = Array.isArray(project.tech)
+              ? project.tech
+                  .map((entry) => entry?.label)
+                  .filter((label): label is string => Boolean(label))
+              : [];
+            const statusLabel = formatStatus(project.status ?? null);
+            const metaParts = [
+              project.year ?? "",
+              statusLabel ?? "",
+            ].filter(Boolean);
 
-          return (
-            <article key={project.id} className="flex flex-col gap-3">
-              <div className="flex flex-wrap items-baseline gap-3">
+            return (
+              <article key={project.id} className="flex flex-col gap-3">
                 <a
-                  className="text-base font-medium text-primary"
+                  className="text-base font-semibold text-primary"
                   href={project.url}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   {title}
                 </a>
-                {project.year ? (
-                  <span className="text-base text-muted">{project.year}</span>
+                {metaParts.length ? (
+                  <p className="text-sm text-muted">{metaParts.join(" / ")}</p>
                 ) : null}
-                {statusLabel ? (
-                  <span className="text-base text-muted">{statusLabel}</span>
+                <p className="text-base text-secondary">{project.description}</p>
+                {detail ? <div className="flex flex-col gap-4">{detail}</div> : null}
+                {techLabels.length ? (
+                  <p className="text-sm text-muted">
+                    Tech: {techLabels.join(", ")}
+                  </p>
                 ) : null}
-              </div>
-              <p className="text-base text-secondary">{project.description}</p>
-              {detail ? <div className="flex flex-col gap-4">{detail}</div> : null}
-              {techLabels.length ? (
-                <p className="text-base text-muted">
-                  Tech: {techLabels.join(", ")}
-                </p>
-              ) : null}
-              <div className="flex flex-wrap gap-4 text-base text-primary">
-                {project.url ? (
-                  <a href={project.url} target="_blank" rel="noopener noreferrer">
-                    Visit
-                  </a>
-                ) : null}
-                {project.github ? (
-                  <a
-                    href={project.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    GitHub
-                  </a>
-                ) : null}
-              </div>
-            </article>
-          );
-        })}
+                <div className="flex flex-wrap gap-4 text-base text-primary">
+                  {project.url ? (
+                    <a
+                      href={project.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Visit
+                    </a>
+                  ) : null}
+                  {project.github ? (
+                    <a
+                      href={project.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      GitHub
+                    </a>
+                  ) : null}
+                </div>
+              </article>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
