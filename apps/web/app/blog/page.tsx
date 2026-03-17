@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/shared/navbar";
-import { BlogCard, BlogPostFooter } from "@/components/blog";
+import { BlogCard } from "@/components/blog";
 import {
   fetchBlogListPosts,
   tagNames,
@@ -69,7 +69,6 @@ export default async function BlogIndexPage() {
           </div>
         </main>
 
-        <BlogPostFooter className="mt-12 w-full" />
       </div>
     </>
   );

@@ -5,6 +5,5 @@ export { BlogPostTitle } from "./blog-post-title";
 export { BlogPostSubtitle } from "./blog-post-subtitle";
 export { BlogPostDivider } from "./blog-post-divider";
 export { BlogPostReadingMeta } from "./blog-post-reading-meta";
-export { BlogPostFooter } from "./blog-post-footer";
 export { BlogPostTOC } from "./blog-post-toc";
 export { BlogPostFurtherReading } from "./blog-post-further-reading";

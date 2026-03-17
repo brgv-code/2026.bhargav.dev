@@ -142,6 +142,9 @@ export default async function RootLayout({
                           <BioBlock name={name} tagline={tagline} bio={bio} />
 
                           <nav aria-label="Primary" className="flex flex-col gap-3">
+                            <Link className="text-base text-primary" href="/">
+                              Home
+                            </Link>
                             <Link className="text-base text-primary" href="/about">
                               About
                             </Link>
@@ -185,6 +188,7 @@ export default async function RootLayout({
                               LinkedIn
                             </a>
                           ) : null}
+                          <a href="/rss.xml">RSS</a>
                           <a href={resumeUrl}>Resume</a>
                         </div>
                       </div>
