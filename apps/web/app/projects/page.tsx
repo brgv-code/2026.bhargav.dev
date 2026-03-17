@@ -3,10 +3,26 @@ import type { ReactNode } from "react";
 import { fetchProjectsFromPayload } from "@/lib/data/cms";
 import { renderMarkdown } from "@/lib/markdown";
 import { BackButton } from "@/components/shared/back-button";
+import { absoluteUrl, siteName } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Projects",
   description: "Selected projects and case notes.",
+  alternates: {
+    canonical: absoluteUrl("/projects"),
+  },
+  openGraph: {
+    type: "website",
+    title: "Projects",
+    description: "Selected projects and case notes.",
+    url: absoluteUrl("/projects"),
+    siteName,
+  },
+  twitter: {
+    card: "summary",
+    title: "Projects",
+    description: "Selected projects and case notes.",
+  },
 };
 
 export const dynamic = "force-static";

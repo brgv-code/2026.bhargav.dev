@@ -2,10 +2,26 @@ import type { Metadata } from "next";
 import { fetchBlogListPosts } from "@/lib/data/cms";
 import { WritingSection } from "@/components/sections/writing-section";
 import { BackButton } from "@/components/shared/back-button";
+import { absoluteUrl, siteName } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Writing",
   description: "All published writing and essays.",
+  alternates: {
+    canonical: absoluteUrl("/writing"),
+  },
+  openGraph: {
+    type: "website",
+    title: "Writing",
+    description: "All published writing and essays.",
+    url: absoluteUrl("/writing"),
+    siteName,
+  },
+  twitter: {
+    card: "summary",
+    title: "Writing",
+    description: "All published writing and essays.",
+  },
 };
 
 export const dynamic = "force-static";

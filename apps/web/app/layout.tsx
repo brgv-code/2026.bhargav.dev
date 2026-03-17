@@ -6,7 +6,16 @@ import { Analytics } from "@vercel/analytics/next";
 import { TooltipProvider } from "@repo/ui";
 import { SoundProvider } from "@/components/providers/sound-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { JsonLd } from "@/components/seo/jsonld";
 import { fetchProfile } from "@/lib/data/cms";
+import {
+  absoluteUrl,
+  buildSameAs,
+  defaultDescription,
+  defaultTitle,
+  siteName,
+  siteUrl,
+} from "@/lib/seo";
 import { BioBlock } from "@/components/aside/bio-block";
 import "./globals.css";
 
@@ -20,9 +29,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bhargav | Developer Portfolio",
-  description:
-    "Product focused developer turning coffee into code with Sutra and bringing ideas to life.",
+  metadataBase: new URL(siteUrl),
+  title: defaultTitle,
+  description: defaultDescription,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    title: defaultTitle,
+    description: defaultDescription,
+    url: absoluteUrl("/"),
+    siteName,
+  },
+  twitter: {
+    card: "summary",
+    title: defaultTitle,
+    description: defaultDescription,
+  },
   icons: {
     icon: [
       {
@@ -58,6 +82,9 @@ export default async function RootLayout({
   const githubUrl = profile?.github ?? process.env.NEXT_PUBLIC_GITHUB_URL;
   const twitterUrl = profile?.x ?? process.env.NEXT_PUBLIC_TWITTER_URL;
   const linkedinUrl = profile?.linkedin ?? process.env.NEXT_PUBLIC_LINKEDIN_URL;
+  const sameAs = buildSameAs([githubUrl, linkedinUrl, twitterUrl]);
+  const personId = `${siteUrl}#person`;
+  const websiteId = `${siteUrl}#website`;
 
   return (
     <html lang="en">
@@ -68,6 +95,29 @@ export default async function RootLayout({
           <TooltipProvider delayDuration={80} skipDelayDuration={500}>
             <SoundProvider>
               <div className="min-h-screen bg-background text-primary">
+                <JsonLd
+                  id="structured-data"
+                  data={{
+                    "@context": "https://schema.org",
+                    "@graph": [
+                      {
+                        "@type": "Person",
+                        "@id": personId,
+                        name,
+                        description: tagline,
+                        url: absoluteUrl("/"),
+                        sameAs,
+                      },
+                      {
+                        "@type": "WebSite",
+                        "@id": websiteId,
+                        url: absoluteUrl("/"),
+                        name: siteName,
+                        publisher: { "@id": personId },
+                      },
+                    ],
+                  }}
+                />
                 <div className="mx-auto w-full max-w-6xl px-6 py-12 md:h-screen md:overflow-hidden md:px-10 md:py-16">
                   <div className="grid grid-cols-1 gap-12 md:h-full md:grid-cols-12 md:gap-16">
                     <aside className="md:col-span-4 md:h-full">

@@ -7,10 +7,26 @@ import {
 } from "@/lib/data/cms";
 import { renderMarkdown } from "@/lib/markdown";
 import { BackButton } from "@/components/shared/back-button";
+import { absoluteUrl, siteName } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Experience",
   description: "Roles, responsibilities, and work highlights.",
+  alternates: {
+    canonical: absoluteUrl("/experience"),
+  },
+  openGraph: {
+    type: "website",
+    title: "Experience",
+    description: "Roles, responsibilities, and work highlights.",
+    url: absoluteUrl("/experience"),
+    siteName,
+  },
+  twitter: {
+    card: "summary",
+    title: "Experience",
+    description: "Roles, responsibilities, and work highlights.",
+  },
 };
 
 export const dynamic = "force-static";

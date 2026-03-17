@@ -10,7 +10,13 @@ import {
 } from "@/lib/data/cms";
 import { formatPostDate, formatReadTime } from "@/lib/format";
 import { renderMarkdown } from "@/lib/markdown";
+import {
+  absoluteUrl,
+  defaultDescription,
+  siteName,
+} from "@/lib/seo";
 import { RichText } from "@/components/shared/rich-text";
+import { JsonLd } from "@/components/seo/jsonld";
 import { BackButton } from "@/components/shared/back-button";
 
 export const dynamic = "force-static";
@@ -33,9 +39,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Writing not found" };
   }
 
+  const description = post.description ?? defaultDescription;
+  const url = absoluteUrl(`/writing/${slug}`);
+
   return {
     title: post.title,
-    description: post.description ?? undefined,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      type: "article",
+      title: post.title,
+      description,
+      url,
+      siteName,
+    },
+    twitter: {
+      card: "summary",
+      title: post.title,
+      description,
+    },
   };
 }
 
@@ -64,6 +88,8 @@ export default async function WritingPostPage({ params }: Props) {
   );
   const readTime = formatReadTime(post.readingTime);
   const cover = resolveCoverImage(post.coverImage);
+  const postUrl = absoluteUrl(`/writing/${slug}`);
+  const postDescription = post.description ?? defaultDescription;
 
   let body: ReactNode = null;
   if (post.markdownInput) {
@@ -86,6 +112,22 @@ export default async function WritingPostPage({ params }: Props) {
 
   return (
     <article className="flex flex-col gap-10 pb-24">
+      <JsonLd
+        id={`post-${slug}`}
+        data={{
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          headline: post.title,
+          description: postDescription,
+          url: postUrl,
+          datePublished: post.publishedAt ?? post.createdAt,
+          dateModified: post.updatedAt ?? post.publishedAt ?? post.createdAt,
+          author: {
+            "@type": "Person",
+            name: siteName,
+          },
+        }}
+      />
       <header className="flex flex-col gap-4">
         <div className="flex items-baseline justify-between gap-6">
           <h1 className="text-4xl font-semibold tracking-tight text-primary">
