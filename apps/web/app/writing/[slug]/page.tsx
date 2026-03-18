@@ -25,7 +25,8 @@ import { BackButton } from "@/components/shared/back-button";
 import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
 
 export const dynamic = "force-static";
-export const dynamicParams = false;
+export const dynamicParams = true;
+export const revalidate = 60;
 
 type Props = {
   params: Promise<{ slug: string }>;

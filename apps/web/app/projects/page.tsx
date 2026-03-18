@@ -39,6 +39,7 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-static";
+export const revalidate = 300;
 
 function formatStatus(status?: string | null) {
   if (!status) return null;

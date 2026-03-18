@@ -17,6 +17,7 @@ import {
 } from "@/lib/seo";
 
 export const dynamic = "force-static";
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: defaultTitle,

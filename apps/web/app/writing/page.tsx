@@ -37,6 +37,7 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-static";
+export const revalidate = 60;
 
 export default async function WritingIndexPage() {
   const posts = await fetchBlogListPosts(500);
