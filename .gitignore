@@ -72,5 +72,9 @@ next-env.d.ts
 .turbo
 .pnpm-store
 
+# locally-hosted fonts (converted from downloads, not committed as binaries)
+apps/web/public/fonts/noto-serif/*.woff2
+apps/web/public/fonts/manrope/*.woff2
+
 # lockfiles (optional: uncomment to ignore)
 # pnpm-lock.yaml
