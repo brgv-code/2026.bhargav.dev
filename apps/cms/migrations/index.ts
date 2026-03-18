@@ -1,7 +1,7 @@
 import * as migration_20250101_000000_create_documents_table from './20250101_000000_create_documents_table';
 import * as migration_20260301_171234_add_posts_markdown_fields from './20260301_171234_add_posts_markdown_fields';
 import * as migration_20260301_200000_add_content_column_markdown_tables from './20260301_200000_add_content_column_markdown_tables';
-import * as migration_20260301_220000_ensure_markdown_columns_sqlite from './20260301_220000_ensure_markdown_columns_sqlite';
+import * as migration_20260301_220000_ensure_markdown_columns from './20260301_220000_ensure_markdown_columns_sqlite';
 import * as migration_20260305_000000_notebooks from './20260305_000000_notebooks';
 import * as migration_20260307_220000_runtime_collections from './20260307_220000_runtime_collections';
 import * as migration_20260310_000000_streaks_sources_links from './20260310_000000_streaks_sources_links';
@@ -23,8 +23,8 @@ export const migrations = [
     name: '20260301_200000_add_content_column_markdown_tables',
   },
   {
-    up: migration_20260301_220000_ensure_markdown_columns_sqlite.up,
-    down: migration_20260301_220000_ensure_markdown_columns_sqlite.down,
+    up: migration_20260301_220000_ensure_markdown_columns.up,
+    down: migration_20260301_220000_ensure_markdown_columns.down,
     name: '20260301_220000_ensure_markdown_columns_sqlite',
   },
   {
