@@ -49,3 +49,23 @@ export function formatReadTime(minutes: number | null | undefined): string {
   if (minutes == null || minutes < 1) return "";
   return `${minutes} min read`;
 }
+
+export function caseStudyAnchor(title: string): string {
+  if (title.toLowerCase().includes("case study")) return title;
+  return `${title} case study`;
+}
+
+export function formatActivityDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    const today = new Date();
+    const isToday =
+      d.getDate() === today.getDate() &&
+      d.getMonth() === today.getMonth() &&
+      d.getFullYear() === today.getFullYear();
+    if (isToday) return "Today";
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  } catch {
+    return iso;
+  }
+}

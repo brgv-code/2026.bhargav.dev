@@ -32,6 +32,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const projectsLastModified = maxDate(projects);
   const experienceLastModified = maxDate(work);
 
+  const writingLastModified = maxDate(posts);
+
   const staticRoutes = ["/", "/about", "/writing", "/projects", "/experience"].map(
     (route) => {
       if (route === "/about") {
@@ -43,7 +45,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (route === "/experience") {
         return { url: absoluteUrl(route), lastModified: experienceLastModified };
       }
-      return { url: absoluteUrl(route), lastModified: new Date() };
+      if (route === "/writing") {
+        return { url: absoluteUrl(route), lastModified: writingLastModified };
+      }
+      // "/" — use most recent content across all sections
+      return { url: absoluteUrl(route), lastModified: maxDate([...posts, ...projects, ...work]) };
     },
   );
 

@@ -3,6 +3,8 @@ import Image from "next/image";
 import * as production from "react/jsx-runtime";
 import * as development from "react/jsx-dev-runtime";
 import { unified } from "unified";
+import { clsx } from "clsx";
+import { resolveMediaSrc } from "@/lib/payload";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
@@ -26,20 +28,12 @@ type PreProps = React.HTMLAttributes<HTMLPreElement>;
 
 type CodeProps = React.HTMLAttributes<HTMLElement>;
 
-function classNames(...values: Array<string | undefined>) {
-  return values.filter(Boolean).join(" ");
-}
-
 function MarkdownImage({ src, alt }: ImgProps) {
   if (!src) return null;
-  const baseUrl = process.env.PAYLOAD_PUBLIC_SERVER_URL ?? "";
-  const resolvedSrc =
-    src.startsWith("http") || !baseUrl ? src : `${baseUrl}${src}`;
-
   return (
     <span className="my-8 block">
       <Image
-        src={resolvedSrc}
+        src={resolveMediaSrc(src)}
         alt={alt ?? ""}
         width={1600}
         height={900}
@@ -54,7 +48,7 @@ function MarkdownHeading({ className, ...props }: HeadingProps) {
   return (
     <h2
       {...props}
-      className={classNames(
+      className={clsx(
         "mt-10 text-2xl font-semibold text-primary",
         className
       )}
@@ -66,7 +60,7 @@ function MarkdownSubheading({ className, ...props }: HeadingProps) {
   return (
     <h3
       {...props}
-      className={classNames(
+      className={clsx(
         "mt-8 text-xl font-semibold text-primary",
         className
       )}
@@ -78,7 +72,7 @@ function MarkdownParagraph({ className, ...props }: TextProps) {
   return (
     <p
       {...props}
-      className={classNames("text-base leading-relaxed text-secondary", className)}
+      className={clsx("text-base leading-relaxed text-secondary", className)}
     />
   );
 }
@@ -87,7 +81,7 @@ function MarkdownList({ className, ...props }: ListProps) {
   return (
     <ul
       {...props}
-      className={classNames("list-disc pl-5 text-base text-secondary", className)}
+      className={clsx("list-disc pl-5 text-base text-secondary", className)}
     />
   );
 }
@@ -96,7 +90,7 @@ function MarkdownOrderedList({ className, ...props }: ListProps) {
   return (
     <ol
       {...props}
-      className={classNames("list-decimal pl-5 text-base text-secondary", className)}
+      className={clsx("list-decimal pl-5 text-base text-secondary", className)}
     />
   );
 }
@@ -105,7 +99,7 @@ function MarkdownLink({ className, ...props }: LinkProps) {
   return (
     <a
       {...props}
-      className={classNames("underline underline-offset-4", className)}
+      className={clsx("underline underline-offset-4", className)}
     />
   );
 }
@@ -114,7 +108,7 @@ function MarkdownPre({ className, ...props }: PreProps) {
   return (
     <pre
       {...props}
-      className={classNames(
+      className={clsx(
         "my-6 overflow-x-auto rounded-none bg-highlight p-4 text-sm",
         className
       )}
@@ -126,7 +120,7 @@ function MarkdownCode({ className, ...props }: CodeProps) {
   return (
     <code
       {...props}
-      className={classNames("font-mono", className)}
+      className={clsx("font-mono", className)}
     />
   );
 }

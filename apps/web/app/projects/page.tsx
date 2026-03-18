@@ -3,9 +3,11 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { fetchBlogListPosts, fetchProjectsFromPayload } from "@/lib/data/cms";
 import { renderMarkdown } from "@/lib/markdown";
+import { caseStudyAnchor } from "@/lib/format";
 import { BackButton } from "@/components/shared/back-button";
 import { absoluteUrl, siteName, siteUrl } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/jsonld";
+import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Projects",
@@ -43,12 +45,6 @@ function formatStatus(status?: string | null) {
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
-function caseStudyAnchor(title: string): string {
-  const normalized = title.toLowerCase();
-  if (normalized.includes("case study")) return title;
-  return `${title} case study`;
-}
-
 function toYearDate(value?: string | null): string | undefined {
   if (!value) return undefined;
   if (/^\d{4}$/.test(value)) return `${value}-01-01`;
@@ -61,7 +57,7 @@ export default async function ProjectsPage() {
     fetchBlogListPosts(3),
   ]);
 
-  if (!projects || projects.length === 0) return null;
+  if (projects.length === 0) return null;
 
   const entries = await Promise.all(
     projects.map(async (project) => {
@@ -134,33 +130,19 @@ export default async function ProjectsPage() {
       <div className="mx-auto w-full max-w-xl">
         <div className="grid grid-cols-3 items-center pt-24 mb-10">
           <span />
-          <h2 className="text-xs uppercase tracking-[0.35em] text-muted text-center">
+          <h1 className="text-xs uppercase tracking-[0.35em] text-muted text-center">
             Projects
-          </h2>
+          </h1>
           <div className="justify-self-end">
             <BackButton className="text-base font-medium text-muted hover:text-primary transition-colors" />
           </div>
         </div>
-        <JsonLd
+        <BreadcrumbsJsonLd
           id="projects-breadcrumbs"
-          data={{
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              {
-                "@type": "ListItem",
-                position: 1,
-                name: "Home",
-                item: absoluteUrl("/"),
-              },
-              {
-                "@type": "ListItem",
-                position: 2,
-                name: "Projects",
-                item: absoluteUrl("/projects"),
-              },
-            ],
-          }}
+          items={[
+            { name: "Home", href: absoluteUrl("/") },
+            { name: "Projects", href: absoluteUrl("/projects") },
+          ]}
         />
         <JsonLd id="projects-list" data={listJsonLd} />
         <div className="flex flex-col gap-12">
