@@ -13,6 +13,8 @@ import {
   fetchReadingNotesFromPayload,
   fetchRelatedPosts,
   fetchWorkExperience,
+  resolveMediaSrc,
+  resolveMediaUrl,
   tagNames,
 } from "@/lib/payload";
 
@@ -31,6 +33,8 @@ export {
   fetchReadingNotesFromPayload,
   fetchRelatedPosts,
   fetchWorkExperience,
+  resolveMediaSrc,
+  resolveMediaUrl,
   tagNames,
 };
 

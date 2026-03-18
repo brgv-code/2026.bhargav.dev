@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BackButton } from "@/components/shared/back-button";
 import { JsonLd } from "@/components/seo/jsonld";
+import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
 import { fetchProfile } from "@/lib/data/cms";
 import {
   absoluteUrl,
@@ -101,26 +102,12 @@ export default async function AboutPage() {
               mainEntity: { "@id": `${siteUrl}#person` },
             }}
           />
-          <JsonLd
+          <BreadcrumbsJsonLd
             id="about-breadcrumbs"
-            data={{
-              "@context": "https://schema.org",
-              "@type": "BreadcrumbList",
-              itemListElement: [
-                {
-                  "@type": "ListItem",
-                  position: 1,
-                  name: "Home",
-                  item: absoluteUrl("/"),
-                },
-                {
-                  "@type": "ListItem",
-                  position: 2,
-                  name: "About",
-                  item: absoluteUrl("/about"),
-                },
-              ],
-            }}
+            items={[
+              { name: "Home", href: absoluteUrl("/") },
+              { name: "About", href: absoluteUrl("/about") },
+            ]}
           />
           <JsonLd id="faq-about" data={faqJsonLd} />
 

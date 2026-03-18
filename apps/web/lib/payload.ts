@@ -1,3 +1,6 @@
+import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical";
+import { formatActivityDate } from "@/lib/format";
+
 type PayloadListResult<T> = {
   docs: T[];
 };
@@ -15,6 +18,8 @@ const TAGS = {
   profile: "profile",
   favorites: "favorites",
   reading: "reading",
+  streaks: "streaks",
+  notebooks: "notebooks",
 } as const;
 
 type PayloadFetchOptions = {
@@ -95,6 +100,20 @@ export type PayloadMedia = {
   width?: number;
   height?: number;
 };
+
+/** Resolves a raw media URL by prepending the CMS base URL when needed. */
+export function resolveMediaSrc(url: string): string {
+  const baseUrl = process.env.PAYLOAD_PUBLIC_SERVER_URL ?? "";
+  return url.startsWith("http") || !baseUrl ? url : `${baseUrl}${url}`;
+}
+
+/** Resolves a PayloadMedia object's URL, returning null if no valid media. */
+export function resolveMediaUrl(
+  media: PayloadMedia | number | null | undefined,
+): PayloadMedia | null {
+  if (!media || typeof media !== "object" || !media.url) return null;
+  return { ...media, url: resolveMediaSrc(media.url) };
+}
 
 export type PayloadTag = {
   id: number;
@@ -191,7 +210,7 @@ export type PayloadTocItem = {
 
 export type PayloadPost = PayloadPostSummary & {
   description?: string | null;
-  content?: unknown;
+  content?: SerializedEditorState | null;
   markdownInput?: string | null;
   contentHtml?: string | null;
   coverImage?: PayloadMedia | number | null;
@@ -265,9 +284,10 @@ export async function fetchRelatedPosts(
   }
   try {
     const url = new URL(`${cmsUrl}/api/posts`);
-    url.searchParams.set("limit", String(limit + 5));
+    url.searchParams.set("limit", String(limit));
     url.searchParams.set("sort", "-publishedAt");
     url.searchParams.set("where[status][equals]", "published");
+    url.searchParams.set("where[slug][not_equals]", excludeSlug);
     url.searchParams.set("depth", "0");
     const res = await fetch(
       url.toString(),
@@ -275,8 +295,7 @@ export async function fetchRelatedPosts(
     );
     if (!res.ok) return [];
     const data = (await res.json()) as PayloadListResult<PayloadPostSummary>;
-    const docs = data.docs ?? [];
-    return docs.filter((p) => p.slug !== excludeSlug).slice(0, limit);
+    return data.docs ?? [];
   } catch (e) {
     logCmsWarning("Related posts fetch error", e);
     return [];
@@ -518,9 +537,10 @@ export async function fetchReadingNotesFromPayload(
     url.searchParams.set("depth", "0");
     url.searchParams.set("where[book][equals]", String(bookId));
 
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 15 },
-    });
+    const res = await fetch(
+      url.toString(),
+      payloadFetchOptions({ tags: [TAGS.reading], revalidate: 15 }),
+    );
     if (!res.ok) {
       logCmsWarning(
         `Reading notes fetch failed: ${res.status} ${res.statusText}`,
@@ -565,9 +585,10 @@ export async function fetchHabitCompletionsFromPayload(
     url.searchParams.set("sort", "-date");
     url.searchParams.set("depth", "0");
 
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 15 },
-    });
+    const res = await fetch(
+      url.toString(),
+      payloadFetchOptions({ tags: [TAGS.streaks], revalidate: 15 }),
+    );
     if (!res.ok) {
       logCmsWarning(
         `Habit completions fetch failed: ${res.status} ${res.statusText}`,
@@ -623,9 +644,10 @@ export async function fetchActivityFromPayload(): Promise<PayloadActivityDay[]> 
     url.searchParams.set("sort", "-date");
     url.searchParams.set("depth", "0");
 
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(
+      url.toString(),
+      payloadFetchOptions({ tags: [TAGS.streaks], revalidate: 60 }),
+    );
     if (!res.ok) {
       logCmsWarning(
         `Streaks fetch failed: ${res.status} ${res.statusText}`,
@@ -647,23 +669,6 @@ export async function fetchActivityFromPayload(): Promise<PayloadActivityDay[]> 
   }
 }
 
-function formatActivityDate(iso: string): string {
-  try {
-    const d = new Date(iso);
-    const today = new Date();
-    const isToday =
-      d.getDate() === today.getDate() &&
-      d.getMonth() === today.getMonth() &&
-      d.getFullYear() === today.getFullYear();
-    if (isToday) return "Today";
-    return d.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return iso;
-  }
-}
 
 // ─── Notebooks (daily notes) ─────────────────────────────────────────────────
 
@@ -699,9 +704,10 @@ export async function fetchNotebooks(): Promise<PayloadNotebook[]> {
     url.searchParams.set("sort", "-date");
     url.searchParams.set("depth", "1");
 
-    const res = await fetch(url.toString(), {
-      next: { revalidate: 30 },
-    });
+    const res = await fetch(
+      url.toString(),
+      payloadFetchOptions({ tags: [TAGS.notebooks], revalidate: 30 }),
+    );
     if (!res.ok) {
       logCmsWarning(
         `Notebooks fetch failed: ${res.status} ${res.statusText}`,

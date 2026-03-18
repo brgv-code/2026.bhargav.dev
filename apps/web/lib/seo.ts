@@ -6,7 +6,7 @@ export const siteName = "Bhargav";
 export const defaultTitle = "Bhargav | Developer Portfolio";
 
 export const defaultDescription =
-  "Product focused developer turning coffee into code with Sutra and bringing ideas to life.";
+  "Product-focused developer building intentional interfaces and writing about code, design, and craft.";
 
 export function absoluteUrl(path = "/"): string {
   try {

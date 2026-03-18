@@ -5,6 +5,7 @@ import { WritingSection } from "@/components/sections/writing-section";
 import { BackButton } from "@/components/shared/back-button";
 import { absoluteUrl, siteName } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/jsonld";
+import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Writing",
@@ -72,33 +73,19 @@ export default async function WritingIndexPage() {
       <div className="mx-auto w-full max-w-xl">
         <div className="grid grid-cols-3 items-center pt-24 mb-10">
           <span />
-          <h2 className="text-xs uppercase tracking-[0.35em] text-muted text-center">
+          <h1 className="text-xs uppercase tracking-[0.35em] text-muted text-center">
             Writing
-          </h2>
+          </h1>
           <div className="justify-self-end">
             <BackButton className="text-base font-medium text-muted hover:text-primary transition-colors" />
           </div>
         </div>
-        <JsonLd
+        <BreadcrumbsJsonLd
           id="writing-breadcrumbs"
-          data={{
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              {
-                "@type": "ListItem",
-                position: 1,
-                name: "Home",
-                item: absoluteUrl("/"),
-              },
-              {
-                "@type": "ListItem",
-                position: 2,
-                name: "Writing",
-                item: absoluteUrl("/writing"),
-              },
-            ],
-          }}
+          items={[
+            { name: "Home", href: absoluteUrl("/") },
+            { name: "Writing", href: absoluteUrl("/writing") },
+          ]}
         />
         {listJsonLd ? <JsonLd id="writing-list" data={listJsonLd} /> : null}
         <WritingSection posts={posts} showTitle={false} />

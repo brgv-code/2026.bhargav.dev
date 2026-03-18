@@ -2,17 +2,16 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { SerializedEditorState } from "@payloadcms/richtext-lexical/lexical";
 import type { ReactNode } from "react";
 import {
   fetchPostBySlug,
   fetchProjectsFromPayload,
   fetchRelatedPosts,
   fetchPostSlugs,
+  resolveMediaUrl,
   tagNames,
-  type PayloadMedia,
 } from "@/lib/data/cms";
-import { formatPostDate, formatReadTime } from "@/lib/format";
+import { caseStudyAnchor, formatPostDate, formatReadTime } from "@/lib/format";
 import { renderMarkdown } from "@/lib/markdown";
 import {
   absoluteUrl,
@@ -47,33 +46,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const description = post.description ?? defaultDescription;
   const url = absoluteUrl(`/writing/${slug}`);
-  const cover =
-    post.coverImage && typeof post.coverImage === "object"
-      ? post.coverImage
-      : null;
-  const coverUrl =
-    cover?.url && cover.url.startsWith("http")
-      ? cover.url
-      : cover?.url
-        ? `${process.env.PAYLOAD_PUBLIC_SERVER_URL ?? ""}${cover.url}`
-        : null;
-  const ogImages = coverUrl
-    ? [
-        {
-          url: coverUrl,
-          width: cover?.width ?? 1200,
-          height: cover?.height ?? 630,
-          alt: post.title,
-        },
-      ]
-    : [
-        {
-          url: "/og-writing.svg",
-          width: 1200,
-          height: 630,
-          alt: "Writing",
-        },
-      ];
+  const cover = resolveMediaUrl(
+    post.coverImage && typeof post.coverImage === "object" ? post.coverImage : null,
+  );
+  const ogImages = cover?.url
+    ? [{ url: cover.url, width: cover.width ?? 1200, height: cover.height ?? 630, alt: post.title }]
+    : [{ url: "/og-writing.svg", width: 1200, height: 630, alt: "Writing" }];
 
   return {
     title: post.title,
@@ -98,26 +76,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-function caseStudyAnchor(title: string): string {
-  const normalized = title.toLowerCase();
-  if (normalized.includes("case study")) return title;
-  return `${title} case study`;
-}
-
-function resolveCoverImage(
-  media: PayloadMedia | number | null | undefined,
-): PayloadMedia | null {
-  if (!media || typeof media !== "object") return null;
-  if (!media.url) return null;
-  const baseUrl = process.env.PAYLOAD_PUBLIC_SERVER_URL ?? "";
-  const resolvedUrl =
-    media.url.startsWith("http") || !baseUrl ? media.url : `${baseUrl}${media.url}`;
-  return {
-    ...media,
-    url: resolvedUrl,
-  };
-}
-
 export default async function WritingPostPage({ params }: Props) {
   const { slug } = await params;
   const [post, relatedPosts, projects] = await Promise.all([
@@ -132,7 +90,7 @@ export default async function WritingPostPage({ params }: Props) {
     post.publishedAt ?? post.createdAt ?? post.updatedAt,
   );
   const readTime = formatReadTime(post.readingTime);
-  const cover = resolveCoverImage(post.coverImage);
+  const cover = resolveMediaUrl(post.coverImage);
   const postUrl = absoluteUrl(`/writing/${slug}`);
   const postDescription = post.description ?? defaultDescription;
   const blogId = `${absoluteUrl("/writing")}#blog`;
@@ -170,7 +128,7 @@ export default async function WritingPostPage({ params }: Props) {
   } else if (post.content) {
     body = (
       <RichText
-        data={post.content as SerializedEditorState | null | undefined}
+        data={post.content}
         className="flex flex-col gap-6"
       />
     );
