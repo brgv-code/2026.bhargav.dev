@@ -1,5 +1,6 @@
 import {
   fetchActivityFromPayload,
+  fetchAdjacentPosts,
   fetchBlogListPosts,
   fetchCurrentBookFromPayload,
   fetchFavoritesFromPayload,
@@ -20,6 +21,7 @@ import {
 
 export {
   fetchActivityFromPayload,
+  fetchAdjacentPosts,
   fetchBlogListPosts,
   fetchCurrentBookFromPayload,
   fetchFavoritesFromPayload,
