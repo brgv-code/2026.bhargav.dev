@@ -23,6 +23,8 @@ const config = {
         link: "var(--color-link)",
         "link-hover": "var(--color-link-hover)",
         highlight: "var(--color-highlight)",
+        "tag-bg": "var(--color-tag-bg)",
+        "tag-text": "var(--color-tag-text)",
 
         // Atelier Mono palette — raw hex values for direct use
         "atelier-cream": "#fcf9f8",

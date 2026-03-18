@@ -1,5 +1,5 @@
 import React from "react";
-import { Github, Twitter, Linkedin } from "lucide-react";
+import { Github, Twitter, Linkedin, Rss } from "lucide-react";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { TooltipProvider } from "@repo/ui";
@@ -87,7 +87,7 @@ export default async function RootLayout({
   const profile = await fetchProfile();
   const name = profile?.name ?? "Bhargav";
   const tagline =
-    profile?.tagline ?? "Product-focused developer building intentional interfaces.";
+    profile?.tagline ?? "Fullstack & AI Developer";
   const resumeUrl = process.env.NEXT_PUBLIC_RESUME_URL ?? "/resume.pdf";
   const githubUrl = profile?.github ?? process.env.NEXT_PUBLIC_GITHUB_URL;
   const twitterUrl = profile?.x ?? process.env.NEXT_PUBLIC_TWITTER_URL;
@@ -102,90 +102,123 @@ export default async function RootLayout({
         <ThemeProvider>
           <TooltipProvider delayDuration={80} skipDelayDuration={500}>
             <SoundProvider>
-              <div className="flex min-h-screen bg-background text-primary md:h-screen md:overflow-hidden">
-                <JsonLd
-                  id="structured-data"
-                  data={{
-                    "@context": "https://schema.org",
-                    "@graph": [
-                      {
-                        "@type": "Person",
-                        "@id": personId,
-                        name,
-                        description: tagline,
-                        url: absoluteUrl("/"),
-                        sameAs,
-                      },
-                      {
-                        "@type": "WebSite",
-                        "@id": websiteId,
-                        url: absoluteUrl("/"),
-                        name: siteName,
-                        publisher: { "@id": personId },
-                      },
-                    ],
-                  }}
-                />
+              <JsonLd
+                id="structured-data"
+                data={{
+                  "@context": "https://schema.org",
+                  "@graph": [
+                    {
+                      "@type": "Person",
+                      "@id": personId,
+                      name,
+                      description: tagline,
+                      url: absoluteUrl("/"),
+                      sameAs,
+                    },
+                    {
+                      "@type": "WebSite",
+                      "@id": websiteId,
+                      url: absoluteUrl("/"),
+                      name: siteName,
+                      publisher: { "@id": personId },
+                    },
+                  ],
+                }}
+              />
 
-                {/* Sidebar */}
-                <aside className="flex w-full shrink-0 flex-col px-8 py-10 md:sticky md:top-0 md:h-screen md:w-52">
-                  <div className="mb-10">
-                    <BioBlock name={name} tagline={tagline} />
-                  </div>
+              {/* Sidebar — fixed left panel */}
+              <aside
+                aria-label="Site navigation"
+                className="hidden md:flex fixed left-0 top-0 h-screen w-64 flex-col py-12 px-6 overflow-y-auto bg-background border-r border-border/30 z-50"
+              >
+                {/* Identity */}
+                <div className="mb-10">
+                  <BioBlock name={name} tagline={tagline} />
+                </div>
 
-                  <SidebarNav />
+                {/* Nav links */}
+                <SidebarNav />
 
-                  <div className="mt-auto flex flex-col gap-4">
+                {/* Footer */}
+                <div className="mt-auto pt-8 border-t border-border/40 space-y-4">
+                  <div className="flex items-center gap-4">
+                    <DarkModeToggle className="text-muted transition-colors hover:text-primary" />
+                    {githubUrl ? (
+                      <a
+                        href={githubUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="GitHub"
+                        className="text-muted transition-colors hover:text-primary"
+                      >
+                        <Github size={16} aria-hidden="true" />
+                      </a>
+                    ) : null}
+                    {twitterUrl ? (
+                      <a
+                        href={twitterUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="X / Twitter"
+                        className="text-muted transition-colors hover:text-primary"
+                      >
+                        <Twitter size={16} aria-hidden="true" />
+                      </a>
+                    ) : null}
+                    {linkedinUrl ? (
+                      <a
+                        href={linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="LinkedIn"
+                        className="text-muted transition-colors hover:text-primary"
+                      >
+                        <Linkedin size={16} aria-hidden="true" />
+                      </a>
+                    ) : null}
                     <a
-                      href={resumeUrl}
-                      className="block w-full bg-accent py-3 px-4 text-center text-[10px] font-medium tracking-[0.15em] uppercase text-accent-foreground transition-opacity hover:opacity-90"
+                      href="/rss.xml"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="RSS Feed"
+                      className="text-muted transition-colors hover:text-primary"
                     >
-                      Download CV
+                      <Rss size={16} aria-hidden="true" />
                     </a>
-                    <div className="flex items-center gap-3">
-                      <DarkModeToggle className="text-muted transition-colors hover:text-primary" />
-                      {githubUrl ? (
-                        <a
-                          href={githubUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label="GitHub"
-                          className="text-muted transition-colors hover:text-primary"
-                        >
-                          <Github size={16} aria-hidden="true" />
-                        </a>
-                      ) : null}
-                      {twitterUrl ? (
-                        <a
-                          href={twitterUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label="X / Twitter"
-                          className="text-muted transition-colors hover:text-primary"
-                        >
-                          <Twitter size={16} aria-hidden="true" />
-                        </a>
-                      ) : null}
-                      {linkedinUrl ? (
-                        <a
-                          href={linkedinUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label="LinkedIn"
-                          className="text-muted transition-colors hover:text-primary"
-                        >
-                          <Linkedin size={16} aria-hidden="true" />
-                        </a>
-                      ) : null}
-                    </div>
                   </div>
-                </aside>
+                  <p className="text-[10px] text-muted uppercase tracking-widest font-semibold">
+                    © {new Date().getFullYear()} bhargav.dev
+                  </p>
+                </div>
+              </aside>
 
-                {/* Main content */}
-                <main id="main-scroll" className="flex-1 md:h-screen md:overflow-y-auto scroll-smooth">
-                  {children}
-                </main>
-              </div>
+              {/* Top header bar — spans content area only */}
+              <header className="hidden md:flex fixed top-0 left-64 right-0 h-20 z-40 bg-background/80 backdrop-blur-md items-center justify-end px-12 border-b border-border/20">
+                <div className="flex items-center gap-6">
+                  <input
+                    type="search"
+                    placeholder="Search entries..."
+                    aria-label="Search entries"
+                    className="bg-surface border border-border/50 focus:outline-none focus:ring-1 focus:ring-accent text-sm px-4 py-1.5 w-48 transition-all duration-300 focus:w-64 text-primary placeholder:text-muted"
+                  />
+                  <a
+                    href={resumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted transition-colors hover:text-primary"
+                  >
+                    Download CV
+                  </a>
+                </div>
+              </header>
+
+              {/* Main content area */}
+              <main
+                id="main-scroll"
+                className="md:ml-64 min-h-screen scroll-smooth"
+              >
+                {children}
+              </main>
             </SoundProvider>
           </TooltipProvider>
         </ThemeProvider>

@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { fetchBlogListPosts } from "@/lib/data/cms";
 import { WritingSection } from "@/components/sections/writing-section";
-import { BackButton } from "@/components/shared/back-button";
 import { absoluteUrl, siteName } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/jsonld";
 import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
@@ -70,35 +69,30 @@ export default async function WritingIndexPage() {
       : null;
 
   return (
-    <div className="flex flex-col gap-16 pb-24">
-      <div className="mx-auto w-full max-w-xl">
-        <div className="grid grid-cols-3 items-center pt-24 mb-10">
-          <span />
-          <h1 className="text-xs uppercase tracking-[0.35em] text-muted text-center">
-            Writing
-          </h1>
-          <div className="justify-self-end">
-            <BackButton className="text-base font-medium text-muted hover:text-primary transition-colors" />
-          </div>
-        </div>
-        <BreadcrumbsJsonLd
-          id="writing-breadcrumbs"
-          items={[
-            { name: "Home", href: absoluteUrl("/") },
-            { name: "Writing", href: absoluteUrl("/writing") },
-          ]}
-        />
-        {listJsonLd ? <JsonLd id="writing-list" data={listJsonLd} /> : null}
-        <WritingSection posts={posts} showTitle={false} />
-        <div className="mt-16 flex flex-col gap-3">
-          <h2 className="text-xs uppercase tracking-[0.35em] text-muted">
-            Explore
-          </h2>
-          <div className="flex flex-col gap-2 text-base text-primary">
-            <Link href="/about">About</Link>
-            <Link href="/projects">Projects</Link>
-            <Link href="/experience">Experience</Link>
-          </div>
+    <div className="px-12 pt-28 pb-24 space-y-16">
+      <div className="flex items-baseline justify-between border-b border-border/15 pb-4">
+        <h1 className="font-serif text-3xl text-accent">Writing</h1>
+      </div>
+
+      <BreadcrumbsJsonLd
+        id="writing-breadcrumbs"
+        items={[
+          { name: "Home", href: absoluteUrl("/") },
+          { name: "Writing", href: absoluteUrl("/writing") },
+        ]}
+      />
+      {listJsonLd ? <JsonLd id="writing-list" data={listJsonLd} /> : null}
+
+      <WritingSection posts={posts} showHeader={false} />
+
+      <div className="pt-8 flex flex-col gap-3">
+        <h2 className="text-xs uppercase tracking-[0.35em] text-muted">
+          Explore
+        </h2>
+        <div className="flex flex-col gap-2 text-base text-primary">
+          <Link href="/about">About</Link>
+          <Link href="/projects">Projects</Link>
+          <Link href="/experience">Experience</Link>
         </div>
       </div>
     </div>
