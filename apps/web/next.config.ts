@@ -35,6 +35,7 @@ remotePatterns.push({
 const nextConfig: NextConfig = {
   images: {
     remotePatterns,
+    unoptimized: process.env.NODE_ENV === "development",
   },
   async redirects() {
     return [

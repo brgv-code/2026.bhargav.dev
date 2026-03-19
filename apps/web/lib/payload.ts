@@ -322,6 +322,59 @@ export type PayloadWorkExperience = {
   }[];
 };
 
+export async function fetchAdjacentPosts(
+  slug: string,
+  publishedAt: string | null | undefined,
+): Promise<{ prev: PayloadPostSummary | null; next: PayloadPostSummary | null }> {
+  if (!cmsUrl || !publishedAt) return { prev: null, next: null };
+
+  try {
+    const [prevRes, nextRes] = await Promise.all([
+      fetch(
+        (() => {
+          const u = new URL(`${cmsUrl}/api/posts`);
+          u.searchParams.set("limit", "1");
+          u.searchParams.set("sort", "-publishedAt");
+          u.searchParams.set("where[status][equals]", "published");
+          u.searchParams.set("where[slug][not_equals]", slug);
+          u.searchParams.set("where[publishedAt][less_than]", publishedAt);
+          u.searchParams.set("depth", "0");
+          return u.toString();
+        })(),
+        payloadFetchOptions({ tags: [TAGS.posts], revalidate: 60 }),
+      ),
+      fetch(
+        (() => {
+          const u = new URL(`${cmsUrl}/api/posts`);
+          u.searchParams.set("limit", "1");
+          u.searchParams.set("sort", "publishedAt");
+          u.searchParams.set("where[status][equals]", "published");
+          u.searchParams.set("where[slug][not_equals]", slug);
+          u.searchParams.set("where[publishedAt][greater_than]", publishedAt);
+          u.searchParams.set("depth", "0");
+          return u.toString();
+        })(),
+        payloadFetchOptions({ tags: [TAGS.posts], revalidate: 60 }),
+      ),
+    ]);
+
+    const prevData = prevRes.ok
+      ? ((await prevRes.json()) as PayloadListResult<PayloadPostSummary>)
+      : null;
+    const nextData = nextRes.ok
+      ? ((await nextRes.json()) as PayloadListResult<PayloadPostSummary>)
+      : null;
+
+    return {
+      prev: prevData?.docs?.[0] ?? null,
+      next: nextData?.docs?.[0] ?? null,
+    };
+  } catch (e) {
+    logCmsWarning("Adjacent posts fetch error", e);
+    return { prev: null, next: null };
+  }
+}
+
 export async function fetchWorkExperience(): Promise<PayloadWorkExperience[]> {
   if (!cmsUrl) {
     logCmsWarning(

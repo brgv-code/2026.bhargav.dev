@@ -43,6 +43,7 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-static";
+export const revalidate = 300;
 
 function parseDateRange(range?: string | null) {
   if (!range) return {};

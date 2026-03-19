@@ -2,35 +2,71 @@ import type { PayloadWorkExperience } from "@/lib/data/cms";
 
 type Props = {
   work: PayloadWorkExperience[];
+  resumeUrl?: string;
 };
 
-export function ExperienceSection({ work }: Props) {
+export function ExperienceSection({ work, resumeUrl = "/resume.pdf" }: Props) {
   if (!work || work.length === 0) return null;
 
   return (
-    <section id="experience" className="scroll-mt-24">
-      <div className="mx-auto w-full max-w-xl">
-        <h2 className="text-xs uppercase tracking-[0.35em] text-muted text-center mt-24 mb-10">
-          Experience
+    <section id="experience" aria-labelledby="experience-heading" className="scroll-mt-24 space-y-12">
+      {/* Section header */}
+      <div className="flex items-baseline justify-between border-b border-border/15 pb-4">
+        <h2
+          id="experience-heading"
+          className="font-serif text-3xl text-accent"
+        >
+          Career Trajectory
         </h2>
+        <a
+          href={resumeUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-primary uppercase tracking-widest hover:underline underline-offset-8"
+        >
+          Full Resume
+        </a>
+      </div>
+
+      {/* Timeline */}
+      <div
+        className="relative pl-8 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-px before:bg-border/40"
+      >
         <div className="flex flex-col gap-12">
-          {work.map((item) => (
+          {work.map((item, index) => (
             <article
               key={item.id}
-              className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto] md:gap-6 content-visibility-auto"
+              className="relative content-visibility-auto"
             >
-              <div className="flex flex-col gap-2">
+              {/* Timeline indicator */}
+              <div
+                className={`absolute -left-9 top-1.5 w-4 h-4 border-4 border-background ${
+                  index === 0 ? "bg-accent" : "bg-border"
+                }`}
+                aria-hidden="true"
+              />
+
+              <div className="space-y-2">
+                {item.date_range ? (
+                  <span className="text-xs font-bold uppercase tracking-widest text-muted/70">
+                    {item.date_range}
+                  </span>
+                ) : null}
+
                 {item.role ? (
-                  <h3 className="text-base font-semibold text-primary">
+                  <h3 className="font-serif text-xl text-primary">
                     {item.role}
+                    {item.company ? (
+                      <>
+                        <span className="text-secondary font-sans font-normal italic px-2">@</span>
+                        {item.company}
+                      </>
+                    ) : null}
                   </h3>
                 ) : null}
-                <div className="flex flex-col gap-1 text-sm text-muted">
-                  <span>{item.company}</span>
-                  {item.tech_stack ? <span>{item.tech_stack}</span> : null}
-                </div>
+
                 {item.bullets?.length ? (
-                  <ul className="list-none pl-0 flex flex-col gap-1 text-base text-secondary">
+                  <ul className="list-none pl-0 flex flex-col gap-1 text-secondary leading-relaxed max-w-2xl">
                     {item.bullets.map((bullet) => (
                       <li key={bullet.id}>
                         {bullet.href ? (
@@ -48,12 +84,16 @@ export function ExperienceSection({ work }: Props) {
                     ))}
                   </ul>
                 ) : null}
+
+                {item.tech_stack ? (
+                  <p className="text-xs font-semibold text-muted/70">
+                    {item.tech_stack
+                      .split(",")
+                      .map((t) => `#${t.trim()}`)
+                      .join("  ")}
+                  </p>
+                ) : null}
               </div>
-              {item.date_range ? (
-                <div className="text-sm text-muted md:text-right">
-                  {item.date_range}
-                </div>
-              ) : null}
             </article>
           ))}
         </div>

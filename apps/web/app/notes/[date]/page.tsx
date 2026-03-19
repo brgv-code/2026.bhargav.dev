@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import { Navbar } from "@/components/shared/navbar";
 import { DailyNotes } from "@/components/notes/daily-notes";
 
+export const dynamic = "force-static";
+export const dynamicParams = true;
+
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 function isValidDateString(date: string): boolean {

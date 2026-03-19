@@ -1,6 +1,6 @@
 import React from "react";
+import { Github, Twitter, Linkedin, Rss } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Analytics } from "@vercel/analytics/next";
 import { TooltipProvider } from "@repo/ui";
 import { SoundProvider } from "@/components/providers/sound-provider";
@@ -16,6 +16,8 @@ import {
   siteUrl,
 } from "@/lib/seo";
 import { BioBlock } from "@/components/aside/bio-block";
+import { SidebarNav } from "@/components/aside/sidebar-nav";
+import { DarkModeToggle } from "@/components/shared/dark-mode-toggle";
 import "./globals.css";
 
 const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
@@ -85,7 +87,7 @@ export default async function RootLayout({
   const profile = await fetchProfile();
   const name = profile?.name ?? "Bhargav";
   const tagline =
-    profile?.tagline ?? "Product-focused developer building intentional interfaces.";
+    profile?.tagline ?? "Fullstack & AI Developer";
   const resumeUrl = process.env.NEXT_PUBLIC_RESUME_URL ?? "/resume.pdf";
   const githubUrl = profile?.github ?? process.env.NEXT_PUBLIC_GITHUB_URL;
   const twitterUrl = profile?.x ?? process.env.NEXT_PUBLIC_TWITTER_URL;
@@ -100,96 +102,123 @@ export default async function RootLayout({
         <ThemeProvider>
           <TooltipProvider delayDuration={80} skipDelayDuration={500}>
             <SoundProvider>
-              <div className="min-h-screen bg-background text-primary">
-                <JsonLd
-                  id="structured-data"
-                  data={{
-                    "@context": "https://schema.org",
-                    "@graph": [
-                      {
-                        "@type": "Person",
-                        "@id": personId,
-                        name,
-                        description: tagline,
-                        url: absoluteUrl("/"),
-                        sameAs,
-                      },
-                      {
-                        "@type": "WebSite",
-                        "@id": websiteId,
-                        url: absoluteUrl("/"),
-                        name: siteName,
-                        publisher: { "@id": personId },
-                      },
-                    ],
-                  }}
-                />
-                <div className="mx-auto w-full max-w-6xl px-6 py-12 md:h-screen md:overflow-hidden md:px-10 md:py-16">
-                  <div className="grid grid-cols-1 gap-12 md:h-full md:grid-cols-12 md:gap-16">
-                    <aside className="md:col-span-4 md:h-full">
-                      <div className="flex flex-col gap-8 md:h-full md:overflow-hidden">
-                        <div className="flex flex-col gap-6 md:flex-1 md:justify-center">
-                          <BioBlock name={name} tagline={tagline} />
+              <JsonLd
+                id="structured-data"
+                data={{
+                  "@context": "https://schema.org",
+                  "@graph": [
+                    {
+                      "@type": "Person",
+                      "@id": personId,
+                      name,
+                      description: tagline,
+                      url: absoluteUrl("/"),
+                      sameAs,
+                    },
+                    {
+                      "@type": "WebSite",
+                      "@id": websiteId,
+                      url: absoluteUrl("/"),
+                      name: siteName,
+                      publisher: { "@id": personId },
+                    },
+                  ],
+                }}
+              />
 
-                          <nav aria-label="Primary" className="flex flex-col gap-3">
-                            <Link className="text-base text-primary" href="/">
-                              Home
-                            </Link>
-                            <Link className="text-base text-primary" href="/about">
-                              About
-                            </Link>
-                            <Link className="text-base text-primary" href="/writing">
-                              Writing
-                            </Link>
-                            <Link className="text-base text-primary" href="/projects">
-                              Projects
-                            </Link>
-                            <Link className="text-base text-primary" href="/experience">
-                              Experience
-                            </Link>
-                          </nav>
-                        </div>
-
-                        <div className="mt-auto flex flex-wrap items-center gap-4 text-base text-primary">
-                          {githubUrl ? (
-                            <a
-                              href={githubUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              GitHub
-                            </a>
-                          ) : null}
-                          {twitterUrl ? (
-                            <a
-                              href={twitterUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              X
-                            </a>
-                          ) : null}
-                          {linkedinUrl ? (
-                            <a
-                              href={linkedinUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              LinkedIn
-                            </a>
-                          ) : null}
-                          <a href="/rss.xml">RSS</a>
-                          <a href={resumeUrl}>Resume</a>
-                        </div>
-                      </div>
-                    </aside>
-
-                    <main className="md:col-span-8 md:h-full md:overflow-y-auto">
-                      {children}
-                    </main>
-                  </div>
+              {/* Sidebar — fixed left panel */}
+              <aside
+                aria-label="Site navigation"
+                className="hidden md:flex fixed left-0 top-0 h-screen w-64 flex-col py-12 px-6 overflow-y-auto bg-background border-r border-border/30 z-50"
+              >
+                {/* Identity */}
+                <div className="mb-10">
+                  <BioBlock name={name} tagline={tagline} />
                 </div>
-              </div>
+
+                {/* Nav links */}
+                <SidebarNav />
+
+                {/* Footer */}
+                <div className="mt-auto pt-8 border-t border-border/40 space-y-4">
+                  <div className="flex items-center gap-4">
+                    <DarkModeToggle className="text-muted transition-colors hover:text-primary" />
+                    {githubUrl ? (
+                      <a
+                        href={githubUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="GitHub"
+                        className="text-muted transition-colors hover:text-primary"
+                      >
+                        <Github size={16} aria-hidden="true" />
+                      </a>
+                    ) : null}
+                    {twitterUrl ? (
+                      <a
+                        href={twitterUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="X / Twitter"
+                        className="text-muted transition-colors hover:text-primary"
+                      >
+                        <Twitter size={16} aria-hidden="true" />
+                      </a>
+                    ) : null}
+                    {linkedinUrl ? (
+                      <a
+                        href={linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="LinkedIn"
+                        className="text-muted transition-colors hover:text-primary"
+                      >
+                        <Linkedin size={16} aria-hidden="true" />
+                      </a>
+                    ) : null}
+                    <a
+                      href="/rss.xml"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="RSS Feed"
+                      className="text-muted transition-colors hover:text-primary"
+                    >
+                      <Rss size={16} aria-hidden="true" />
+                    </a>
+                  </div>
+                  <p className="text-[10px] text-muted uppercase tracking-widest font-semibold">
+                    © {new Date().getFullYear()} bhargav.dev
+                  </p>
+                </div>
+              </aside>
+
+              {/* Top header bar — spans content area only */}
+              <header className="hidden md:flex fixed top-0 left-64 right-0 h-20 z-40 bg-background/80 backdrop-blur-md items-center justify-end px-12 border-b border-border/20">
+                <div className="flex items-center gap-6">
+                  <input
+                    type="search"
+                    placeholder="Search entries..."
+                    aria-label="Search entries"
+                    className="bg-surface border border-border/50 focus:outline-none focus:ring-1 focus:ring-accent text-sm px-4 py-1.5 w-48 transition-all duration-300 focus:w-64 text-primary placeholder:text-muted"
+                  />
+                  <a
+                    href={resumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted transition-colors hover:text-primary"
+                  >
+                    Download CV
+                  </a>
+                </div>
+              </header>
+
+              {/* Main content area */}
+              <main
+                id="main-scroll"
+                className="md:ml-64 min-h-screen scroll-smooth"
+              >
+                {children}
+              </main>
             </SoundProvider>
           </TooltipProvider>
         </ThemeProvider>
