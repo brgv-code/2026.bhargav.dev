@@ -21,7 +21,7 @@ export async function Hero() {
 
         <p className="text-[var(--editorial-text-muted)] text-[14px] leading-snug max-w-md mb-4">
           {profile?.tagline ??
-            "Product focused developer turning coffee into code and bringing ideas to life."}
+            "Product-focused developer building intentional interfaces and writing about code, design, and craft."}
         </p>
 
         <div className="flex flex-wrap items-center gap-3">

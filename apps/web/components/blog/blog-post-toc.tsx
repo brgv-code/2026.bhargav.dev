@@ -90,7 +90,7 @@ export function BlogPostTOC({ items }: Props) {
                 }`}
                 style={item.level > 2 ? { paddingLeft: `${12 + (item.level - 2) * 10}px` } : undefined}
               >
-                <span className="shrink-0 text-[10px] tabular-nums opacity-40">
+                <span className="shrink-0 text-[10px] tabular-nums font-bold text-accent/70">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 {item.text}

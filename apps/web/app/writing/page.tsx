@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { fetchBlogListPosts } from "@/lib/data/cms";
 import { WritingSection } from "@/components/sections/writing-section";
 import { absoluteUrl, siteName } from "@/lib/seo";
@@ -84,17 +83,6 @@ export default async function WritingIndexPage() {
       {listJsonLd ? <JsonLd id="writing-list" data={listJsonLd} /> : null}
 
       <WritingSection posts={posts} showHeader={false} />
-
-      <div className="pt-8 flex flex-col gap-3">
-        <h2 className="text-xs uppercase tracking-[0.35em] text-muted">
-          Explore
-        </h2>
-        <div className="flex flex-col gap-2 text-base text-primary">
-          <Link href="/about">About</Link>
-          <Link href="/projects">Projects</Link>
-          <Link href="/experience">Experience</Link>
-        </div>
-      </div>
     </div>
   );
 }

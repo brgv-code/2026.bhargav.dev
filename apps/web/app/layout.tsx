@@ -18,6 +18,7 @@ import {
 import { BioBlock } from "@/components/aside/bio-block";
 import { SidebarNav } from "@/components/aside/sidebar-nav";
 import { DarkModeToggle } from "@/components/shared/dark-mode-toggle";
+import { HeaderBackButton } from "@/components/shared/header-back-button";
 import "./globals.css";
 
 const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
@@ -25,7 +26,10 @@ const bingVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: defaultTitle,
+  title: {
+    default: defaultTitle,
+    template: "%s | Bhargav",
+  },
   description: defaultDescription,
   alternates: {
     canonical: "/",
@@ -139,8 +143,19 @@ export default async function RootLayout({
                 {/* Nav links */}
                 <SidebarNav />
 
-                {/* Footer */}
-                <div className="mt-auto pt-8 border-t border-border/40 space-y-4">
+                {/* Sidebar footer */}
+                <div className="mt-auto pt-6 border-t border-border/40 space-y-4">
+                  {/* CV — intentional, full-width button */}
+                  <a
+                    href={resumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full bg-accent py-2.5 px-4 text-center text-[10px] font-semibold tracking-[0.15em] uppercase text-accent-foreground transition-opacity hover:opacity-90"
+                  >
+                    Download CV
+                  </a>
+
+                  {/* Social icons + dark mode */}
                   <div className="flex items-center gap-4">
                     <DarkModeToggle className="text-muted transition-colors hover:text-primary" />
                     {githubUrl ? (
@@ -186,30 +201,18 @@ export default async function RootLayout({
                       <Rss size={16} aria-hidden="true" />
                     </a>
                   </div>
-                  <p className="text-[10px] text-muted uppercase tracking-widest font-semibold">
-                    © {new Date().getFullYear()} bhargav.dev
-                  </p>
                 </div>
               </aside>
 
               {/* Top header bar — spans content area only */}
-              <header className="hidden md:flex fixed top-0 left-64 right-0 h-20 z-40 bg-background/80 backdrop-blur-md items-center justify-end px-12 border-b border-border/20">
-                <div className="flex items-center gap-6">
-                  <input
-                    type="search"
-                    placeholder="Search entries..."
-                    aria-label="Search entries"
-                    className="bg-surface border border-border/50 focus:outline-none focus:ring-1 focus:ring-accent text-sm px-4 py-1.5 w-48 transition-all duration-300 focus:w-64 text-primary placeholder:text-muted"
-                  />
-                  <a
-                    href={resumeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted transition-colors hover:text-primary"
-                  >
-                    Download CV
-                  </a>
-                </div>
+              <header className="hidden md:flex fixed top-0 left-64 right-0 h-20 z-40 bg-background/80 backdrop-blur-md items-center justify-between px-12 border-b border-border/20">
+                <HeaderBackButton />
+                <input
+                  type="search"
+                  placeholder="Search entries..."
+                  aria-label="Search entries"
+                  className="bg-surface border border-border/50 focus:outline-none focus:ring-1 focus:ring-accent text-sm px-4 py-1.5 w-48 transition-all duration-300 focus:w-64 text-primary placeholder:text-muted"
+                />
               </header>
 
               {/* Main content area */}
