@@ -19,7 +19,6 @@ import { RichText } from "@/components/shared/rich-text";
 import { JsonLd } from "@/components/seo/jsonld";
 import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
 import { BlogPostTOC } from "@/components/blog/blog-post-toc";
-import { DarkModeToggle } from "@/components/shared/dark-mode-toggle";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export const dynamic = "force-static";
@@ -164,29 +163,6 @@ export default async function WritingPostPage({ params }: Props) {
         ]}
       />
 
-      {/* Sticky reading bar */}
-      <div className="sticky top-0 z-40 flex items-center justify-between gap-4 bg-background/90 backdrop-blur-sm px-6 md:px-12 h-14 border-b border-border/50">
-        <Link
-          href="/writing"
-          className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted hover:text-primary transition-colors"
-        >
-          <ArrowLeft size={14} aria-hidden="true" />
-          Writing
-        </Link>
-        <div className="flex items-center gap-4">
-          {/* TODO: Archive page */}
-          {/* <Link href="/writing/archive" className="hidden md:block text-xs uppercase tracking-widest text-muted hover:text-primary transition-colors">Archive</Link> */}
-          {/* TODO: Subscribe flow */}
-          {/* <button type="button" className="hidden md:block text-xs uppercase tracking-widest text-muted hover:text-primary transition-colors">Subscribe</button> */}
-          {(dateLabel || readTime) && (
-            <span className="hidden sm:block text-[10px] uppercase tracking-widest text-muted">
-              {[dateLabel, readTime].filter(Boolean).join(" · ")}
-            </span>
-          )}
-          <DarkModeToggle className="text-muted hover:text-primary transition-colors" />
-        </div>
-      </div>
-
       <article
         className="pb-24"
         itemScope
@@ -219,7 +195,7 @@ export default async function WritingPostPage({ params }: Props) {
 
           {post.description && (
             <p
-              className="font-serif italic text-xl text-secondary leading-relaxed"
+              className="font-sans text-base text-muted leading-relaxed mt-4"
               itemProp="description"
             >
               {post.description}
@@ -366,10 +342,21 @@ export default async function WritingPostPage({ params }: Props) {
                 <nav className="flex flex-col gap-3">
                   {relatedProjects.map((project) => {
                     const title = project.title ?? project.name;
-                    return (
+                    const isExternal = Boolean(project.url);
+                    return isExternal ? (
+                      <a
+                        key={project.id}
+                        href={project.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:text-accent transition-colors leading-snug"
+                      >
+                        {caseStudyAnchor(title)}
+                      </a>
+                    ) : (
                       <Link
                         key={project.id}
-                        href={`/projects#project-${project.id}`}
+                        href="/projects"
                         className="text-sm text-primary hover:text-accent transition-colors leading-snug"
                       >
                         {caseStudyAnchor(title)}

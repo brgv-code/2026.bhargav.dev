@@ -71,8 +71,7 @@ export function WritingSection({ posts, showHeader = true }: Props) {
                     className="text-sm font-semibold text-accent inline-flex items-center gap-1 group/link hover:gap-2 transition-all"
                     aria-label={`Read ${post.title}`}
                   >
-                    Read Entry
-                    <span aria-hidden="true">→</span>
+                    Read Entry →
                   </Link>
                 </div>
               </div>

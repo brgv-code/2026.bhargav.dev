@@ -8,7 +8,6 @@ import {
   resolveMediaUrl,
 } from "@/lib/data/cms";
 import { renderMarkdown } from "@/lib/markdown";
-import { BackButton } from "@/components/shared/back-button";
 import { absoluteUrl, siteName } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/jsonld";
 import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
@@ -106,14 +105,8 @@ export default async function ExperiencePage() {
   return (
     <section className="pb-24">
       <div className="mx-auto w-full max-w-xl">
-        <div className="grid grid-cols-3 items-center pt-24 mb-10">
-          <span />
-          <h1 className="text-xs uppercase tracking-[0.35em] text-muted text-center">
-            Experience
-          </h1>
-          <div className="justify-self-end">
-            <BackButton className="text-base font-medium text-muted hover:text-primary transition-colors" />
-          </div>
+        <div className="pt-24 mb-10">
+          <h1 className="font-serif text-3xl text-accent">Experience</h1>
         </div>
         <BreadcrumbsJsonLd
           id="experience-breadcrumbs"

@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/shared/navbar";
-import { Footer } from "@/components/shared/footer";
 import {
   PixelVideo,
   PixelArticle,
@@ -115,12 +113,8 @@ export default function FavoritesPage() {
 
   return (
     <>
-      <Navbar />
-      <div
-        data-theme="editorial"
-        className="min-h-screen bg-[var(--editorial-bg)] flex flex-col"
-      >
-        <main className="flex-1 max-w-4xl mx-auto w-full px-6 md:px-8 pt-28 pb-24">
+      <div className="min-h-screen flex flex-col">
+        <main className="flex-1 px-12 pt-28 pb-24">
           <header className="mb-14">
             <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--editorial-text-dim)] mb-4">
               curated
@@ -267,7 +261,6 @@ export default function FavoritesPage() {
             )}
           </section>
         </main>
-        <Footer />
       </div>
 
       <AddFavoriteModal

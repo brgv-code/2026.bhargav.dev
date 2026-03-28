@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { BackButton } from "@/components/shared/back-button";
 import { JsonLd } from "@/components/seo/jsonld";
 import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
 import { fetchProfile } from "@/lib/data/cms";
@@ -75,19 +73,13 @@ export default async function AboutPage() {
   };
 
   return (
-    <section className="pb-24">
-      <div className="mx-auto w-full max-w-xl">
-        <div className="grid grid-cols-3 items-center pt-24 mb-10">
-          <span />
-          <h2 className="text-xs uppercase tracking-[0.35em] text-muted text-center">
-            About
-          </h2>
-          <div className="justify-self-end">
-            <BackButton className="text-base font-medium text-muted hover:text-primary transition-colors" />
-          </div>
-        </div>
+    <section className="px-12 pt-28 pb-24">
+      <div className="flex items-baseline justify-between border-b border-border/15 pb-4 mb-12">
+        <h1 className="font-serif text-3xl text-accent">About</h1>
+      </div>
 
-        <div className="flex flex-col gap-12">
+      <div className="max-w-2xl flex flex-col gap-12">
+        <div>
           <JsonLd
             id="about-profile"
             data={{
@@ -112,20 +104,10 @@ export default async function AboutPage() {
           <JsonLd id="faq-about" data={faqJsonLd} />
 
           <div className="flex flex-col gap-3">
-            <h1 className="text-2xl font-semibold text-primary">{name}</h1>
+            <h2 className="text-2xl font-semibold text-primary">{name}</h2>
             <p className="text-base text-secondary leading-relaxed">
               {aboutText}
             </p>
-            <div className="mt-6 flex flex-col gap-3">
-              <h2 className="text-xs uppercase tracking-[0.35em] text-muted">
-                Explore
-              </h2>
-              <div className="flex flex-col gap-2 text-base text-primary">
-                <Link href="/writing">Writing</Link>
-                <Link href="/projects">Projects</Link>
-                <Link href="/experience">Experience</Link>
-              </div>
-            </div>
           </div>
         </div>
       </div>

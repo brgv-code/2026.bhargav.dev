@@ -240,6 +240,9 @@ export function Reading({
   };
 
   if (variant === "aside") {
+    // Hide entire section until a book is populated in CMS
+    if (!loading && !book) return null;
+
     return (
       <>
         <div className="border-t border-[var(--editorial-border)] pt-8">
@@ -248,25 +251,29 @@ export function Reading({
               {label}
             </span>
           </div>
-          <button
-            type="button"
-            onClick={handleBookClick}
-            className="group w-full text-left disabled:cursor-default"
-            disabled={!book}
-          >
-            <h4 className="font-serif text-2xl leading-tight mb-1 text-[var(--editorial-text)] group-hover:text-[var(--editorial-accent)] transition-colors">
-              {book?.title ?? (loading ? "Loading..." : "No current book")}
-            </h4>
-            <p className="text-[10px] font-mono uppercase text-[var(--editorial-text-dim)] mb-3">
-              {book?.author ?? "Add a reading book in CMS"}
-            </p>
-            <p className="text-xs font-serif italic text-[var(--editorial-text-muted)] leading-relaxed border-l-2 border-[var(--editorial-accent)] pl-3">
-              &quot;
-              {book?.latestThought ??
-                "Open the reading habit and log today’s page range and notes to see it here."}
-              &quot;
-            </p>
-          </button>
+          {loading ? (
+            <div className="h-16 animate-pulse bg-[var(--editorial-border)] rounded" />
+          ) : (
+            <button
+              type="button"
+              onClick={handleBookClick}
+              className="group w-full text-left"
+            >
+              <h4 className="font-serif text-2xl leading-tight mb-1 text-[var(--editorial-text)] group-hover:text-[var(--editorial-accent)] transition-colors">
+                {book!.title}
+              </h4>
+              {book!.author && (
+                <p className="text-[10px] font-mono uppercase text-[var(--editorial-text-dim)] mb-3">
+                  {book!.author}
+                </p>
+              )}
+              {book!.latestThought && (
+                <p className="text-xs font-serif italic text-[var(--editorial-text-muted)] leading-relaxed border-l-2 border-[var(--editorial-accent)] pl-3">
+                  &quot;{book!.latestThought}&quot;
+                </p>
+              )}
+            </button>
+          )}
         </div>
         <ReadingJournal
           isOpen={journalOpen}
