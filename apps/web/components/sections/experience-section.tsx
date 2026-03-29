@@ -131,27 +131,6 @@ export function ExperienceSection({
           ) : null}
         </article>
       ))}
-
-      {/* Status */}
-      <div className="px-5 py-4 border-b border-border">
-        <h3 className="text-2xs font-mono uppercase tracking-widest text-muted mb-3">
-          Status
-        </h3>
-        <div className="flex items-center gap-2 mb-1.5">
-          {/* Green availability dot */}
-          <div
-            className="w-1.5 h-1.5 rounded-full bg-success flex-shrink-0"
-            aria-hidden="true"
-          />
-          <span className="text-sm font-semibold text-primary">
-            Available for work
-          </span>
-        </div>
-        <p className="text-xs text-secondary leading-relaxed">
-          Open to full-time product engineering roles and interesting consulting
-          projects.
-        </p>
-      </div>
     </section>
   );
 }

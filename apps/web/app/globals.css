@@ -496,3 +496,22 @@
   border-top: var(--border-width) var(--border-style) var(--color-border);
   margin: var(--space-14) 0;
 }
+
+/* /experience entries: description + markdown match role/company stack (not blog scale) */
+.experience-entry-prose.article-prose p {
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text);
+  margin-bottom: var(--space-3);
+}
+.experience-entry-prose.article-prose p:last-child {
+  margin-bottom: 0;
+}
+.experience-entry-prose.article-prose h2,
+.experience-entry-prose.article-prose h3 {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-2);
+}
