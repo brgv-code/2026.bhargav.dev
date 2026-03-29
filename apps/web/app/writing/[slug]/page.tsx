@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import {
-  fetchAdjacentPosts,
+  fetchBlogListPosts,
   fetchPostBySlug,
   fetchProjectsFromPayload,
   fetchRelatedPosts,
@@ -18,7 +18,9 @@ import { absoluteUrl, defaultDescription, siteName, siteUrl } from "@/lib/seo";
 import { RichText } from "@/components/shared/rich-text";
 import { JsonLd } from "@/components/seo/jsonld";
 import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
-import { BlogPostTOC } from "@/components/blog/blog-post-toc";
+import { BlogPostMainColumn } from "@/components/blog/blog-post-main-column";
+import { BlogPostTocRail } from "@/components/blog/blog-post-toc-rail";
+import { WritingPostHeaderBar } from "@/components/blog/writing-post-header-bar";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export const dynamic = "force-static";
@@ -43,10 +45,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = post.description ?? defaultDescription;
   const url = absoluteUrl(`/writing/${slug}`);
   const cover = resolveMediaUrl(
-    post.coverImage && typeof post.coverImage === "object" ? post.coverImage : null,
+    post.coverImage && typeof post.coverImage === "object"
+      ? post.coverImage
+      : null
   );
   const ogImages = cover?.url
-    ? [{ url: cover.url, width: cover.width ?? 1200, height: cover.height ?? 630, alt: post.title }]
+    ? [
+        {
+          url: cover.url,
+          width: cover.width ?? 1200,
+          height: cover.height ?? 630,
+          alt: post.title,
+        },
+      ]
     : [{ url: "/og-writing.svg", width: 1200, height: 630, alt: "Writing" }];
 
   return {
@@ -75,17 +86,35 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function WritingPostPage({ params }: Props) {
   const { slug } = await params;
-  const [post, relatedPosts, projects] = await Promise.all([
+  const [post, relatedPosts, projects, allPosts] = await Promise.all([
     fetchPostBySlug(slug),
     fetchRelatedPosts(slug, 3),
     fetchProjectsFromPayload(),
+    fetchBlogListPosts(500),
   ]);
 
   if (!post) notFound();
 
-  const adjacent = await fetchAdjacentPosts(slug, post.publishedAt);
+  const postIndex = allPosts.findIndex((p) => p.slug === slug);
+  const adjacent = {
+    prev:
+      postIndex >= 0 && postIndex < allPosts.length - 1
+        ? allPosts[postIndex + 1]
+        : null,
+    next: postIndex > 0 ? allPosts[postIndex - 1] : null,
+  };
+  const newerSlug = adjacent.next?.slug ?? null;
+  const olderSlug = adjacent.prev?.slug ?? null;
+  const positionInFeed =
+    postIndex >= 0 && allPosts.length > 0 ? postIndex + 1 : null;
+  const searchPosts = allPosts.map((p) => ({
+    slug: p.slug,
+    title: p.title,
+  }));
 
-  const dateLabel = formatPostDate(post.publishedAt ?? post.createdAt ?? post.updatedAt);
+  const dateLabel = formatPostDate(
+    post.publishedAt ?? post.createdAt ?? post.updatedAt
+  );
   const readTime = formatReadTime(post.readingTime);
   const cover = resolveMediaUrl(post.coverImage);
   const postUrl = absoluteUrl(`/writing/${slug}`);
@@ -93,6 +122,7 @@ export default async function WritingPostPage({ params }: Props) {
   const blogId = `${absoluteUrl("/writing")}#blog`;
   const tags = tagNames(post.tags);
   const primaryTag = tags[0];
+  const articleShellClass = "w-full px-article-inline";
 
   const postTagSet = new Set(tags.map((t) => t.toLowerCase()));
   const scoredProjects = projects.map((project) => {
@@ -104,9 +134,12 @@ export default async function WritingPostPage({ params }: Props) {
     return { project, score };
   });
   const hasMatch = scoredProjects.some((e) => e.score > 0);
-  const relatedProjects = (hasMatch
-    ? scoredProjects.filter((e) => e.score > 0).sort((a, b) => b.score - a.score)
-    : scoredProjects
+  const relatedProjects = (
+    hasMatch
+      ? scoredProjects
+          .filter((e) => e.score > 0)
+          .sort((a, b) => b.score - a.score)
+      : scoredProjects
   )
     .slice(0, 3)
     .map((e) => e.project);
@@ -163,95 +196,190 @@ export default async function WritingPostPage({ params }: Props) {
         ]}
       />
 
+      <WritingPostHeaderBar
+        siteLabel={siteName}
+        articleTitle={post.title}
+        position={positionInFeed}
+        total={allPosts.length}
+        newerSlug={newerSlug}
+        olderSlug={olderSlug}
+        searchPosts={searchPosts}
+      />
       <article
         className="pb-24"
         itemScope
         itemType="https://schema.org/BlogPosting"
       >
         <meta itemProp="url" content={postUrl} />
-        {post.publishedAt && <meta itemProp="datePublished" content={post.publishedAt} />}
-        {post.updatedAt && <meta itemProp="dateModified" content={post.updatedAt} />}
-
-        {/* Article header */}
-        <header className="px-6 md:px-12 pt-12 pb-10 w-full md:w-3/4">
-          <div className="flex flex-wrap items-center gap-3 mb-6 text-[10px] uppercase tracking-[0.2em] text-muted">
-            {dateLabel && <time dateTime={post.publishedAt ?? post.createdAt ?? ""}>{dateLabel}</time>}
-            {dateLabel && readTime && <span aria-hidden="true" className="w-1 h-1 rounded-full bg-border" />}
-            {readTime && <span>{readTime}</span>}
-            {primaryTag && (
-              <>
-                <span aria-hidden="true" className="w-1 h-1 rounded-full bg-border" />
-                <span itemProp="keywords">{primaryTag}</span>
-              </>
-            )}
-          </div>
-
-          <h1
-            className="font-serif text-4xl md:text-6xl font-bold leading-[1.1] tracking-tight text-primary mb-6"
-            itemProp="headline"
-          >
-            {post.title}
-          </h1>
-
-          {post.description && (
-            <p
-              className="font-sans text-base text-muted leading-relaxed mt-4"
-              itemProp="description"
-            >
-              {post.description}
-            </p>
-          )}
-        </header>
-
-        {/* Hero image */}
-        {cover?.url && (
-          <div className="mb-16 px-6 md:px-12">
-            <figure className="aspect-video overflow-hidden bg-surface">
-              <Image
-                src={cover.url}
-                alt={cover.alt ?? post.title}
-                width={cover.width ?? 1600}
-                height={cover.height ?? 900}
-                sizes="(max-width: 768px) 100vw, calc(100vw - 208px)"
-                className="h-full w-full object-cover"
-                priority
-                itemProp="image"
-              />
-            </figure>
-          </div>
+        {post.publishedAt && (
+          <meta itemProp="datePublished" content={post.publishedAt} />
+        )}
+        {post.updatedAt && (
+          <meta itemProp="dateModified" content={post.updatedAt} />
         )}
 
-        {/* Content area: TOC + body */}
-        <div className="px-6 md:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 relative">
-
-            {/* Sticky TOC */}
-            {post.tocItems?.length ? (
-              <aside
-                className="hidden lg:block lg:col-span-3"
-                aria-label="Table of contents"
-              >
-                <div className="sticky top-20">
-                  <BlogPostTOC items={post.tocItems} />
-                </div>
-              </aside>
-            ) : null}
-
-            {/* Article body */}
+        {post.tocItems?.length ? (
+          <div className="grid gap-x-px gap-y-0 bg-background lg:grid-cols-home-main lg:grid-rows-[auto_minmax(0,1fr)]">
             <div
-              className={`${post.tocItems?.length ? "lg:col-span-9" : "lg:col-span-12 max-w-3xl"} article-prose`}
-              itemProp="articleBody"
+              className={`bg-surface pt-4 lg:col-start-1 lg:row-start-1 ${articleShellClass}`}
             >
-              {body ?? (
-                <p className="text-base text-muted">Content coming soon.</p>
-              )}
+              <div className="flex flex-wrap items-center gap-3 mb-6 text-[10px] uppercase tracking-[0.2em] text-muted">
+                {dateLabel && (
+                  <time dateTime={post.publishedAt ?? post.createdAt ?? ""}>
+                    {dateLabel}
+                  </time>
+                )}
+                {dateLabel && readTime && (
+                  <span
+                    aria-hidden="true"
+                    className="w-1 h-1 rounded-full bg-border"
+                  />
+                )}
+                {readTime && <span>{readTime}</span>}
+                {primaryTag && (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="w-1 h-1 rounded-full bg-border"
+                    />
+                    <span itemProp="keywords">{primaryTag}</span>
+                  </>
+                )}
+              </div>
             </div>
+            <div
+              className="hidden bg-surface lg:col-start-2 lg:row-start-1 lg:block"
+              aria-hidden
+            />
+
+            <BlogPostMainColumn className="lg:col-start-1 lg:row-start-2 min-h-0">
+              <header className={`${articleShellClass} pb-10`}>
+                <h1
+                  className="font-serif text-4xl md:text-6xl font-bold leading-[1.1] tracking-tight text-primary mb-6"
+                  itemProp="headline"
+                >
+                  {post.title}
+                </h1>
+
+                {post.description && (
+                  <p
+                    className="font-sans text-base text-muted leading-relaxed mt-4"
+                    itemProp="description"
+                  >
+                    {post.description}
+                  </p>
+                )}
+              </header>
+
+              {cover?.url && (
+                <div className={`${articleShellClass} mb-16`}>
+                  <figure className="aspect-video overflow-hidden bg-surface">
+                    <Image
+                      src={cover.url}
+                      alt={cover.alt ?? post.title}
+                      width={cover.width ?? 1600}
+                      height={cover.height ?? 900}
+                      sizes="(max-width: 768px) 100vw, calc(100vw - 208px)"
+                      className="h-full w-full object-cover"
+                      priority
+                      itemProp="image"
+                    />
+                  </figure>
+                </div>
+              )}
+
+              <div className={articleShellClass}>
+                <div className="article-prose" itemProp="articleBody">
+                  {body ?? (
+                    <p className="text-base text-muted">
+                      Content coming soon.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </BlogPostMainColumn>
+
+            <BlogPostTocRail
+              className="lg:col-start-2 lg:row-start-2"
+              items={post.tocItems}
+            />
           </div>
-        </div>
+        ) : (
+          <>
+            <header className={`${articleShellClass} pt-4 pb-10`}>
+              <div className="flex flex-wrap items-center gap-3 mb-6 text-[10px] uppercase tracking-[0.2em] text-muted">
+                {dateLabel && (
+                  <time dateTime={post.publishedAt ?? post.createdAt ?? ""}>
+                    {dateLabel}
+                  </time>
+                )}
+                {dateLabel && readTime && (
+                  <span
+                    aria-hidden="true"
+                    className="w-1 h-1 rounded-full bg-border"
+                  />
+                )}
+                {readTime && <span>{readTime}</span>}
+                {primaryTag && (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="w-1 h-1 rounded-full bg-border"
+                    />
+                    <span itemProp="keywords">{primaryTag}</span>
+                  </>
+                )}
+              </div>
+
+              <h1
+                className="font-serif text-4xl md:text-6xl font-bold leading-[1.1] tracking-tight text-primary mb-6"
+                itemProp="headline"
+              >
+                {post.title}
+              </h1>
+
+              {post.description && (
+                <p
+                  className="font-sans text-base text-muted leading-relaxed mt-4"
+                  itemProp="description"
+                >
+                  {post.description}
+                </p>
+              )}
+            </header>
+
+            {cover?.url && (
+              <div className={`${articleShellClass} mb-16`}>
+                <figure className="aspect-video overflow-hidden bg-surface">
+                  <Image
+                    src={cover.url}
+                    alt={cover.alt ?? post.title}
+                    width={cover.width ?? 1600}
+                    height={cover.height ?? 900}
+                    sizes="(max-width: 768px) 100vw, calc(100vw - 208px)"
+                    className="h-full w-full object-cover"
+                    priority
+                    itemProp="image"
+                  />
+                </figure>
+              </div>
+            )}
+
+            <div className={articleShellClass}>
+              <div className="article-prose" itemProp="articleBody">
+                {body ?? (
+                  <p className="text-base text-muted">Content coming soon.</p>
+                )}
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Article footer */}
-        <footer className="px-6 md:px-12 mt-20 border-t border-border/40" aria-label="Article navigation">
-
+        <footer
+          className={`${articleShellClass} mt-20 border-t border-border/40`}
+          aria-label="Article navigation"
+        >
           {/* Continue Reading */}
           {(adjacent.prev || adjacent.next) && (
             <div className="mt-12 mb-4 relative bg-surface px-10 pt-10 pb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-8">

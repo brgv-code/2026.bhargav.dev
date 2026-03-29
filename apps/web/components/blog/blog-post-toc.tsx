@@ -7,7 +7,8 @@ type Props = {
   items: PayloadTocItem[] | null | undefined;
 };
 
-const STICKY_BAR_HEIGHT = 56; // h-14
+/** Offset for in-container scroll (matches --writing-post-header-offset / --header-height) */
+const STICKY_BAR_HEIGHT = 56;
 const ROOT_MARGIN = "-15% 0px -75% 0px";
 
 export function BlogPostTOC({ items }: Props) {

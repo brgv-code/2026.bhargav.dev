@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Github, Twitter, Linkedin, PenLine } from "lucide-react";
+import { Search } from "lucide-react";
 import {
   fetchBlogListPosts,
   fetchProjectsFromPayload,
   fetchWorkExperience,
-  fetchProfile,
 } from "@/lib/data/cms";
 import { WritingSection } from "@/components/sections/writing-section";
 import { ProjectsSection } from "@/components/sections/projects-section";
@@ -52,16 +50,12 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const [posts, projects, work, profile] = await Promise.all([
+  const [posts, projects, work] = await Promise.all([
     fetchBlogListPosts(10),
     fetchProjectsFromPayload(),
     fetchWorkExperience(),
-    fetchProfile(),
   ]);
 
-  const githubUrl = profile?.github ?? process.env.NEXT_PUBLIC_GITHUB_URL;
-  const twitterUrl = profile?.x ?? process.env.NEXT_PUBLIC_TWITTER_URL;
-  const linkedinUrl = profile?.linkedin ?? process.env.NEXT_PUBLIC_LINKEDIN_URL;
   const resumeUrl = process.env.NEXT_PUBLIC_RESUME_URL ?? "/resume.pdf";
 
   return (
@@ -80,73 +74,49 @@ export default async function Home() {
         }}
       />
 
-      {/* Page content */}
-      <div className="px-12 pt-28 pb-24 space-y-24">
-        <WritingSection posts={posts} />
-        <ProjectsSection projects={projects} />
-        <ExperienceSection work={work} resumeUrl={resumeUrl} />
-
-        {/* Page footer — quote + social pill */}
-        <footer className="pt-16 border-t border-border/10 flex flex-col items-center gap-8">
-          <div className="text-center space-y-2 max-w-2xl">
-            <p className="font-serif italic text-xl text-secondary">
-              &ldquo;Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away.&rdquo;
-            </p>
-            <p className="text-xs uppercase tracking-widest text-muted/60">
-              — Antoine de Saint-Exupéry
+      <div className="flex min-h-full flex-col">
+        <div className="border-b border-border flex items-center justify-between px-8 py-5 gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-primary leading-tight">
+              Selected Work
+            </h1>
+            <p className="text-sm text-secondary mt-0.5">
+              Writing, projects, and things I&apos;ve built.
             </p>
           </div>
 
-          <nav
-            aria-label="Social links"
-            className="bg-surface px-8 py-4 flex items-center gap-8 shadow-sm"
-          >
-            {githubUrl ? (
-              <a
-                href={githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="GitHub"
-                className="text-secondary hover:text-primary transition-colors"
-              >
-                <Github size={18} aria-hidden="true" />
-              </a>
-            ) : null}
-            {twitterUrl ? (
-              <a
-                href={twitterUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="X / Twitter"
-                className="text-secondary hover:text-primary transition-colors"
-              >
-                <Twitter size={18} aria-hidden="true" />
-              </a>
-            ) : null}
-            {linkedinUrl ? (
-              <a
-                href={linkedinUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="LinkedIn"
-                className="text-secondary hover:text-primary transition-colors"
-              >
-                <Linkedin size={18} aria-hidden="true" />
-              </a>
-            ) : null}
-          </nav>
-        </footer>
-      </div>
+          <label className="relative flex items-center shrink-0">
+            <span className="sr-only">Search entries</span>
+            <Search
+              size={13}
+              className="absolute left-3 text-muted"
+              aria-hidden="true"
+            />
+            <input
+              type="search"
+              placeholder="Search..."
+              aria-label="Search entries"
+              className="bg-background border border-border text-sm pl-8 pr-4 py-1.5 w-search focus:w-search-focus focus:outline-none focus:border-border-focus transition-all duration-slow text-primary placeholder:text-muted"
+            />
+          </label>
+        </div>
 
-      {/* Floating action button */}
-      <div className="fixed bottom-8 right-8 z-50">
-        <Link
-          href="/writing/new"
-          aria-label="Write new entry"
-          className="w-14 h-14 bg-accent text-accent-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-all"
-        >
-          <PenLine size={20} aria-hidden="true" />
-        </Link>
+        <div className="flex-1 grid grid-cols-1 xl:grid-cols-home-main min-h-0">
+          <div className="xl:border-r xl:border-border min-w-0">
+            <WritingSection posts={posts} />
+          </div>
+          <div className="hidden xl:block min-h-0">
+            <ExperienceSection
+              work={work}
+              resumeUrl={resumeUrl}
+              variant="panel"
+            />
+          </div>
+        </div>
+
+        <div className="border-t border-border mt-auto">
+          <ProjectsSection projects={projects} />
+        </div>
       </div>
     </>
   );

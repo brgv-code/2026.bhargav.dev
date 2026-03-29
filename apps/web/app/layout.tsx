@@ -18,7 +18,7 @@ import {
 import { BioBlock } from "@/components/aside/bio-block";
 import { SidebarNav } from "@/components/aside/sidebar-nav";
 import { DarkModeToggle } from "@/components/shared/dark-mode-toggle";
-import { HeaderBackButton } from "@/components/shared/header-back-button";
+import { MainCardShell } from "@/components/layout/main-card-shell";
 import "./globals.css";
 
 const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
@@ -90,8 +90,7 @@ export default async function RootLayout({
 }>) {
   const profile = await fetchProfile();
   const name = profile?.name ?? "Bhargav";
-  const tagline =
-    profile?.tagline ?? "Fullstack & AI Developer";
+  const tagline = profile?.tagline ?? "Fullstack & AI Developer";
   const resumeUrl = process.env.NEXT_PUBLIC_RESUME_URL ?? "/resume.pdf";
   const githubUrl = profile?.github ?? process.env.NEXT_PUBLIC_GITHUB_URL;
   const twitterUrl = profile?.x ?? process.env.NEXT_PUBLIC_TWITTER_URL;
@@ -102,7 +101,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className="font-sans antialiased">
+      <body className="overflow-hidden font-sans antialiased bg-background text-primary">
         <ThemeProvider>
           <TooltipProvider delayDuration={80} skipDelayDuration={500}>
             <SoundProvider>
@@ -130,13 +129,13 @@ export default async function RootLayout({
                 }}
               />
 
-              {/* Sidebar — fixed left panel */}
+              {/* Sidebar — fixed left panel, transparent on the page background */}
               <aside
                 aria-label="Site navigation"
-                className="hidden md:flex fixed left-0 top-0 h-screen w-64 flex-col py-12 px-6 overflow-y-auto bg-background border-r border-border/30 z-50"
+                className="hidden md:flex fixed left-0 top-0 h-screen w-sidebar flex-col py-10 px-4 overflow-y-auto z-sticky border-r border-border"
               >
                 {/* Identity */}
-                <div className="mb-10">
+                <div className="mb-8">
                   <BioBlock name={name} tagline={tagline} />
                 </div>
 
@@ -144,18 +143,18 @@ export default async function RootLayout({
                 <SidebarNav />
 
                 {/* Sidebar footer */}
-                <div className="mt-auto pt-6 border-t border-border/40 space-y-4">
-                  {/* CV — intentional, full-width button */}
+                <div className="mt-auto pt-5 border-t border-border-subtle space-y-4">
+                  {/* CV download button */}
                   <a
                     href={resumeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block w-full bg-accent py-2.5 px-4 text-center text-[10px] font-semibold tracking-[0.15em] uppercase text-accent-foreground transition-opacity hover:opacity-90"
+                    className="block w-full bg-accent text-accent-foreground py-2.5 px-4 text-center text-2xs font-semibold tracking-ultra uppercase transition-opacity hover:opacity-90"
                   >
                     Download CV
                   </a>
 
-                  {/* Social icons + dark mode */}
+                  {/* Social icons + dark mode toggle */}
                   <div className="flex items-center gap-4">
                     <DarkModeToggle className="text-muted transition-colors hover:text-primary" />
                     {githubUrl ? (
@@ -166,7 +165,7 @@ export default async function RootLayout({
                         aria-label="GitHub"
                         className="text-muted transition-colors hover:text-primary"
                       >
-                        <Github size={16} aria-hidden="true" />
+                        <Github size={15} aria-hidden="true" />
                       </a>
                     ) : null}
                     {twitterUrl ? (
@@ -177,7 +176,7 @@ export default async function RootLayout({
                         aria-label="X / Twitter"
                         className="text-muted transition-colors hover:text-primary"
                       >
-                        <Twitter size={16} aria-hidden="true" />
+                        <Twitter size={15} aria-hidden="true" />
                       </a>
                     ) : null}
                     {linkedinUrl ? (
@@ -188,7 +187,7 @@ export default async function RootLayout({
                         aria-label="LinkedIn"
                         className="text-muted transition-colors hover:text-primary"
                       >
-                        <Linkedin size={16} aria-hidden="true" />
+                        <Linkedin size={15} aria-hidden="true" />
                       </a>
                     ) : null}
                     <a
@@ -198,29 +197,15 @@ export default async function RootLayout({
                       aria-label="RSS Feed"
                       className="text-muted transition-colors hover:text-primary"
                     >
-                      <Rss size={16} aria-hidden="true" />
+                      <Rss size={15} aria-hidden="true" />
                     </a>
                   </div>
                 </div>
               </aside>
 
-              {/* Top header bar — spans content area only */}
-              <header className="hidden md:flex fixed top-0 left-64 right-0 h-20 z-40 bg-background/80 backdrop-blur-md items-center justify-between px-12 border-b border-border/20">
-                <HeaderBackButton />
-                <input
-                  type="search"
-                  placeholder="Search entries..."
-                  aria-label="Search entries"
-                  className="bg-surface border border-border/50 focus:outline-none focus:ring-1 focus:ring-accent text-sm px-4 py-1.5 w-48 transition-all duration-300 focus:w-64 text-primary placeholder:text-muted"
-                />
-              </header>
-
-              {/* Main content area */}
-              <main
-                id="main-scroll"
-                className="md:ml-64 min-h-screen scroll-smooth"
-              >
-                {children}
+              {/* Main: fixed viewport height; scroll lives inside MainCardShell */}
+              <main className="flex h-screen min-h-0 flex-col overflow-hidden md:ml-sidebar">
+                <MainCardShell>{children}</MainCardShell>
               </main>
             </SoundProvider>
           </TooltipProvider>

@@ -4,78 +4,70 @@ import { formatPostDate, formatReadTime } from "@/lib/format";
 
 type Props = {
   posts: PayloadPostListItem[];
-  showHeader?: boolean;
 };
 
-export function WritingSection({ posts, showHeader = true }: Props) {
+export function WritingSection({ posts }: Props) {
   if (!posts || posts.length === 0) return null;
 
   return (
-    <section id="writing" aria-labelledby="writing-heading" className="scroll-mt-24 space-y-12">
+    <section aria-labelledby="writing-heading">
       {/* Section header */}
-      {showHeader ? <div className="flex items-baseline justify-between border-b border-border/15 pb-4">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
         <h2
           id="writing-heading"
-          className="font-serif text-3xl text-accent"
+          className="text-2xs font-mono uppercase tracking-widest text-muted"
         >
-          Selected Writing
+          Writing
         </h2>
         <Link
           href="/writing"
-          className="text-sm text-primary uppercase tracking-widest hover:underline underline-offset-8"
+          className="text-2xs text-muted hover:text-primary transition-colors duration-normal"
         >
-          All Articles
+          View all →
         </Link>
-      </div> : null}
+      </div>
 
-      {/* Articles */}
-      <div className="flex flex-col gap-16">
+      {/* Article list */}
+      <div>
         {posts.map((post) => {
           const dateLabel = formatPostDate(
-            post.publishedAt ?? post.createdAt ?? post.updatedAt,
+            post.publishedAt ?? post.createdAt ?? post.updatedAt
           );
           const readTime = formatReadTime(post.readingTime);
 
           return (
-            <article
+            <Link
               key={post.id}
-              className="group editorial-grid content-visibility-auto"
+              href={`/writing/${post.slug}`}
+              className="group flex flex-col gap-1 px-6 py-4 border-b border-border hover:bg-interactive-hover transition-colors duration-normal"
             >
-              {/* Date column */}
-              <div className="text-sm text-muted pt-1">
-                <time
-                  dateTime={post.publishedAt ?? post.createdAt ?? post.updatedAt}
-                >
-                  {dateLabel}
-                </time>
-                {readTime ? (
-                  <p className="mt-1 text-xs text-muted/70">{readTime}</p>
-                ) : null}
-              </div>
-
-              {/* Content column */}
-              <div className="space-y-4">
-                <h3 className="font-serif text-2xl leading-tight group-hover:text-accent transition-colors">
-                  <Link href={`/writing/${post.slug}`} className="text-primary hover:text-accent">
-                    {post.title}
-                  </Link>
+              <div className="flex items-baseline justify-between gap-4">
+                <h3 className="text-sm font-semibold text-primary group-hover:text-accent transition-colors duration-normal leading-snug">
+                  {post.title}
                 </h3>
-                {post.description ? (
-                  <p className="text-secondary leading-relaxed">
-                    {post.description}
-                  </p>
-                ) : null}
-                <div className="pt-2">
-                  <Link
-                    href={`/writing/${post.slug}`}
-                    className="text-sm font-semibold text-accent inline-flex items-center gap-1 group/link hover:gap-2 transition-all"
-                    aria-label={`Read ${post.title}`}
-                  >
-                    Read Entry →
-                  </Link>
+                <div className="flex items-center gap-3 shrink-0 text-muted">
+                  {dateLabel ? (
+                    <time
+                      dateTime={
+                        post.publishedAt ?? post.createdAt ?? post.updatedAt
+                      }
+                      className="text-xs"
+                    >
+                      {dateLabel}
+                    </time>
+                  ) : null}
+                  {readTime ? (
+                    <span className="text-xs">{readTime}</span>
+                  ) : null}
+                  <span className="text-xs">→</span>
                 </div>
               </div>
-            </article>
+              {post.description ? (
+                <p className="text-xs text-secondary leading-relaxed">
+                  {post.description}
+                </p>
+              ) : null}
+            </Link>
           );
         })}
       </div>

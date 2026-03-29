@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ExternalLink, Code2 } from "lucide-react";
 import type { PayloadProject } from "@/lib/data/cms";
 
@@ -9,20 +10,25 @@ export function ProjectsSection({ projects }: Props) {
   if (!projects || projects.length === 0) return null;
 
   return (
-    <section id="projects" aria-labelledby="projects-heading" className="scroll-mt-24 space-y-12">
+    <section aria-labelledby="projects-heading">
       {/* Section header */}
-      <div className="flex items-baseline justify-between border-b border-border/15 pb-4">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
         <h2
           id="projects-heading"
-          className="font-serif text-3xl text-accent"
+          className="text-2xs font-mono uppercase tracking-widest text-muted"
         >
-          Technical Work
+          Projects
         </h2>
-        <span className="text-sm text-muted italic">Selected Open Source</span>
+        <Link
+          href="/projects"
+          className="text-2xs text-muted hover:text-primary transition-colors duration-normal"
+        >
+          View all →
+        </Link>
       </div>
 
       {/* Card grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-background p-px">
         {projects.map((project) => {
           const techLabels = Array.isArray(project.tech)
             ? project.tech
@@ -33,14 +39,14 @@ export function ProjectsSection({ projects }: Props) {
           return (
             <article
               key={project.id}
-              className="bg-surface p-8 space-y-6 transition-colors hover:bg-highlight content-visibility-auto"
+              className="bg-surface p-5 flex flex-col gap-4"
             >
-              {/* Card header */}
-              <div className="flex justify-between items-start">
-                <div className="w-12 h-12 bg-accent flex items-center justify-center">
+              {/* Card header row */}
+              <div className="flex items-start justify-between">
+                <div className="w-8 h-8 bg-accent-subtle flex items-center justify-center">
                   <Code2
-                    size={20}
-                    className="text-accent-foreground"
+                    size={14}
+                    className="text-accent"
                     aria-hidden="true"
                   />
                 </div>
@@ -50,30 +56,30 @@ export function ProjectsSection({ projects }: Props) {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Open ${project.title ?? project.name} in new tab`}
-                    className="text-muted hover:text-primary transition-colors"
+                    className="text-muted hover:text-primary transition-colors duration-normal"
                   >
-                    <ExternalLink size={16} aria-hidden="true" />
+                    <ExternalLink size={12} aria-hidden="true" />
                   </a>
                 ) : null}
               </div>
 
               {/* Card body */}
-              <div className="space-y-3">
-                <h3 className="font-serif text-xl text-primary">
+              <div className="flex flex-col gap-1.5 flex-1">
+                <h3 className="text-sm font-semibold text-primary leading-snug">
                   {project.title ?? project.name}
                 </h3>
-                <p className="text-sm text-secondary leading-relaxed">
+                <p className="text-xs text-secondary leading-relaxed">
                   {project.description}
                 </p>
               </div>
 
               {/* Tech tags */}
               {techLabels.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1">
                   {techLabels.map((label) => (
                     <span
                       key={label}
-                      className="px-2 py-1 text-[10px] uppercase font-bold tracking-tight bg-tag-bg text-tag-text"
+                      className="px-1.5 py-0.5 text-2xs font-semibold bg-tag-bg text-tag-text"
                     >
                       {label}
                     </span>
