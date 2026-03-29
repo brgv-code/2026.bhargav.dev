@@ -1,16 +1,12 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import type { ReactNode } from "react";
-import Link from "next/link";
-import {
-  fetchProjectsFromPayload,
-  fetchWorkExperience,
-  resolveMediaUrl,
-} from "@/lib/data/cms";
+import { fetchProjectsFromPayload, fetchWorkExperience } from "@/lib/data/cms";
 import { renderMarkdown } from "@/lib/markdown";
+import { cn } from "@/lib/utils";
 import { absoluteUrl, siteName } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/jsonld";
 import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
+import { SidebarLinkPanel } from "@/components/sections/sidebar-link-panel";
 
 export const metadata: Metadata = {
   title: "Experience",
@@ -55,13 +51,19 @@ function parseDateRange(range?: string | null) {
   };
 }
 
+function parseTechStack(raw?: string | null): string[] {
+  if (!raw?.trim()) return [];
+  return raw
+    .split(/[,;|]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 export default async function ExperiencePage() {
   const [work, projects] = await Promise.all([
     fetchWorkExperience(),
     fetchProjectsFromPayload(),
   ]);
-
-  if (work.length === 0) return null;
 
   const entries = await Promise.all(
     work.map(async (item) => {
@@ -72,129 +74,172 @@ export default async function ExperiencePage() {
       } else if (item.contentHtml) {
         detail = (
           <div
-            className="flex flex-col gap-4 text-base text-secondary leading-relaxed"
+            className="article-prose"
             dangerouslySetInnerHTML={{ __html: item.contentHtml }}
           />
         );
       }
 
-      return { item, detail, logo: resolveMediaUrl(item.logo) };
+      return { item, detail };
     }),
   );
 
-  const listJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    itemListElement: work.map((item, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      item: {
-        "@type": "OrganizationRole",
-        name: `${item.role ?? "Role"} at ${item.company ?? "Company"}`,
-        roleName: item.role ?? undefined,
-        memberOf: {
-          "@type": "Organization",
-          name: item.company ?? "Company",
-        },
-        description: item.date_range ?? undefined,
-        ...parseDateRange(item.date_range),
-      },
-    })),
-  };
+  const listJsonLd =
+    work.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          itemListElement: work.map((item, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            item: {
+              "@type": "OrganizationRole",
+              name: `${item.role ?? "Role"} at ${item.company ?? "Company"}`,
+              roleName: item.role ?? undefined,
+              memberOf: {
+                "@type": "Organization",
+                name: item.company ?? "Company",
+              },
+              description: item.date_range ?? undefined,
+              ...parseDateRange(item.date_range),
+            },
+          })),
+        }
+      : null;
 
   return (
-    <section className="pb-24">
-      <div className="mx-auto w-full max-w-xl">
-        <div className="pt-24 mb-10">
-          <h1 className="font-serif text-3xl text-accent">Experience</h1>
-        </div>
-        <BreadcrumbsJsonLd
-          id="experience-breadcrumbs"
-          items={[
-            { name: "Home", href: absoluteUrl("/") },
-            { name: "Experience", href: absoluteUrl("/experience") },
-          ]}
-        />
-        <JsonLd id="experience-list" data={listJsonLd} />
-        <div className="flex flex-col gap-12">
-          {entries.map(({ item, detail, logo }) => (
-            <article
-              key={item.id}
-              id={`experience-${item.id}`}
-              className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto] md:gap-6 content-visibility-auto"
-            >
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-col gap-2">
-                  {logo ? (
-                    <Image
-                      src={logo.url ?? ""}
-                      alt={logo.alt ?? item.company}
-                      width={logo.width ?? 48}
-                      height={logo.height ?? 48}
-                      className="h-12 w-12 object-cover"
-                    />
-                  ) : null}
-                  {item.role ? (
-                    <h3 className="text-base font-semibold text-primary">
-                      {item.role}
-                    </h3>
-                  ) : null}
-                  <div className="flex flex-col gap-1 text-sm text-muted">
-                    <span>{item.company}</span>
-                    {item.tech_stack ? <span>{item.tech_stack}</span> : null}
-                  </div>
-                </div>
-                {item.bullets?.length ? (
-                  <ul className="list-none pl-0 flex flex-col gap-1 text-base text-secondary">
-                    {item.bullets.map((bullet) => (
-                      <li key={bullet.id}>
-                        {bullet.href ? (
-                          <a
-                            href={bullet.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {bullet.label}
-                          </a>
-                        ) : (
-                          bullet.label
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-                {detail ? <div className="flex flex-col gap-4">{detail}</div> : null}
+    <>
+      <div className="border-b border-border px-8 py-6">
+        <h1 className="text-2xl font-bold text-primary">Experience</h1>
+        <p className="text-sm text-secondary mt-0.5">
+          Roles, responsibilities, and work highlights.
+        </p>
+      </div>
+
+      <BreadcrumbsJsonLd
+        id="experience-breadcrumbs"
+        items={[
+          { name: "Home", href: absoluteUrl("/") },
+          { name: "Experience", href: absoluteUrl("/experience") },
+        ]}
+      />
+      {listJsonLd ? <JsonLd id="experience-list" data={listJsonLd} /> : null}
+
+      <div
+        className={cn(
+          "grid min-h-0",
+          projects.length > 0
+            ? "grid-cols-1 xl:grid-cols-home-main"
+            : "grid-cols-1",
+        )}
+      >
+        <div
+          className={cn(
+            "min-w-0",
+            projects.length > 0 && "xl:border-r xl:border-border",
+          )}
+        >
+          <section aria-label="Work history" className="pb-24">
+            {work.length === 0 ? (
+              <p className="border-b border-border px-6 py-10 text-sm text-secondary">
+                No experience entries yet. Check back soon.
+              </p>
+            ) : (
+              <div>
+                {entries.map(({ item, detail }) => {
+                  const tech = parseTechStack(item.tech_stack);
+
+                  return (
+                    <article
+                      key={item.id}
+                      id={`experience-${item.id}`}
+                      className="border-b border-border px-6 py-6 content-visibility-auto"
+                    >
+                      <div className="flex max-w-3xl flex-col gap-4">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-baseline justify-between gap-4">
+                            {item.role ? (
+                              <h3 className="min-w-0 text-base font-semibold leading-snug text-primary">
+                                {item.role}
+                              </h3>
+                            ) : (
+                              <span className="min-w-0 text-base font-semibold leading-snug text-primary">
+                                {item.company ?? "—"}
+                              </span>
+                            )}
+                            {item.date_range ? (
+                              <span className="shrink-0 text-xs tabular-nums text-muted">
+                                {item.date_range}
+                              </span>
+                            ) : null}
+                          </div>
+                          {item.role && item.company ? (
+                            <p className="text-sm text-muted">{item.company}</p>
+                          ) : null}
+                        </div>
+
+                        {(item.bullets?.length || detail) ? (
+                          <div className="flex flex-col gap-3 text-sm leading-relaxed text-primary">
+                            {item.bullets?.length
+                              ? item.bullets.map((bullet) => (
+                                  <p key={bullet.id} className="m-0">
+                                    {bullet.href ? (
+                                      <a
+                                        href={bullet.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-primary hover:text-accent transition-colors duration-normal"
+                                      >
+                                        {bullet.label}
+                                      </a>
+                                    ) : (
+                                      bullet.label
+                                    )}
+                                  </p>
+                                ))
+                              : null}
+                            {detail ? (
+                              <div className="experience-entry-prose article-prose">
+                                {detail}
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
+
+                        {tech.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {tech.map((label) => (
+                              <span
+                                key={label}
+                                className="rounded border border-border bg-tag-bg px-2 py-0.5 text-2xs font-medium text-tag-text"
+                              >
+                                {label}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
-              {item.date_range ? (
-                <div className="text-sm text-muted md:text-right">
-                  {item.date_range}
-                </div>
-              ) : null}
-            </article>
-          ))}
+            )}
+          </section>
         </div>
-        {projects.length ? (
-          <div className="mt-16 flex flex-col gap-3">
-            <h2 className="text-xs uppercase tracking-[0.35em] text-muted">
-              Selected projects
-            </h2>
-            <div className="flex flex-col gap-2 text-base text-primary">
-              {projects.slice(0, 3).map((project) => {
-                const title = project.title ?? project.name;
-                return (
-                  <Link
-                    key={project.id}
-                    href={`/projects#project-${project.id}`}
-                  >
-                    {title}
-                  </Link>
-                );
-              })}
-              <Link href="/projects">View all projects</Link>
-            </div>
-          </div>
+
+        {projects.length > 0 ? (
+          <SidebarLinkPanel
+            id="experience-related-projects-heading"
+            title="Selected projects"
+            viewAllHref="/projects"
+            items={projects.slice(0, 5).map((project) => ({
+              key: project.id,
+              href: `/projects#project-${project.id}`,
+              label: project.title ?? project.name,
+            }))}
+          />
         ) : null}
       </div>
-    </section>
+    </>
   );
 }

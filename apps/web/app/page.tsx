@@ -105,7 +105,7 @@ export default async function Home() {
           <div className="xl:border-r xl:border-border min-w-0">
             <WritingSection posts={posts} />
           </div>
-          <div className="hidden xl:block min-h-0">
+          <div className="hidden min-h-0 xl:block">
             <ExperienceSection
               work={work}
               resumeUrl={resumeUrl}
