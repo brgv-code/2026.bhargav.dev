@@ -47,15 +47,15 @@ function NavLink({
   return (
     <Link
       href={href}
-      className={`flex items-center gap-3 py-1.5 text-sm transition-colors ${
+      className={`flex items-center gap-2.5 px-3 py-1.5 text-sm rounded-sm transition-colors ${
         isActive
-          ? "border-l-2 border-accent pl-4 text-accent font-semibold"
+          ? "bg-interactive-active text-primary font-medium"
           : secondary
-            ? "pl-4 text-muted/60 hover:text-muted"
-            : "pl-4 text-muted hover:text-accent"
+            ? "text-disabled hover:text-muted hover:bg-interactive-hover"
+            : "text-muted hover:text-primary hover:bg-interactive-hover"
       }`}
     >
-      <Icon size={secondary ? 14 : 16} aria-hidden="true" />
+      <Icon size={secondary ? 13 : 15} aria-hidden="true" />
       <span className={secondary ? "text-xs" : ""}>{label}</span>
     </Link>
   );
@@ -63,13 +63,15 @@ function NavLink({
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const hasActiveSecondary = secondaryLinks.some(({ href }) =>
-    pathname === href || pathname.startsWith(href + "/")
+  const hasActiveSecondary = secondaryLinks.some(
+    ({ href }) => pathname === href || pathname.startsWith(href + "/")
   );
   const [open, setOpen] = useState(hasActiveSecondary);
 
   const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
+    href === "/"
+      ? pathname === "/"
+      : pathname === href || pathname.startsWith(href + "/");
 
   return (
     <nav aria-label="Primary" className="flex flex-col">
@@ -87,14 +89,14 @@ export function SidebarNav() {
       </div>
 
       {/* More toggle */}
-      <div className="mt-4">
+      <div className="mt-3">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="flex items-center gap-3 pl-4 py-1.5 text-xs text-muted/50 hover:text-muted transition-colors w-full group"
+          className="flex items-center gap-2.5 px-3 py-1.5 text-xs text-disabled hover:text-muted transition-colors w-full rounded-sm hover:bg-interactive-hover"
         >
-          <MoreHorizontal size={14} aria-hidden="true" />
+          <MoreHorizontal size={13} aria-hidden="true" />
           <span className="uppercase tracking-widest">
             {open ? "Less" : "More"}
           </span>
@@ -102,11 +104,11 @@ export function SidebarNav() {
 
         {/* Secondary links — slide down when open */}
         <div
-          className={`overflow-hidden transition-all duration-200 ${
+          className={`overflow-hidden transition-all duration-normal ${
             open ? "max-h-48 opacity-100 mt-1" : "max-h-0 opacity-0"
           }`}
         >
-          <div className="flex flex-col gap-0.5 pt-1 border-t border-border/20">
+          <div className="flex flex-col gap-0.5 pt-1 border-t border-border-subtle">
             {secondaryLinks.map(({ href, label, icon }) => (
               <NavLink
                 key={href}

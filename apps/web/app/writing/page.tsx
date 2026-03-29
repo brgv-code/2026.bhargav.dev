@@ -53,7 +53,8 @@ export default async function WritingIndexPage() {
               name: post.title,
               url: absoluteUrl(`/writing/${post.slug}`),
               datePublished: post.publishedAt ?? post.createdAt,
-              dateModified: post.updatedAt ?? post.publishedAt ?? post.createdAt,
+              dateModified:
+                post.updatedAt ?? post.publishedAt ?? post.createdAt,
               description: post.description ?? undefined,
               inLanguage: "en",
               isPartOf: {
@@ -68,9 +69,13 @@ export default async function WritingIndexPage() {
       : null;
 
   return (
-    <div className="px-12 pt-28 pb-24 space-y-16">
-      <div className="flex items-baseline justify-between border-b border-border/15 pb-4">
-        <h1 className="font-serif text-3xl text-accent">Writing</h1>
+    <>
+      {/* Page header */}
+      <div className="border-b border-border px-8 py-6">
+        <h1 className="text-2xl font-bold text-primary">Writing</h1>
+        <p className="text-sm text-secondary mt-0.5">
+          All published essays and technical notes.
+        </p>
       </div>
 
       <BreadcrumbsJsonLd
@@ -82,7 +87,7 @@ export default async function WritingIndexPage() {
       />
       {listJsonLd ? <JsonLd id="writing-list" data={listJsonLd} /> : null}
 
-      <WritingSection posts={posts} showHeader={false} />
-    </div>
+      <WritingSection posts={posts} />
+    </>
   );
 }

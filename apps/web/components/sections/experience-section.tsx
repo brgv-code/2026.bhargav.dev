@@ -1,102 +1,156 @@
+import Link from "next/link";
 import type { PayloadWorkExperience } from "@/lib/data/cms";
 
 type Props = {
   work: PayloadWorkExperience[];
   resumeUrl?: string;
+  /** Show as compact sidebar panel (home page) vs full-width list (experience page) */
+  variant?: "panel" | "full";
 };
 
-export function ExperienceSection({ work, resumeUrl = "/resume.pdf" }: Props) {
+export function ExperienceSection({
+  work,
+  resumeUrl = "/resume.pdf",
+  variant = "panel",
+}: Props) {
   if (!work || work.length === 0) return null;
 
-  return (
-    <section id="experience" aria-labelledby="experience-heading" className="scroll-mt-24 space-y-12">
-      {/* Section header */}
-      <div className="flex items-baseline justify-between border-b border-border/15 pb-4">
-        <h2
-          id="experience-heading"
-          className="font-serif text-3xl text-accent"
-        >
-          Career Trajectory
-        </h2>
-        <a
-          href={resumeUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-primary uppercase tracking-widest hover:underline underline-offset-8"
-        >
-          Full Resume
-        </a>
-      </div>
-
-      {/* Timeline */}
-      <div
-        className="relative pl-8 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-px before:bg-border/40"
+  if (variant === "full") {
+    return (
+      <section
+        id="experience"
+        aria-labelledby="experience-heading"
+        className="scroll-mt-8"
       >
-        <div className="flex flex-col gap-12">
-          {work.map((item, index) => (
-            <article
-              key={item.id}
-              className="relative content-visibility-auto"
-            >
-              {/* Timeline indicator */}
-              <div
-                className={`absolute -left-9 top-1.5 w-4 h-4 border-4 border-background ${
-                  index === 0 ? "bg-accent" : "bg-border"
-                }`}
-                aria-hidden="true"
-              />
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <h2
+            id="experience-heading"
+            className="text-2xs font-mono uppercase tracking-widest text-muted"
+          >
+            Experience
+          </h2>
+          <a
+            href={resumeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-2xs text-muted hover:text-primary transition-colors duration-normal"
+          >
+            Full Resume →
+          </a>
+        </div>
 
-              <div className="space-y-2">
+        <div className="flex flex-col">
+          {work.map((item) => (
+            <article key={item.id} className="px-6 py-5 border-b border-border">
+              <div className="flex items-baseline justify-between gap-4 mb-1">
+                <h3 className="text-sm font-semibold text-primary">
+                  {item.role}
+                </h3>
                 {item.date_range ? (
-                  <span className="text-xs font-bold uppercase tracking-widest text-muted/70">
+                  <span className="text-xs text-muted shrink-0">
                     {item.date_range}
                   </span>
                 ) : null}
-
-                {item.role ? (
-                  <h3 className="font-serif text-xl text-primary">
-                    {item.role}
-                    {item.company ? (
-                      <>
-                        <span className="text-secondary font-sans font-normal italic px-2">@</span>
-                        {item.company}
-                      </>
-                    ) : null}
-                  </h3>
-                ) : null}
-
-                {item.bullets?.length ? (
-                  <ul className="list-none pl-0 flex flex-col gap-1 text-secondary leading-relaxed max-w-2xl">
-                    {item.bullets.map((bullet) => (
-                      <li key={bullet.id}>
-                        {bullet.href ? (
-                          <a
-                            href={bullet.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {bullet.label}
-                          </a>
-                        ) : (
-                          bullet.label
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-
-                {item.tech_stack ? (
-                  <p className="text-xs font-semibold text-muted/70">
-                    {item.tech_stack
-                      .split(",")
-                      .map((t) => `#${t.trim()}`)
-                      .join("  ")}
-                  </p>
-                ) : null}
               </div>
+              {item.company ? (
+                <p className="text-xs font-medium text-accent mb-2">
+                  {item.company}
+                </p>
+              ) : null}
+              {item.bullets?.length ? (
+                <ul className="flex flex-col gap-1">
+                  {item.bullets.map((bullet) => (
+                    <li
+                      key={bullet.id}
+                      className="text-xs text-secondary leading-relaxed"
+                    >
+                      {bullet.href ? (
+                        <a
+                          href={bullet.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-primary transition-colors"
+                        >
+                          {bullet.label}
+                        </a>
+                      ) : (
+                        bullet.label
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </article>
           ))}
         </div>
+      </section>
+    );
+  }
+
+  /* Panel variant — compact sidebar style for home page */
+  return (
+    <section aria-labelledby="experience-panel-heading">
+      {/* Experience header */}
+      <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+        <h2
+          id="experience-panel-heading"
+          className="text-2xs font-mono uppercase tracking-widest text-muted"
+        >
+          Experience
+        </h2>
+        <Link
+          href="/experience"
+          className="text-2xs text-muted hover:text-primary transition-colors duration-normal"
+        >
+          View all →
+        </Link>
+      </div>
+
+      {/* Experience entries */}
+      {work.slice(0, 4).map((item) => (
+        <article key={item.id} className="px-5 py-4 border-b border-border">
+          <div className="flex items-baseline justify-between gap-2 mb-0.5">
+            <h3 className="text-sm font-semibold text-primary leading-snug">
+              {item.role}
+            </h3>
+            {item.date_range ? (
+              <span className="text-2xs text-muted shrink-0">
+                {item.date_range}
+              </span>
+            ) : null}
+          </div>
+          {item.company ? (
+            <p className="text-xs font-medium text-accent mb-1.5">
+              {item.company}
+            </p>
+          ) : null}
+          {item.bullets?.[0] ? (
+            <p className="text-xs text-secondary leading-relaxed line-clamp-2">
+              {item.bullets[0].label}
+            </p>
+          ) : null}
+        </article>
+      ))}
+
+      {/* Status */}
+      <div className="px-5 py-4 border-b border-border">
+        <h3 className="text-2xs font-mono uppercase tracking-widest text-muted mb-3">
+          Status
+        </h3>
+        <div className="flex items-center gap-2 mb-1.5">
+          {/* Green availability dot */}
+          <div
+            className="w-1.5 h-1.5 rounded-full bg-success flex-shrink-0"
+            aria-hidden="true"
+          />
+          <span className="text-sm font-semibold text-primary">
+            Available for work
+          </span>
+        </div>
+        <p className="text-xs text-secondary leading-relaxed">
+          Open to full-time product engineering roles and interesting consulting
+          projects.
+        </p>
       </div>
     </section>
   );
