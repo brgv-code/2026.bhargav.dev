@@ -41,12 +41,11 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-static";
-export const revalidate = 60;
 
 export default async function AboutPage() {
   const [profile, projects] = await Promise.all([
     fetchProfile(),
-    fetchProjectsFromPayload(),
+    fetchProjectsFromPayload(5),
   ]);
 
   const name = profile?.name ?? "Bhargav";

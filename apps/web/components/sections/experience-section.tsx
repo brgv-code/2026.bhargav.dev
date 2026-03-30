@@ -6,12 +6,14 @@ type Props = {
   resumeUrl?: string;
   /** Show as compact sidebar panel (home page) vs full-width list (experience page) */
   variant?: "panel" | "full";
+  compactHome?: boolean;
 };
 
 export function ExperienceSection({
   work,
   resumeUrl = "/resume.pdf",
   variant = "panel",
+  compactHome = false,
 }: Props) {
   if (!work || work.length === 0) return null;
 
@@ -91,7 +93,11 @@ export function ExperienceSection({
   return (
     <section aria-labelledby="experience-panel-heading">
       {/* Experience header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+      <div
+        className={`flex items-center justify-between px-5 py-4 ${
+          compactHome ? "" : "border-b border-border"
+        }`}
+      >
         <h2
           id="experience-panel-heading"
           className="text-2xs font-mono uppercase tracking-widest text-muted"
@@ -108,7 +114,11 @@ export function ExperienceSection({
 
       {/* Experience entries */}
       {work.slice(0, 4).map((item) => (
-        <article key={item.id} className="px-5 py-4 border-b border-border">
+        <article
+          key={item.id}
+          className={`px-5 py-0 ${compactHome ? "" : "border-b border-border"}`}
+        >
+          <div className={`${compactHome ? "border-b border-border/60 py-4" : "py-4"}`}>
           <div className="flex items-baseline justify-between gap-2 mb-0.5">
             <h3 className="text-sm font-semibold text-primary leading-snug">
               {item.role}
@@ -129,6 +139,7 @@ export function ExperienceSection({
               {item.bullets[0].label}
             </p>
           ) : null}
+          </div>
         </article>
       ))}
     </section>

@@ -103,19 +103,20 @@ export default async function Home() {
 
         <div className="flex-1 grid grid-cols-1 xl:grid-cols-home-main min-h-0">
           <div className="xl:border-r xl:border-border min-w-0">
-            <WritingSection posts={posts} />
+            <WritingSection posts={posts} compactHome />
           </div>
           <div className="hidden min-h-0 xl:block">
             <ExperienceSection
               work={work}
               resumeUrl={resumeUrl}
               variant="panel"
+              compactHome
             />
           </div>
         </div>
 
         <div className="border-t border-border mt-auto">
-          <ProjectsSection projects={projects} />
+          <ProjectsSection projects={projects} compactHome />
         </div>
       </div>
     </>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   PixelVideo,
   PixelArticle,
@@ -110,26 +111,26 @@ export default function FavoritesPage() {
 
   const getTypeCount = (type: FavoriteType) =>
     favorites.filter((f) => f.type === type).length;
+  const sidebarLinks = [
+    { href: "/writing", label: "Latest writing" },
+    { href: "/projects", label: "Selected projects" },
+    { href: "/notes", label: "Daily notes" },
+    { href: "/reading", label: "Reading log" },
+  ];
 
   return (
     <>
-      <div className="min-h-screen flex flex-col">
-        <main className="flex-1 px-12 pt-28 pb-24">
-          <header className="mb-14">
-            <p className="font-mono text-[10px] tracking-widest uppercase text-[var(--editorial-text-dim)] mb-4">
-              curated
-            </p>
-            <h1 className="font-serif text-4xl md:text-[3.2rem] text-[var(--editorial-text)] leading-[1.1] mb-4">
-              Favorites
-            </h1>
-            <p className="text-[var(--editorial-text-muted)] text-[15px] leading-relaxed max-w-md">
-              Videos, articles, podcasts, books, and tools that shaped my
-              thinking.
-            </p>
-            <div className="mt-8 border-b border-dashed border-[var(--editorial-border)]" />
-          </header>
+      <div className="border-b border-border px-8 py-6">
+        <h1 className="text-2xl font-bold text-primary">Favorites</h1>
+        <p className="text-sm text-secondary mt-0.5">
+          Videos, articles, podcasts, books, and tools that shaped my thinking.
+        </p>
+      </div>
 
-          <section className="flex flex-wrap items-center justify-between gap-4 mb-10 border-b border-[var(--editorial-border)] pb-4">
+      <div className="grid min-h-0 grid-cols-1 xl:grid-cols-home-main">
+        <div className="min-w-0 xl:border-r xl:border-border">
+          <main className="px-6 py-6 pb-24">
+            <section className="flex flex-wrap items-center justify-between gap-4 mb-6 border-b border-border pb-4">
             <div className="flex items-center gap-4 font-mono text-xs uppercase tracking-widest">
               <button
                 onClick={() => handleTypeClick("all")}
@@ -175,7 +176,7 @@ export default function FavoritesPage() {
             </button>
           </section>
 
-          <section>
+            <section>
             {loading ? (
               <p className="text-sm text-[var(--editorial-text-muted)]">
                 Loading...
@@ -259,8 +260,35 @@ export default function FavoritesPage() {
                 })}
               </div>
             )}
+            </section>
+          </main>
+        </div>
+
+        <aside className="hidden min-h-0 xl:block" aria-labelledby="favorites-sidebar-heading">
+          <section className="min-h-0">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <h2
+                id="favorites-sidebar-heading"
+                className="text-2xs font-mono uppercase tracking-widest text-muted"
+              >
+                Explore
+              </h2>
+            </div>
+            <nav className="flex flex-col" aria-label="Explore">
+              {sidebarLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="group flex flex-col gap-1 border-b border-border px-5 py-4 transition-colors duration-normal hover:bg-interactive-hover"
+                >
+                  <span className="text-sm font-semibold leading-snug text-primary transition-colors duration-normal group-hover:text-accent">
+                    {item.label}
+                  </span>
+                </Link>
+              ))}
+            </nav>
           </section>
-        </main>
+        </aside>
       </div>
 
       <AddFavoriteModal

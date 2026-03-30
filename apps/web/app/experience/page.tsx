@@ -62,7 +62,7 @@ function parseTechStack(raw?: string | null): string[] {
 export default async function ExperiencePage() {
   const [work, projects] = await Promise.all([
     fetchWorkExperience(),
-    fetchProjectsFromPayload(),
+    fetchProjectsFromPayload(5),
   ]);
 
   const entries = await Promise.all(
@@ -208,9 +208,9 @@ export default async function ExperiencePage() {
 
                         {tech.length > 0 ? (
                           <div className="flex flex-wrap gap-2">
-                            {tech.map((label) => (
+                            {tech.map((label, i) => (
                               <span
-                                key={label}
+                                key={`${label}-${i}`}
                                 className="rounded border border-border bg-tag-bg px-2 py-0.5 text-2xs font-medium text-tag-text"
                               >
                                 {label}

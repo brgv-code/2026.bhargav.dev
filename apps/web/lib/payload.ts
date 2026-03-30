@@ -436,7 +436,9 @@ export type PayloadProject = {
   github?: string | null;
 };
 
-export async function fetchProjectsFromPayload(): Promise<PayloadProject[]> {
+export async function fetchProjectsFromPayload(
+  limit = 200,
+): Promise<PayloadProject[]> {
   if (!cmsUrl) {
     logCmsWarning("PAYLOAD_PUBLIC_SERVER_URL not set; projects will be empty.");
     return [];
@@ -444,7 +446,7 @@ export async function fetchProjectsFromPayload(): Promise<PayloadProject[]> {
 
   try {
     const url = new URL(`${cmsUrl}/api/projects`);
-    url.searchParams.set("limit", "200");
+    url.searchParams.set("limit", String(limit));
     url.searchParams.set("sort", "-updatedAt");
     url.searchParams.set("depth", "0");
 

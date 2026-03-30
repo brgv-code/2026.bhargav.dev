@@ -189,27 +189,25 @@ export default async function ProjectsPage() {
                 >
                   <div className="flex flex-col gap-4 max-w-3xl">
                     <div className="flex items-baseline justify-between gap-4">
-                      <div className="min-w-0 flex items-start gap-2">
-                        <h3 className="text-sm font-semibold text-primary leading-snug">
-                          {project.url ? (
-                            <a
-                              href={project.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:text-accent transition-colors duration-normal inline-flex items-center gap-1.5"
-                            >
-                              {title}
-                              <ExternalLink
-                                size={12}
-                                className="shrink-0 text-muted"
-                                aria-hidden="true"
-                              />
-                            </a>
-                          ) : (
-                            title
-                          )}
-                        </h3>
-                      </div>
+                      <h3 className="min-w-0 text-sm font-semibold text-primary leading-snug">
+                        {project.url ? (
+                          <a
+                            href={project.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-accent transition-colors duration-normal inline-flex items-center gap-1.5"
+                          >
+                            {title}
+                            <ExternalLink
+                              size={12}
+                              className="shrink-0 text-muted"
+                              aria-hidden="true"
+                            />
+                          </a>
+                        ) : (
+                          title
+                        )}
+                      </h3>
                       {metaParts.length ? (
                         <p className="text-xs text-muted shrink-0 tabular-nums">
                           {metaParts.join(" · ")}
@@ -229,9 +227,9 @@ export default async function ProjectsPage() {
 
                     {techLabels.length ? (
                       <div className="flex flex-wrap gap-1">
-                        {techLabels.map((label) => (
+                        {techLabels.map((label, i) => (
                           <span
-                            key={label}
+                            key={`${label}-${i}`}
                             className="px-1.5 py-0.5 text-2xs font-semibold bg-tag-bg text-tag-text"
                           >
                             {label}

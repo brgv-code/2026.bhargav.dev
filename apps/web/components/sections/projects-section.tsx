@@ -4,15 +4,20 @@ import type { PayloadProject } from "@/lib/data/cms";
 
 type Props = {
   projects: PayloadProject[];
+  compactHome?: boolean;
 };
 
-export function ProjectsSection({ projects }: Props) {
+export function ProjectsSection({ projects, compactHome = false }: Props) {
   if (!projects || projects.length === 0) return null;
 
   return (
     <section aria-labelledby="projects-heading">
       {/* Section header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+      <div
+        className={`flex items-center justify-between px-6 py-4 ${
+          compactHome ? "" : "border-b border-border"
+        }`}
+      >
         <h2
           id="projects-heading"
           className="text-2xs font-mono uppercase tracking-widest text-muted"
