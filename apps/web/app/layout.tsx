@@ -144,7 +144,7 @@ export default async function RootLayout({
 
                 {/* Sidebar footer */}
                 <div className="mt-auto pt-5 border-t border-border-subtle space-y-4">
-                  {/* CV download button */}
+                  {/* CV download button
                   <a
                     href={resumeUrl}
                     target="_blank"
@@ -153,6 +153,7 @@ export default async function RootLayout({
                   >
                     Download CV
                   </a>
+                  */}
 
                   {/* Social icons + dark mode toggle */}
                   <div className="flex items-center gap-4">

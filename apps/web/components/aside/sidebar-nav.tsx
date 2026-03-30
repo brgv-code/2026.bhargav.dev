@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 import {
   Home,
   PenLine,
@@ -13,7 +12,6 @@ import {
   Layers,
   StickyNote,
   BookOpen,
-  MoreHorizontal,
 } from "lucide-react";
 
 const primaryLinks = [
@@ -66,7 +64,7 @@ export function SidebarNav() {
   const hasActiveSecondary = secondaryLinks.some(
     ({ href }) => pathname === href || pathname.startsWith(href + "/")
   );
-  const [open, setOpen] = useState(hasActiveSecondary);
+  const open = hasActiveSecondary;
 
   const isActive = (href: string) =>
     href === "/"
@@ -88,11 +86,10 @@ export function SidebarNav() {
         ))}
       </div>
 
-      {/* More toggle */}
       <div className="mt-3">
+        {/* More button
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           className="flex items-center gap-2.5 px-3 py-1.5 text-xs text-disabled hover:text-muted transition-colors w-full rounded-sm hover:bg-interactive-hover"
         >
@@ -101,6 +98,7 @@ export function SidebarNav() {
             {open ? "Less" : "More"}
           </span>
         </button>
+        */}
 
         {/* Secondary links — slide down when open */}
         <div
