@@ -88,7 +88,15 @@
   --palette-green-600: #123524;
   --palette-green-700: #0b2318;
 
+  --palette-amber-50: #fff7ed;
+  --palette-amber-200: #fed7aa;
   --palette-amber-500: #d97706;
+  --palette-amber-700: #b45309;
+  --palette-amber-900: #431407;
+
+  --banner-bg: var(--palette-amber-50);
+  --banner-border: var(--palette-amber-200);
+  --banner-text: var(--palette-amber-700);
   --palette-red-600: #dc2626;
   --palette-blue-600: #2563eb;
 
@@ -303,6 +311,10 @@
   --color-tag-bg: var(--palette-green-700);
   --color-tag-text: var(--palette-green-200);
   --color-tag-border: var(--palette-green-600);
+
+  --banner-bg: #2a1500;
+  --banner-border: #5c2d00;
+  --banner-text: #fbbf70;
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);

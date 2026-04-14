@@ -147,7 +147,18 @@ export default async function AboutPage() {
                   {tagline}
                 </p>
               </div>
-              <p className="text-sm leading-relaxed text-primary">{aboutText}</p>
+              <div className="flex flex-col gap-4">
+                {aboutText.split(/\n\n+/).map((para, i) => (
+                  <p key={i} className="text-sm leading-relaxed text-primary">
+                    {para.split("\n").map((line, j, arr) => (
+                      <span key={j}>
+                        {line}
+                        {j < arr.length - 1 && <br />}
+                      </span>
+                    ))}
+                  </p>
+                ))}
+              </div>
 
               {(email || githubUrl || twitterUrl || linkedinUrl) ? (
                 <div className="mt-6 flex flex-col gap-2 border-t border-border pt-6">
