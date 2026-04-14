@@ -205,25 +205,16 @@ export default async function AboutPage() {
                       </a>
                     ) : null}
                   </div>
-                  <a
+                  {/* <a
                     href={resumeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-2xs font-mono uppercase tracking-widest text-muted hover:text-primary transition-colors duration-normal"
                   >
                     Resume ↓
-                  </a>
+                  </a> */}
                 </div>
-              ) : (
-                <a
-                  href={resumeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-6 inline-block w-fit text-2xs font-mono uppercase tracking-widest text-muted hover:text-primary transition-colors duration-normal"
-                >
-                  Resume ↓
-                </a>
-              )}
+              ) : null}
             </div>
           </section>
         </div>

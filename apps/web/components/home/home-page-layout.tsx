@@ -216,14 +216,14 @@ export function HomePageLayout({
                 </div>
               </div>
 
-              <a
+              {/* <a
                 href={RESUME_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 font-mono text-[11px] tracking-wider uppercase px-4 py-2.5 border border-[var(--editorial-text)] text-[var(--editorial-text)] hover:bg-[var(--editorial-text)] hover:text-[var(--editorial-bg)] transition-colors duration-200 w-fit"
               >
                 Download Resume ↓
-              </a>
+              </a> */}
             </motion.div>
           ) : (
             <motion.div
@@ -254,14 +254,14 @@ export function HomePageLayout({
                   >
                     Know more →
                   </button>
-                  <a
+                  {/* <a
                     href={RESUME_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-mono text-[11px] text-[var(--editorial-text-muted)] hover:text-[var(--editorial-text)] transition-colors"
                   >
                     Resume ↓
-                  </a>
+                  </a> */}
                 </div>
               </div>
 

@@ -31,14 +31,14 @@ export function ExperienceSection({
           >
             Experience
           </h2>
-          <a
+          {/* <a
             href={resumeUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-2xs text-muted hover:text-primary transition-colors duration-normal"
           >
             Full Resume →
-          </a>
+          </a> */}
         </div>
 
         <div className="flex flex-col">
