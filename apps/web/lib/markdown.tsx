@@ -9,8 +9,11 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkRehype from "remark-rehype";
 import rehypeRaw from "rehype-raw";
+import rehypeSlug from "rehype-slug";
 import rehypePrettyCode from "rehype-pretty-code";
 import rehypeReact from "rehype-react";
+import { CodeBlock } from "@/components/blog/code-block";
+import { ChecklistItem } from "@/components/blog/checklist-item";
 
 type ImgProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, "src"> & {
   src?: string | null;
@@ -22,9 +25,9 @@ type TextProps = React.HTMLAttributes<HTMLParagraphElement>;
 
 type ListProps = React.HTMLAttributes<HTMLUListElement | HTMLOListElement>;
 
-type LinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement>;
+type ListItemProps = React.HTMLAttributes<HTMLLIElement>;
 
-type PreProps = React.HTMLAttributes<HTMLPreElement>;
+type LinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement>;
 
 type CodeProps = React.HTMLAttributes<HTMLElement>;
 
@@ -44,24 +47,48 @@ function MarkdownImage({ src, alt }: ImgProps) {
   );
 }
 
-function MarkdownHeading({ className, ...props }: HeadingProps) {
+function MarkdownH2({ className, ...props }: HeadingProps) {
   return (
     <h2
       {...props}
       className={clsx(
-        "mt-10 text-2xl font-semibold text-primary",
+        "mt-16 pt-6 mb-4 font-serif text-3xl font-bold tracking-tight text-primary",
         className
       )}
     />
   );
 }
 
-function MarkdownSubheading({ className, ...props }: HeadingProps) {
+function MarkdownH3({ className, ...props }: HeadingProps) {
   return (
     <h3
       {...props}
       className={clsx(
-        "mt-8 text-xl font-semibold text-primary",
+        "mt-10 mb-3 font-serif text-2xl font-bold text-primary",
+        className
+      )}
+    />
+  );
+}
+
+function MarkdownH4({ className, ...props }: HeadingProps) {
+  return (
+    <h4
+      {...props}
+      className={clsx(
+        "mt-6 mb-2 font-serif text-xl font-semibold text-primary",
+        className
+      )}
+    />
+  );
+}
+
+function MarkdownH5({ className, ...props }: HeadingProps) {
+  return (
+    <h5
+      {...props}
+      className={clsx(
+        "mt-5 mb-2 font-sans text-base font-semibold text-primary uppercase tracking-wider",
         className
       )}
     />
@@ -86,11 +113,29 @@ function MarkdownList({ className, ...props }: ListProps) {
   );
 }
 
+function MarkdownChecklistList({ className, ...props }: ListProps) {
+  return (
+    <ul
+      {...props}
+      className={clsx("list-none pl-0 text-base text-secondary checklist-list", className)}
+    />
+  );
+}
+
 function MarkdownOrderedList({ className, ...props }: ListProps) {
   return (
     <ol
       {...props}
       className={clsx("list-decimal pl-5 text-base text-secondary", className)}
+    />
+  );
+}
+
+function MarkdownListItem({ className, ...props }: ListItemProps) {
+  return (
+    <li
+      {...props}
+      className={clsx("mb-2", className)}
     />
   );
 }
@@ -104,58 +149,70 @@ function MarkdownLink({ className, ...props }: LinkProps) {
   );
 }
 
-function MarkdownPre({ className, ...props }: PreProps) {
-  return (
-    <pre
-      {...props}
-      className={clsx(
-        "my-6 overflow-x-auto rounded-none bg-highlight p-4 text-sm",
-        className
-      )}
-    />
-  );
-}
-
 function MarkdownCode({ className, ...props }: CodeProps) {
   return (
     <code
       {...props}
-      className={clsx("font-mono", className)}
+      className={clsx("font-mono text-[0.875em]", className)}
     />
   );
 }
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
-const processor = unified()
-  .use(remarkParse)
-  .use(remarkGfm)
-  .use(remarkRehype, { allowDangerousHtml: true })
-  .use(rehypeRaw)
-  .use(rehypePrettyCode, {
-    theme: "github-light",
-    keepBackground: false,
-  })
-  .use(rehypeReact, {
-    Fragment: production.Fragment,
-    jsx: production.jsx,
-    jsxs: production.jsxs,
-    jsxDEV: development.jsxDEV,
-    development: isDevelopment,
-    components: {
-      img: MarkdownImage,
-      h2: MarkdownHeading,
-      h3: MarkdownSubheading,
-      p: MarkdownParagraph,
-      ul: MarkdownList,
-      ol: MarkdownOrderedList,
-      a: MarkdownLink,
-      pre: MarkdownPre,
-      code: MarkdownCode,
-    },
-  } as unknown as Parameters<typeof rehypeReact>[0]);
+const rehypeOptions = {
+  theme: {
+    light: "github-light",
+    dark: "github-dark-dimmed",
+  },
+  keepBackground: false,
+} as const;
 
-export async function renderMarkdown(markdown: string): Promise<React.ReactNode> {
-  const file = await processor.process(markdown);
+function buildProcessor(interactive: boolean) {
+  const listComponent = interactive ? MarkdownChecklistList : MarkdownList;
+  const listItemComponent = interactive
+    ? (ChecklistItem as React.ComponentType<ListItemProps>)
+    : MarkdownListItem;
+
+  return unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeRaw)
+    .use(rehypeSlug)
+    .use(rehypePrettyCode, rehypeOptions)
+    .use(rehypeReact, {
+      Fragment: production.Fragment,
+      jsx: production.jsx,
+      jsxs: production.jsxs,
+      jsxDEV: development.jsxDEV,
+      development: isDevelopment,
+      components: {
+        img: MarkdownImage,
+        h2: MarkdownH2,
+        h3: MarkdownH3,
+        h4: MarkdownH4,
+        h5: MarkdownH5,
+        p: MarkdownParagraph,
+        ul: listComponent,
+        ol: MarkdownOrderedList,
+        li: listItemComponent,
+        a: MarkdownLink,
+        pre: CodeBlock as React.ComponentType<React.HTMLAttributes<HTMLPreElement>>,
+        code: MarkdownCode,
+      },
+    } as unknown as Parameters<typeof rehypeReact>[0]);
+}
+
+const processor = buildProcessor(false);
+const checklistProcessor = buildProcessor(true);
+
+export async function renderMarkdown(
+  markdown: string,
+  options?: { slug?: string }
+): Promise<React.ReactNode> {
+  const isChecklist = options?.slug?.includes("checklist") ?? false;
+  const proc = isChecklist ? checklistProcessor : processor;
+  const file = await proc.process(markdown);
   return file.result as React.ReactNode;
 }

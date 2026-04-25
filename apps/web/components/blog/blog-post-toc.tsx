@@ -84,17 +84,23 @@ export function BlogPostTOC({ items }: Props) {
                 href={`#${item.id}`}
                 aria-current={isActive ? "location" : undefined}
                 onClick={(e) => handleClick(e, item.id)}
-                className={`flex items-baseline gap-2 py-1.5 px-3 text-xs leading-snug border-l-2 transition-colors -ml-px ${
+                className={`flex items-baseline gap-2 py-1.5 px-3 leading-snug border-l-2 transition-colors -ml-px ${
+                  item.level >= 4 ? "text-[10px]" : "text-xs"
+                } ${
                   isActive
                     ? "border-accent text-primary font-medium bg-accent/5"
-                    : "border-transparent text-muted hover:text-primary hover:border-accent/40"
+                    : `border-transparent hover:text-primary hover:border-accent/40 ${item.level >= 4 ? "text-muted/70" : "text-muted"}`
                 }`}
-                style={item.level > 2 ? { paddingLeft: `${12 + (item.level - 2) * 10}px` } : undefined}
+                style={item.level > 2 ? { paddingLeft: `${12 + (item.level - 2) * 12}px` } : undefined}
               >
-                <span className="shrink-0 text-[10px] tabular-nums font-bold text-accent/70">
-                  {String(i + 1).padStart(2, "0")}
+                {item.level === 2 && (
+                  <span className="shrink-0 text-[10px] tabular-nums font-bold text-accent/70">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                )}
+                <span className={item.level >= 4 ? "opacity-80" : undefined}>
+                  {item.text}
                 </span>
-                {item.text}
               </a>
             </li>
           );

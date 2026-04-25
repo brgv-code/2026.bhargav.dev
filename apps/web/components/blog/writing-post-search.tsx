@@ -83,7 +83,7 @@ export function WritingPostSearch({ posts }: Props) {
         onKeyDown={onKeyDown}
         placeholder="Search…"
         autoComplete="off"
-        className="w-search border border-border bg-background py-1.5 pl-8 pr-4 text-sm text-primary placeholder:text-muted transition-all duration-slow focus:w-search-focus focus:border-border-focus focus:outline-none"
+        className="w-search border border-border bg-highlight py-1.5 pl-8 pr-4 text-sm text-primary placeholder:text-muted transition-all duration-slow focus:w-search-focus focus:border-border-focus focus:outline-none"
         aria-autocomplete="list"
       />
       {open && q.trim() && filtered.length > 0 ? (

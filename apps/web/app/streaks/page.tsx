@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navbar } from "@/components/shared/navbar";
-import { Footer } from "@/components/shared/footer";
 import { StreakCalendar } from "@/components/streaks/streak-calendar";
 import { WeeklyView } from "@/components/streaks/weekly-view";
 import {
@@ -268,7 +267,6 @@ export default function StreaksPage() {
             </div>
           </section>
         </main>
-        <Footer />
       </div>
     </>
   );

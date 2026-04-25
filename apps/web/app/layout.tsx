@@ -129,10 +129,11 @@ export default async function RootLayout({
                 }}
               />
 
-              {/* Sidebar — fixed left panel, transparent on the page background */}
+              {/* Sidebar — fixed left panel, surface bg so it reads as a distinct
+                  panel against the cream-200 body background in light mode.   */}
               <aside
                 aria-label="Site navigation"
-                className="hidden md:flex fixed left-0 top-0 h-screen w-sidebar flex-col py-10 px-4 overflow-y-auto z-sticky border-r border-border"
+                className="hidden md:flex fixed left-0 top-0 h-screen w-sidebar flex-col py-10 px-4 overflow-y-auto z-sticky bg-surface border-r border-border-strong dark:border-border"
               >
                 {/* Identity */}
                 <div className="mb-8">

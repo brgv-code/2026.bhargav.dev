@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import {
   WritingPostSearch,
@@ -41,18 +41,14 @@ export function WritingPostHeaderBar({
         >
           {siteLabel}
         </Link>
-        <span className="shrink-0 text-border" aria-hidden="true">
-          /
-        </span>
+        <ChevronRight size={12} className="shrink-0 text-muted opacity-60" aria-hidden="true" />
         <Link
           href="/writing"
           className="shrink-0 transition-colors hover:text-primary"
         >
           Writing
         </Link>
-        <span className="shrink-0 text-border" aria-hidden="true">
-          /
-        </span>
+        <ChevronRight size={12} className="shrink-0 text-muted opacity-60" aria-hidden="true" />
         <span
           className="min-w-0 truncate text-primary"
           title={articleTitle}
