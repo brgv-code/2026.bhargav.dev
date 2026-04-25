@@ -96,7 +96,7 @@ export default async function Home() {
               type="search"
               placeholder="Search..."
               aria-label="Search entries"
-              className="bg-background border border-border text-sm pl-8 pr-4 py-1.5 w-search focus:w-search-focus focus:outline-none focus:border-border-focus transition-all duration-slow text-primary placeholder:text-muted"
+              className="bg-highlight border border-border text-sm pl-8 pr-4 py-1.5 w-search focus:w-search-focus focus:outline-none focus:border-border-focus transition-all duration-slow text-primary placeholder:text-muted"
             />
           </label>
         </div>

@@ -31,10 +31,10 @@ const htmlConverters: HTMLConvertersFunction = ({ defaultConverters }) => ({
         language?: string;
         filename?: string;
       };
-      const filename = fields.filename
-        ? `<p class="text-xs text-muted-foreground mb-2 font-mono">${escapeHtml(s(fields.filename))}</p>`
+      const filenameBar = fields.filename
+        ? `<div style="padding:0.5rem 0.75rem;border-bottom:1px solid var(--code-border);background:var(--code-header-bg);font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted)">${escapeHtml(s(fields.filename))}</div>`
         : "";
-      return `<div class="my-6 rounded-lg border border-border bg-muted/30 p-4 overflow-x-auto">${filename}<pre class="text-sm"><code>${escapeHtml(s(fields.code))}</code></pre></div>`;
+      return `<div style="margin:2rem 0;border:1px solid var(--code-border);border-radius:var(--radius-md);overflow:hidden;background:var(--code-bg)">${filenameBar}<pre style="margin:0;padding:1.25rem;overflow-x:auto;font-size:0.875rem;line-height:1.65;background:var(--code-bg)"><code style="font-family:var(--font-mono)">${escapeHtml(s(fields.code))}</code></pre></div>`;
     },
     callout: ({ node }: BlockConverterArgs) => {
       const fields = node.fields as {
@@ -113,7 +113,7 @@ const htmlConverters: HTMLConvertersFunction = ({ defaultConverters }) => ({
     },
     sandpack: ({ node }: BlockConverterArgs) => {
       const fields = node.fields as { code?: string };
-      return `<div class="my-6 rounded-lg border border-border bg-muted/30 p-4 overflow-x-auto"><pre class="text-sm"><code>${escapeHtml(s(fields.code))}</code></pre></div>`;
+      return `<div style="margin:2rem 0;border:1px solid var(--code-border);border-radius:var(--radius-md);overflow:hidden;background:var(--code-bg)"><pre style="margin:0;padding:1.25rem;overflow-x:auto;font-size:0.875rem;line-height:1.65;background:var(--code-bg)"><code style="font-family:var(--font-mono)">${escapeHtml(s(fields.code))}</code></pre></div>`;
     },
     aiPlayground: ({ node }: BlockConverterArgs) => {
       const fields = node.fields as {
@@ -158,7 +158,6 @@ function injectHeadingIds(html: string, ids: string[]): string {
 type Props = {
   data: SerializedEditorState | null | undefined;
   className?: string;
-  /** When provided (e.g. from post.tocItems), heading tags get these ids in order so TOC links work without client JS. */
   headingIds?: string[];
 };
 

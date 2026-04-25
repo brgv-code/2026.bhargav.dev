@@ -6,13 +6,11 @@ import type { ReactNode } from "react";
 import {
   fetchBlogListPosts,
   fetchPostBySlug,
-  fetchProjectsFromPayload,
-  fetchRelatedPosts,
   fetchPostSlugs,
   resolveMediaUrl,
   tagNames,
 } from "@/lib/data/cms";
-import { caseStudyAnchor, formatPostDate, formatReadTime } from "@/lib/format";
+import { formatPostDate, formatReadTime } from "@/lib/format";
 import { renderMarkdown } from "@/lib/markdown";
 import { absoluteUrl, defaultDescription, siteName, siteUrl } from "@/lib/seo";
 import { RichText } from "@/components/shared/rich-text";
@@ -21,7 +19,6 @@ import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
 import { BlogPostMainColumn } from "@/components/blog/blog-post-main-column";
 import { BlogPostTocRail } from "@/components/blog/blog-post-toc-rail";
 import { WritingPostHeaderBar } from "@/components/blog/writing-post-header-bar";
-import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export const dynamic = "force-static";
 export const dynamicParams = true;
@@ -86,10 +83,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function WritingPostPage({ params }: Props) {
   const { slug } = await params;
-  const [post, relatedPosts, projects, allPosts] = await Promise.all([
+  const [post, allPosts] = await Promise.all([
     fetchPostBySlug(slug),
-    fetchRelatedPosts(slug, 3),
-    fetchProjectsFromPayload(),
     fetchBlogListPosts(500),
   ]);
 
@@ -124,29 +119,9 @@ export default async function WritingPostPage({ params }: Props) {
   const primaryTag = tags[0];
   const articleShellClass = "w-full px-article-inline";
 
-  const postTagSet = new Set(tags.map((t) => t.toLowerCase()));
-  const scoredProjects = projects.map((project) => {
-    const techLabels =
-      project.tech
-        ?.map((entry) => entry?.label?.toLowerCase())
-        .filter((label): label is string => Boolean(label)) ?? [];
-    const score = techLabels.filter((label) => postTagSet.has(label)).length;
-    return { project, score };
-  });
-  const hasMatch = scoredProjects.some((e) => e.score > 0);
-  const relatedProjects = (
-    hasMatch
-      ? scoredProjects
-          .filter((e) => e.score > 0)
-          .sort((a, b) => b.score - a.score)
-      : scoredProjects
-  )
-    .slice(0, 3)
-    .map((e) => e.project);
-
   let body: ReactNode = null;
   if (post.markdownInput) {
-    body = await renderMarkdown(post.markdownInput);
+    body = await renderMarkdown(post.markdownInput, { slug });
   } else if (post.contentHtml) {
     body = (
       <div
@@ -155,7 +130,13 @@ export default async function WritingPostPage({ params }: Props) {
       />
     );
   } else if (post.content) {
-    body = <RichText data={post.content} className="article-body" />;
+    body = (
+      <RichText
+        data={post.content}
+        className="article-body"
+        headingIds={post.tocItems?.map((t) => t.id) ?? []}
+      />
+    );
   }
 
   return (
@@ -375,133 +356,6 @@ export default async function WritingPostPage({ params }: Props) {
           </>
         )}
 
-        {/* Article footer */}
-        <footer
-          className={`${articleShellClass} mt-20 border-t border-border/40`}
-          aria-label="Article navigation"
-        >
-          {/* Continue Reading */}
-          {(adjacent.prev || adjacent.next) && (
-            <div className="mt-12 mb-4 relative bg-surface px-10 pt-10 pb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
-              {/* Bottom accent bar */}
-              <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-accent" />
-
-              <div className="flex flex-col gap-3">
-                <span className="text-[10px] uppercase tracking-[0.25em] text-muted">
-                  Continue Reading
-                </span>
-                <Link
-                  href={`/writing/${(adjacent.next ?? adjacent.prev)!.slug}`}
-                  className="font-serif text-2xl md:text-3xl font-bold text-primary hover:text-accent transition-colors leading-tight max-w-lg"
-                >
-                  {(adjacent.next ?? adjacent.prev)!.title}
-                </Link>
-              </div>
-
-              <div className="flex items-center gap-3 shrink-0">
-                {adjacent.prev ? (
-                  <Link
-                    href={`/writing/${adjacent.prev.slug}`}
-                    aria-label={`Previous: ${adjacent.prev.title}`}
-                    className="flex items-center justify-center w-12 h-12 bg-highlight text-primary hover:bg-accent hover:text-accent-foreground transition-colors"
-                  >
-                    <ArrowLeft size={18} aria-hidden="true" />
-                  </Link>
-                ) : (
-                  <span className="flex items-center justify-center w-12 h-12 bg-highlight text-muted opacity-30 cursor-not-allowed">
-                    <ArrowLeft size={18} aria-hidden="true" />
-                  </span>
-                )}
-                {adjacent.next ? (
-                  <Link
-                    href={`/writing/${adjacent.next.slug}`}
-                    aria-label={`Next: ${adjacent.next.title}`}
-                    className="flex items-center justify-center w-12 h-12 bg-highlight text-primary hover:bg-accent hover:text-accent-foreground transition-colors"
-                  >
-                    <ArrowRight size={18} aria-hidden="true" />
-                  </Link>
-                ) : (
-                  <span className="flex items-center justify-center w-12 h-12 bg-highlight text-muted opacity-30 cursor-not-allowed">
-                    <ArrowRight size={18} aria-hidden="true" />
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Related writing & projects */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 py-12">
-            {relatedPosts.length ? (
-              <section aria-labelledby="more-writing-heading">
-                <h2
-                  id="more-writing-heading"
-                  className="text-[10px] uppercase tracking-[0.25em] text-muted mb-5"
-                >
-                  More writing
-                </h2>
-                <nav className="flex flex-col gap-3">
-                  {relatedPosts.map((related) => (
-                    <Link
-                      key={related.id}
-                      href={`/writing/${related.slug}`}
-                      className="text-sm text-primary hover:text-accent transition-colors leading-snug"
-                    >
-                      {caseStudyAnchor(related.title)}
-                    </Link>
-                  ))}
-                  <Link
-                    href="/writing"
-                    className="text-xs uppercase tracking-widest text-muted hover:text-primary transition-colors mt-1"
-                  >
-                    View all →
-                  </Link>
-                </nav>
-              </section>
-            ) : null}
-
-            {relatedProjects.length ? (
-              <section aria-labelledby="related-projects-heading">
-                <h2
-                  id="related-projects-heading"
-                  className="text-[10px] uppercase tracking-[0.25em] text-muted mb-5"
-                >
-                  Related projects
-                </h2>
-                <nav className="flex flex-col gap-3">
-                  {relatedProjects.map((project) => {
-                    const title = project.title ?? project.name;
-                    const isExternal = Boolean(project.url);
-                    return isExternal ? (
-                      <a
-                        key={project.id}
-                        href={project.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:text-accent transition-colors leading-snug"
-                      >
-                        {caseStudyAnchor(title)}
-                      </a>
-                    ) : (
-                      <Link
-                        key={project.id}
-                        href="/projects"
-                        className="text-sm text-primary hover:text-accent transition-colors leading-snug"
-                      >
-                        {caseStudyAnchor(title)}
-                      </Link>
-                    );
-                  })}
-                  <Link
-                    href="/projects"
-                    className="text-xs uppercase tracking-widest text-muted hover:text-primary transition-colors mt-1"
-                  >
-                    View all →
-                  </Link>
-                </nav>
-              </section>
-            ) : null}
-          </div>
-        </footer>
       </article>
     </>
   );
