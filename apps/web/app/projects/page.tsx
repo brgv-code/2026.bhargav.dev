@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import { ExternalLink } from "lucide-react";
 import { fetchBlogListPosts, fetchProjectsFromPayload } from "@/lib/data/cms";
-import { renderMarkdown } from "@/lib/markdown";
 import { caseStudyAnchor } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { absoluteUrl, siteName, siteUrl } from "@/lib/seo";
@@ -59,27 +57,15 @@ export default async function ProjectsPage() {
     fetchBlogListPosts(3),
   ]);
 
-  const entries =
-    projects.length > 0
-      ? await Promise.all(
-          projects.map(async (project) => {
-            let detail: ReactNode = null;
-
-            if (project.markdownInput) {
-              detail = await renderMarkdown(project.markdownInput);
-            } else if (project.contentHtml) {
-              detail = (
-                <div
-                  className="article-prose"
-                  dangerouslySetInnerHTML={{ __html: project.contentHtml }}
-                />
-              );
-            }
-
-            return { project, detail };
-          }),
-        )
-      : [];
+  const entries = projects.map((project) => {
+    const detail = project.contentHtml ? (
+      <div
+        className="article-prose"
+        dangerouslySetInnerHTML={{ __html: project.contentHtml }}
+      />
+    ) : null;
+    return { project, detail };
+  });
 
   const listJsonLd =
     projects.length > 0

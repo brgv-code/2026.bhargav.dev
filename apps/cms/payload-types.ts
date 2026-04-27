@@ -82,6 +82,11 @@ export interface Config {
     streaks: Streak;
     notebooks: Notebook;
     documents: Document;
+    education: Education;
+    research: Research;
+    community: Community;
+    skills: Skill;
+    languages: Language;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -104,6 +109,11 @@ export interface Config {
     streaks: StreaksSelect<false> | StreaksSelect<true>;
     notebooks: NotebooksSelect<false> | NotebooksSelect<true>;
     documents: DocumentsSelect<false> | DocumentsSelect<true>;
+    education: EducationSelect<false> | EducationSelect<true>;
+    research: ResearchSelect<false> | ResearchSelect<true>;
+    community: CommunitySelect<false> | CommunitySelect<true>;
+    skills: SkillsSelect<false> | SkillsSelect<true>;
+    languages: LanguagesSelect<false> | LanguagesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -469,8 +479,15 @@ export interface WorkExperience {
   company: string;
   role: string;
   date_range?: string | null;
+  location?: string | null;
+  summary?: string | null;
   logo?: (number | null) | Media;
-  tech_stack?: string | null;
+  tech?:
+    | {
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
   bullets?:
     | {
         label: string;
@@ -478,6 +495,7 @@ export interface WorkExperience {
         id?: string | null;
       }[]
     | null;
+  order?: number | null;
   /**
    * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
    */
@@ -908,6 +926,233 @@ export interface Notebook {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "education".
+ */
+export interface Education {
+  id: number;
+  institution: string;
+  degree: string;
+  location?: string | null;
+  startYear?: string | null;
+  endYear?: string | null;
+  note?: string | null;
+  order?: number | null;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "research".
+ */
+export interface Research {
+  id: number;
+  title: string;
+  subtitle?: string | null;
+  institution?: string | null;
+  year?: string | null;
+  description?: string | null;
+  url?: string | null;
+  order?: number | null;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "community".
+ */
+export interface Community {
+  id: number;
+  name: string;
+  role: string;
+  url?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  description?: string | null;
+  order?: number | null;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "skills".
+ */
+export interface Skill {
+  id: number;
+  category: string;
+  items?:
+    | {
+        name: string;
+        id?: string | null;
+      }[]
+    | null;
+  order?: number | null;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "languages".
+ */
+export interface Language {
+  id: number;
+  language: string;
+  level: string;
+  order?: number | null;
+  /**
+   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   */
+  markdownInput?: string | null;
+  /**
+   * Auto-populated from the Markdown above, or edit directly.
+   */
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Server-rendered HTML for use in your frontend.
+   */
+  contentHtml?: string | null;
+  /**
+   * Or choose an existing Markdown document to use its content.
+   */
+  sourceDocument?: (number | null) | Document;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -989,6 +1234,26 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'documents';
         value: number | Document;
+      } | null)
+    | ({
+        relationTo: 'education';
+        value: number | Education;
+      } | null)
+    | ({
+        relationTo: 'research';
+        value: number | Research;
+      } | null)
+    | ({
+        relationTo: 'community';
+        value: number | Community;
+      } | null)
+    | ({
+        relationTo: 'skills';
+        value: number | Skill;
+      } | null)
+    | ({
+        relationTo: 'languages';
+        value: number | Language;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1171,8 +1436,15 @@ export interface WorkExperienceSelect<T extends boolean = true> {
   company?: T;
   role?: T;
   date_range?: T;
+  location?: T;
+  summary?: T;
   logo?: T;
-  tech_stack?: T;
+  tech?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
   bullets?:
     | T
     | {
@@ -1180,6 +1452,7 @@ export interface WorkExperienceSelect<T extends boolean = true> {
         href?: T;
         id?: T;
       };
+  order?: T;
   markdownInput?: T;
   content?: T;
   contentHtml?: T;
@@ -1349,6 +1622,98 @@ export interface DocumentsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "education_select".
+ */
+export interface EducationSelect<T extends boolean = true> {
+  institution?: T;
+  degree?: T;
+  location?: T;
+  startYear?: T;
+  endYear?: T;
+  note?: T;
+  order?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "research_select".
+ */
+export interface ResearchSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  institution?: T;
+  year?: T;
+  description?: T;
+  url?: T;
+  order?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "community_select".
+ */
+export interface CommunitySelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
+  url?: T;
+  startDate?: T;
+  endDate?: T;
+  description?: T;
+  order?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "skills_select".
+ */
+export interface SkillsSelect<T extends boolean = true> {
+  category?: T;
+  items?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
+  order?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "languages_select".
+ */
+export interface LanguagesSelect<T extends boolean = true> {
+  language?: T;
+  level?: T;
+  order?: T;
+  markdownInput?: T;
+  content?: T;
+  contentHtml?: T;
+  sourceDocument?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -1396,6 +1761,7 @@ export interface Profile {
   name: string;
   tagline?: string | null;
   bio?: string | null;
+  resume_summary?: string | null;
   available_for_work?: boolean | null;
   github?: string | null;
   x?: string | null;
@@ -1412,6 +1778,7 @@ export interface ProfileSelect<T extends boolean = true> {
   name?: T;
   tagline?: T;
   bio?: T;
+  resume_summary?: T;
   available_for_work?: T;
   github?: T;
   x?: T;

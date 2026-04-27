@@ -64,6 +64,13 @@ export function NavbarNavLinks({ onNavClick }: NavbarNavLinksProps) {
         </Link> */}
 
         <Link
+          href="/resume"
+          onClick={onNavClick}
+          className={pathname === "/resume" ? "text-[var(--editorial-text)]" : "hover:text-[var(--editorial-text)] transition-colors"}
+        >
+          Resume
+        </Link>
+        <Link
           href="/favorites"
           onClick={onNavClick}
           className={`flex items-center gap-2 ${pathname === "/favorites" ? "text-[var(--editorial-text)]" : "hover:text-[var(--editorial-text)] transition-colors"}`}
