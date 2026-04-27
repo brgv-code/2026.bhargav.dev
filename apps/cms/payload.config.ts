@@ -72,6 +72,7 @@ const config = buildConfig({
         { name: "name", type: "text", required: true },
         { name: "tagline", type: "text" },
         { name: "bio", type: "textarea" },
+        { name: "resume_summary", type: "textarea" },
         { name: "available_for_work", type: "checkbox", defaultValue: true },
         { name: "github", type: "text" },
         { name: "x", type: "text" },

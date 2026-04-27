@@ -14,8 +14,14 @@ export const workExperienceCollection: CollectionConfig = {
     { name: "company", type: "text", required: true },
     { name: "role", type: "text", required: true },
     { name: "date_range", type: "text" },
+    { name: "location", type: "text" },
+    { name: "summary", type: "textarea" },
     { name: "logo", type: "upload", relationTo: slugs.media },
-    { name: "tech_stack", type: "text" },
+    {
+      name: "tech",
+      type: "array",
+      fields: [{ name: "label", type: "text", required: true }],
+    },
     {
       name: "bullets",
       type: "array",
@@ -24,5 +30,6 @@ export const workExperienceCollection: CollectionConfig = {
         { name: "href", type: "text" },
       ],
     },
+    { name: "order", type: "number", defaultValue: 0 },
   ],
 };

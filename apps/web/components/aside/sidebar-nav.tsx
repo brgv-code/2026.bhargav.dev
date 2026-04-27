@@ -12,13 +12,15 @@ import {
   Layers,
   StickyNote,
   BookOpen,
+  FileText,
 } from "lucide-react";
 
 const primaryLinks = [
   { href: "/", label: "Home", icon: Home },
   { href: "/writing", label: "Writing", icon: PenLine },
   { href: "/projects", label: "Projects", icon: Terminal },
-  { href: "/experience", label: "Experience", icon: Briefcase },
+  // { href: "/experience", label: "Experience", icon: Briefcase },
+  { href: "/resume", label: "Resume", icon: FileText },
   { href: "/about", label: "About", icon: User },
 ];
 

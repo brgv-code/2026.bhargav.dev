@@ -42,48 +42,63 @@ export function ExperienceSection({
         </div>
 
         <div className="flex flex-col">
-          {work.map((item) => (
-            <article key={item.id} className="px-6 py-5 border-b border-border">
-              <div className="flex items-baseline justify-between gap-4 mb-1">
-                <h3 className="text-sm font-semibold text-primary">
-                  {item.role}
-                </h3>
-                {item.date_range ? (
-                  <span className="text-xs text-muted shrink-0">
-                    {item.date_range}
-                  </span>
+          {work.map((item) => {
+            const tech = (item.tech ?? []).map((t) => t.label).filter(Boolean);
+            return (
+              <article key={item.id} className="px-6 py-5 border-b border-border">
+                <div className="flex items-baseline justify-between gap-4 mb-1">
+                  <h3 className="text-sm font-semibold text-primary">
+                    {item.role}
+                  </h3>
+                  {item.date_range ? (
+                    <span className="text-xs text-muted shrink-0">
+                      {item.date_range}
+                    </span>
+                  ) : null}
+                </div>
+                {item.company ? (
+                  <p className="text-xs font-medium text-accent mb-2">
+                    {item.company}
+                  </p>
                 ) : null}
-              </div>
-              {item.company ? (
-                <p className="text-xs font-medium text-accent mb-2">
-                  {item.company}
-                </p>
-              ) : null}
-              {item.bullets?.length ? (
-                <ul className="flex flex-col gap-1">
-                  {item.bullets.map((bullet) => (
-                    <li
-                      key={bullet.id}
-                      className="text-xs text-secondary leading-relaxed"
-                    >
-                      {bullet.href ? (
-                        <a
-                          href={bullet.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-primary transition-colors"
-                        >
-                          {bullet.label}
-                        </a>
-                      ) : (
-                        bullet.label
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </article>
-          ))}
+                {item.bullets?.length ? (
+                  <ul className="flex flex-col gap-1">
+                    {item.bullets.map((bullet) => (
+                      <li
+                        key={bullet.id}
+                        className="text-xs text-secondary leading-relaxed"
+                      >
+                        {bullet.href ? (
+                          <a
+                            href={bullet.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-primary transition-colors"
+                          >
+                            {bullet.label}
+                          </a>
+                        ) : (
+                          bullet.label
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {tech.length > 0 ? (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {tech.map((label, i) => (
+                      <span
+                        key={`${label}-${i}`}
+                        className="rounded border border-border bg-tag-bg px-2 py-0.5 text-2xs font-medium text-tag-text"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </article>
+            );
+          })}
         </div>
       </section>
     );

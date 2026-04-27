@@ -16,6 +16,11 @@ import { habitCompletionsCollection } from "./habit-completions";
 import { errorLogsCollection } from "./error-logs";
 import { streaksCollection } from "./streaks";
 import { notebooksCollection } from "./notebooks";
+import { educationCollection } from "./education";
+import { researchCollection } from "./research";
+import { communityCollection } from "./community";
+import { skillsCollection } from "./skills";
+import { languagesCollection } from "./languages";
 
 export { isLoggedIn, slugs } from "./constants";
 
@@ -39,5 +44,10 @@ export function getCollections(): CollectionConfig[] {
     streaksCollection,
     notebooksCollection,
     getDocumentsCollection(cmsDir),
+    educationCollection,
+    researchCollection,
+    communityCollection,
+    skillsCollection,
+    languagesCollection,
   ];
 }

@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import { fetchProjectsFromPayload, fetchWorkExperience } from "@/lib/data/cms";
-import { renderMarkdown } from "@/lib/markdown";
 import { cn } from "@/lib/utils";
 import { absoluteUrl, siteName } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/jsonld";
@@ -51,38 +49,21 @@ function parseDateRange(range?: string | null) {
   };
 }
 
-function parseTechStack(raw?: string | null): string[] {
-  if (!raw?.trim()) return [];
-  return raw
-    .split(/[,;|]/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
 export default async function ExperiencePage() {
   const [work, projects] = await Promise.all([
     fetchWorkExperience(),
     fetchProjectsFromPayload(5),
   ]);
 
-  const entries = await Promise.all(
-    work.map(async (item) => {
-      let detail: ReactNode = null;
-
-      if (item.markdownInput) {
-        detail = await renderMarkdown(item.markdownInput);
-      } else if (item.contentHtml) {
-        detail = (
-          <div
-            className="article-prose"
-            dangerouslySetInnerHTML={{ __html: item.contentHtml }}
-          />
-        );
-      }
-
-      return { item, detail };
-    }),
-  );
+  const entries = work.map((item) => {
+    const detail = item.contentHtml ? (
+      <div
+        className="article-prose"
+        dangerouslySetInnerHTML={{ __html: item.contentHtml }}
+      />
+    ) : null;
+    return { item, detail };
+  });
 
   const listJsonLd =
     work.length > 0
@@ -147,7 +128,7 @@ export default async function ExperiencePage() {
             ) : (
               <div>
                 {entries.map(({ item, detail }) => {
-                  const tech = parseTechStack(item.tech_stack);
+                  const tech = (item.tech ?? []).map((t) => t.label).filter(Boolean);
 
                   return (
                     <article

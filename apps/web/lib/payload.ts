@@ -115,6 +115,25 @@ export function resolveMediaUrl(
   return { ...media, url: resolveMediaSrc(media.url) };
 }
 
+/** Fetches the CV PDF from media — looks for the entry with alt = "cv-pdf". */
+export async function fetchCvPdf(): Promise<PayloadMedia | null> {
+  if (!cmsUrl) return null;
+  try {
+    const url = new URL(`${cmsUrl}/api/media`);
+    url.searchParams.set("where[alt][equals]", "cv-pdf");
+    url.searchParams.set("limit", "1");
+    url.searchParams.set("depth", "0");
+    const res = await fetch(url.toString(), { cache: "no-store" });
+    if (!res.ok) return null;
+    const data = (await res.json()) as PayloadListResult<PayloadMedia>;
+    const doc = data.docs?.[0];
+    if (!doc?.url) return null;
+    return { ...doc, url: resolveMediaSrc(doc.url) };
+  } catch {
+    return null;
+  }
+}
+
 export type PayloadTag = {
   id: number;
   name: string;
@@ -306,20 +325,16 @@ export type PayloadWorkExperience = {
   id: string;
   company: string;
   role: string;
-  date_range?: string;
+  date_range?: string | null;
+  location?: string | null;
+  summary?: string | null;
   logo?: PayloadMedia | number | null;
-  tech_stack?: string | null;
+  contentHtml?: string | null;
+  tech?: { id?: string; label: string }[] | null;
+  bullets?: { id: string; label: string; href?: string }[] | null;
+  order?: number | null;
   updatedAt?: string | null;
   createdAt?: string | null;
-
-  markdownInput?: string | null;
-
-  contentHtml?: string | null;
-  bullets?: {
-    id: string;
-    label: string;
-    href?: string;
-  }[];
 };
 
 export async function fetchAdjacentPosts(
@@ -386,6 +401,7 @@ export async function fetchWorkExperience(): Promise<PayloadWorkExperience[]> {
   try {
     const url = new URL(`${cmsUrl}/api/work-experience`);
     url.searchParams.set("limit", "100");
+    url.searchParams.set("sort", "order");
     url.searchParams.set("depth", "1");
 
     const res = await fetch(
@@ -774,6 +790,153 @@ export async function fetchNotebooks(): Promise<PayloadNotebook[]> {
     return data.docs ?? [];
   } catch (e) {
     logCmsWarning("Notebooks fetch error (is the CMS running?)", e);
+    return [];
+  }
+}
+
+// ─── CV collections ───────────────────────────────────────────────────────────
+
+export type PayloadEducation = {
+  id: number;
+  institution: string;
+  degree: string;
+  location?: string | null;
+  startYear?: string | null;
+  endYear?: string | null;
+  note?: string | null;
+  order?: number | null;
+  contentHtml?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+};
+
+export async function fetchEducation(): Promise<PayloadEducation[]> {
+  if (!cmsUrl) return [];
+  try {
+    const url = new URL(`${cmsUrl}/api/education`);
+    url.searchParams.set("limit", "50");
+    url.searchParams.set("sort", "order");
+    url.searchParams.set("depth", "0");
+    const res = await fetch(url.toString(), payloadFetchOptions({ tags: ["cv"], revalidate: 300 }));
+    if (!res.ok) { logCmsWarning(`Education fetch failed: ${res.status}`); return []; }
+    const data = (await res.json()) as PayloadListResult<PayloadEducation>;
+    return data.docs ?? [];
+  } catch (e) {
+    logCmsWarning("Education fetch error", e);
+    return [];
+  }
+}
+
+export type PayloadResearch = {
+  id: number;
+  title: string;
+  subtitle?: string | null;
+  institution?: string | null;
+  year?: string | null;
+  description?: string | null;
+  url?: string | null;
+  order?: number | null;
+  contentHtml?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+};
+
+export async function fetchResearch(): Promise<PayloadResearch[]> {
+  if (!cmsUrl) return [];
+  try {
+    const url = new URL(`${cmsUrl}/api/research`);
+    url.searchParams.set("limit", "50");
+    url.searchParams.set("sort", "order");
+    url.searchParams.set("depth", "0");
+    const res = await fetch(url.toString(), payloadFetchOptions({ tags: ["cv"], revalidate: 300 }));
+    if (!res.ok) { logCmsWarning(`Research fetch failed: ${res.status}`); return []; }
+    const data = (await res.json()) as PayloadListResult<PayloadResearch>;
+    return data.docs ?? [];
+  } catch (e) {
+    logCmsWarning("Research fetch error", e);
+    return [];
+  }
+}
+
+export type PayloadCommunity = {
+  id: number;
+  name: string;
+  role: string;
+  url?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  description?: string | null;
+  order?: number | null;
+  contentHtml?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+};
+
+export async function fetchCommunity(): Promise<PayloadCommunity[]> {
+  if (!cmsUrl) return [];
+  try {
+    const url = new URL(`${cmsUrl}/api/community`);
+    url.searchParams.set("limit", "50");
+    url.searchParams.set("sort", "order");
+    url.searchParams.set("depth", "0");
+    const res = await fetch(url.toString(), payloadFetchOptions({ tags: ["cv"], revalidate: 300 }));
+    if (!res.ok) { logCmsWarning(`Community fetch failed: ${res.status}`); return []; }
+    const data = (await res.json()) as PayloadListResult<PayloadCommunity>;
+    return data.docs ?? [];
+  } catch (e) {
+    logCmsWarning("Community fetch error", e);
+    return [];
+  }
+}
+
+export type PayloadSkillCategory = {
+  id: number;
+  category: string;
+  items?: { id?: string; name: string }[] | null;
+  order?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+};
+
+export async function fetchSkills(): Promise<PayloadSkillCategory[]> {
+  if (!cmsUrl) return [];
+  try {
+    const url = new URL(`${cmsUrl}/api/skills`);
+    url.searchParams.set("limit", "50");
+    url.searchParams.set("sort", "order");
+    url.searchParams.set("depth", "1");
+    const res = await fetch(url.toString(), payloadFetchOptions({ tags: ["cv"], revalidate: 300 }));
+    if (!res.ok) { logCmsWarning(`Skills fetch failed: ${res.status}`); return []; }
+    const data = (await res.json()) as PayloadListResult<PayloadSkillCategory>;
+    return data.docs ?? [];
+  } catch (e) {
+    logCmsWarning("Skills fetch error", e);
+    return [];
+  }
+}
+
+export type PayloadLanguage = {
+  id: number;
+  language: string;
+  level: string;
+  order?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+};
+
+export async function fetchLanguages(): Promise<PayloadLanguage[]> {
+  if (!cmsUrl) return [];
+  try {
+    const url = new URL(`${cmsUrl}/api/languages`);
+    url.searchParams.set("limit", "20");
+    url.searchParams.set("sort", "order");
+    url.searchParams.set("depth", "0");
+    const res = await fetch(url.toString(), payloadFetchOptions({ tags: ["cv"], revalidate: 300 }));
+    if (!res.ok) { logCmsWarning(`Languages fetch failed: ${res.status}`); return []; }
+    const data = (await res.json()) as PayloadListResult<PayloadLanguage>;
+    return data.docs ?? [];
+  } catch (e) {
+    logCmsWarning("Languages fetch error", e);
     return [];
   }
 }

@@ -17,6 +17,7 @@ export function getMediaCollection(cmsDir: string): CollectionConfig {
         "video/webm",
         "audio/mpeg",
         "audio/mp4",
+        "application/pdf",
       ],
     },
     access: {

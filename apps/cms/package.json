@@ -19,6 +19,8 @@
     "seed:habit-completions": "payload run ./scripts/seed-habit-completions.ts",
     "seed:runtime": "pnpm run seed:projects && pnpm run seed:books && pnpm run seed:favorites && pnpm run seed:habit-completions",
     "seed:runtime:dry-run": "pnpm run seed:projects -- --dry-run && pnpm run seed:books -- --dry-run && pnpm run seed:favorites -- --dry-run && pnpm run seed:habit-completions -- --dry-run",
+    "seed:resume": "payload run ./scripts/seed-resume.ts",
+    "seed:resume:dry-run": "payload run ./scripts/seed-resume.ts -- --dry-run",
     "backfill:activity": "payload run ./scripts/backfill-activity.ts",
     "backfill:activity:dry-run": "payload run ./scripts/backfill-activity.ts -- --dry-run"
   },

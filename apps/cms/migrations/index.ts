@@ -5,6 +5,7 @@ import * as migration_20260301_220000_ensure_markdown_columns from './20260301_2
 import * as migration_20260305_000000_notebooks from './20260305_000000_notebooks';
 import * as migration_20260307_220000_runtime_collections from './20260307_220000_runtime_collections';
 import * as migration_20260310_000000_streaks_sources_links from './20260310_000000_streaks_sources_links';
+import * as migration_20260427_000000_cv_collections from './20260427_000000_cv_collections';
 
 export const migrations = [
   {
@@ -41,5 +42,10 @@ export const migrations = [
     up: migration_20260310_000000_streaks_sources_links.up,
     down: migration_20260310_000000_streaks_sources_links.down,
     name: '20260310_000000_streaks_sources_links',
+  },
+  {
+    up: migration_20260427_000000_cv_collections.up,
+    down: migration_20260427_000000_cv_collections.down,
+    name: '20260427_000000_cv_collections',
   },
 ];
