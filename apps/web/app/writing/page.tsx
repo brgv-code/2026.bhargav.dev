@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { fetchBlogListPosts } from "@/lib/data/cms";
+import { TrackedLink } from "@/components/analytics/tracked-link";
 import { formatPostDate, formatReadTime } from "@/lib/format";
 import { tagNames } from "@/lib/data/cms";
 import { absoluteUrl, siteName } from "@/lib/seo";
@@ -91,14 +91,19 @@ export default async function WritingIndexPage() {
                     {readTime && <><span aria-hidden>•</span><span>{readTime}</span></>}
                     {primaryTag && <><span aria-hidden>•</span><span>{primaryTag}</span></>}
                   </div>
-                  <Link href={`/writing/${post.slug}`} className="group block mt-3">
+                  <TrackedLink
+                    href={`/writing/${post.slug}`}
+                    eventName="writing_click"
+                    eventParams={{ event_category: "content", title: post.title }}
+                    className="group block mt-3"
+                  >
                     <h2 className="font-serif text-2xl font-bold tracking-tight text-primary group-hover:underline decoration-2 underline-offset-4">
                       {post.title}
                     </h2>
                     {post.description && (
                       <p className="mt-2 text-secondary leading-relaxed">{post.description}</p>
                     )}
-                  </Link>
+                  </TrackedLink>
                 </article>
               );
             })}

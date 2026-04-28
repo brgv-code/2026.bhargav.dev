@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Download, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
+import { CvDownloadButton } from "@/components/resume/cv-download-button";
 import {
   fetchWorkExperience,
   fetchProjectsFromPayload,
@@ -81,16 +82,7 @@ export default async function ResumePage() {
               Resume
             </h1>
           </div>
-          {cvPdf?.url && (
-            <a
-              href={cvPdf.url}
-              download
-              className="inline-flex items-center gap-2 border border-border bg-surface px-3 py-2 text-xs uppercase tracking-wider text-muted hover:border-border-strong hover:text-primary transition-colors shrink-0"
-            >
-              <Download className="h-3.5 w-3.5" />
-              Download PDF
-            </a>
-          )}
+          {cvPdf?.url && <CvDownloadButton url={cvPdf.url} />}
         </div>
 
         <p className="mt-4 text-lg text-secondary font-serif leading-relaxed max-w-prose">
