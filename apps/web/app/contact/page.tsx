@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { Mail, Github, Twitter, Linkedin } from "lucide-react";
 import { fetchProfile } from "@/lib/data/cms";
 import { absoluteUrl, siteName } from "@/lib/seo";
 import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
-import { ContactLinks } from "@/components/contact/contact-links";
+import { ContactLinks, type ContactLink } from "@/components/contact/contact-links";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -24,13 +23,12 @@ export const revalidate = 300;
 export default async function ContactPage() {
   const profile = await fetchProfile();
 
-  const links = [
+  const links: ContactLink[] = [
     profile?.email && {
       label: "EMAIL",
       method: "email" as const,
       value: profile.email,
       href: `mailto:${profile.email}`,
-      icon: Mail,
     },
     profile?.github && {
       label: "GITHUB",
@@ -41,7 +39,6 @@ export default async function ContactPage() {
       href: profile.github.startsWith("http")
         ? profile.github
         : `https://github.com/${profile.github}`,
-      icon: Github,
     },
     profile?.x && {
       label: "TWITTER",
@@ -52,7 +49,6 @@ export default async function ContactPage() {
       href: profile.x.startsWith("http")
         ? profile.x
         : `https://x.com/${profile.x}`,
-      icon: Twitter,
     },
     profile?.linkedin && {
       label: "LINKEDIN",
@@ -63,9 +59,8 @@ export default async function ContactPage() {
       href: profile.linkedin.startsWith("http")
         ? profile.linkedin
         : `https://linkedin.com/in/${profile.linkedin}`,
-      icon: Linkedin,
     },
-  ].filter(Boolean) as React.ComponentProps<typeof ContactLinks>["links"];
+  ].filter(Boolean) as ContactLink[];
 
   return (
     <>
