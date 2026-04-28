@@ -1,5 +1,6 @@
 import React from "react";
 import { Github, Twitter, Linkedin, Rss } from "lucide-react";
+import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { TooltipProvider } from "@repo/ui";
@@ -20,6 +21,27 @@ import { SidebarNav } from "@/components/aside/sidebar-nav";
 import { DarkModeToggle } from "@/components/shared/dark-mode-toggle";
 import { MainCardShell } from "@/components/layout/main-card-shell";
 import "./globals.css";
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  axes: ["opsz"],
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
 
 const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
 const bingVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION;
@@ -100,7 +122,7 @@ export default async function RootLayout({
   const websiteId = `${siteUrl}#website`;
 
   return (
-    <html lang="en">
+    <html lang="en" className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="overflow-hidden font-sans antialiased bg-background text-primary">
         <ThemeProvider>
           <TooltipProvider delayDuration={80} skipDelayDuration={500}>

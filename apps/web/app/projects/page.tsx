@@ -1,38 +1,26 @@
 import type { Metadata } from "next";
-import { ExternalLink } from "lucide-react";
-import { fetchBlogListPosts, fetchProjectsFromPayload } from "@/lib/data/cms";
-import { caseStudyAnchor } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { ArrowUpRight } from "lucide-react";
+import { fetchProjectsFromPayload } from "@/lib/data/cms";
 import { absoluteUrl, siteName, siteUrl } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/jsonld";
 import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
-import { SidebarLinkPanel } from "@/components/sections/sidebar-link-panel";
 
 export const metadata: Metadata = {
   title: "Projects",
-  description: "Selected projects and case notes.",
-  alternates: {
-    canonical: absoluteUrl("/projects"),
-  },
+  description: "Things I've built — shipped, in beta, and archived.",
+  alternates: { canonical: absoluteUrl("/projects") },
   openGraph: {
     type: "website",
     title: "Projects",
-    description: "Selected projects and case notes.",
+    description: "Things I've built — shipped, in beta, and archived.",
     url: absoluteUrl("/projects"),
     siteName,
-    images: [
-      {
-        url: "/og-projects.svg",
-        width: 1200,
-        height: 630,
-        alt: "Projects",
-      },
-    ],
+    images: [{ url: "/og-projects.svg", width: 1200, height: 630, alt: "Projects" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Projects",
-    description: "Selected projects and case notes.",
+    description: "Things I've built — shipped, in beta, and archived.",
     images: ["/og-projects.svg"],
   },
 };
@@ -40,10 +28,27 @@ export const metadata: Metadata = {
 export const dynamic = "force-static";
 export const revalidate = 300;
 
-function formatStatus(status?: string | null) {
-  if (!status) return null;
-  return status.charAt(0).toUpperCase() + status.slice(1);
-}
+const statusStyles: Record<string, { className: string; style?: React.CSSProperties }> = {
+  active: {
+    className: "border",
+    style: {
+      background: "var(--palette-green-50)",
+      color: "var(--palette-green-600)",
+      borderColor: "var(--palette-green-200)",
+    },
+  },
+  wip: {
+    className: "border",
+    style: {
+      background: "var(--palette-amber-50)",
+      color: "var(--palette-amber-700)",
+      borderColor: "var(--palette-amber-200)",
+    },
+  },
+  archived: {
+    className: "border bg-highlight text-muted border-border",
+  },
+};
 
 function toYearDate(value?: string | null): string | undefined {
   if (!value) return undefined;
@@ -52,20 +57,7 @@ function toYearDate(value?: string | null): string | undefined {
 }
 
 export default async function ProjectsPage() {
-  const [projects, posts] = await Promise.all([
-    fetchProjectsFromPayload(),
-    fetchBlogListPosts(3),
-  ]);
-
-  const entries = projects.map((project) => {
-    const detail = project.contentHtml ? (
-      <div
-        className="article-prose"
-        dangerouslySetInnerHTML={{ __html: project.contentHtml }}
-      />
-    ) : null;
-    return { project, detail };
-  });
+  const projects = await fetchProjectsFromPayload();
 
   const listJsonLd =
     projects.length > 0
@@ -79,40 +71,17 @@ export default async function ProjectsPage() {
               ?.map((entry) => entry?.label?.trim())
               .filter((label): label is string => Boolean(label))
               .join(", ");
-            const offer =
-              project.offers &&
-              (project.offers.price ||
-                project.offers.priceCurrency ||
-                project.offers.availability ||
-                project.offers.url)
-                ? {
-                    "@type": "Offer",
-                    price: project.offers.price ?? undefined,
-                    priceCurrency: project.offers.priceCurrency ?? undefined,
-                    availability: project.offers.availability ?? undefined,
-                    url: project.offers.url ?? undefined,
-                  }
-                : undefined;
-            const hasAppFields = Boolean(
-              project.applicationCategory ||
-                project.operatingSystem ||
-                offer,
-            );
-
             return {
               "@type": "ListItem",
               position: index + 1,
               item: {
-                "@type": hasAppFields ? "SoftwareApplication" : "CreativeWork",
+                "@type": "CreativeWork",
                 name: title,
                 url,
                 description: project.description,
                 creator: { "@id": `${siteUrl}#person` },
                 dateCreated: toYearDate(project.year),
                 keywords: keywords || undefined,
-                applicationCategory: project.applicationCategory ?? undefined,
-                operatingSystem: project.operatingSystem ?? undefined,
-                offers: offer,
               },
             };
           }),
@@ -121,10 +90,6 @@ export default async function ProjectsPage() {
 
   return (
     <>
-      <div className="border-b border-border px-8 py-6">
-        <h1 className="text-2xl font-bold text-primary">Projects</h1>
-      </div>
-
       <BreadcrumbsJsonLd
         id="projects-breadcrumbs"
         items={[
@@ -134,129 +99,98 @@ export default async function ProjectsPage() {
       />
       {listJsonLd ? <JsonLd id="projects-list" data={listJsonLd} /> : null}
 
-      <div
-        className={cn(
-          "grid min-h-0",
-          posts.length > 0
-            ? "grid-cols-1 xl:grid-cols-home-main"
-            : "grid-cols-1",
-        )}
-      >
-        <div
-          className={cn(
-            "min-w-0",
-            posts.length > 0 && "xl:border-r xl:border-border",
-          )}
-        >
-          <section aria-label="Project list" className="pb-24">
-            {projects.length === 0 ? (
-              <p className="px-6 py-10 text-sm text-secondary border-b border-border">
-                No projects published yet. Check back soon.
-              </p>
-            ) : (
-              <div>
-                {entries.map(({ project, detail }) => {
+      <div className="mx-auto max-w-3xl px-8 py-16">
+        <p className="text-xs uppercase tracking-widest text-muted">What I&apos;ve shipped</p>
+        <h1 className="mt-3 font-serif text-5xl font-black tracking-tight text-primary">
+          Projects
+        </h1>
+        <p className="mt-4 text-lg text-muted font-serif italic max-w-prose">
+          A mix of tools I built because nothing else worked, and experiments that escaped the laptop.
+        </p>
+
+        {projects.length === 0 ? (
+          <p className="mt-14 text-sm text-muted">No projects published yet. Check back soon.</p>
+        ) : (
+          <div className="mt-14 space-y-4">
+            {projects.map((project) => {
               const title = project.title ?? project.name;
               const techLabels = Array.isArray(project.tech)
-                ? project.tech
-                    .map((entry) => entry?.label)
-                    .filter((label): label is string => Boolean(label))
+                ? project.tech.map((t) => t?.label).filter((l): l is string => Boolean(l))
                 : [];
-              const statusLabel = formatStatus(project.status ?? null);
-              const metaParts = [project.year ?? "", statusLabel ?? ""].filter(
-                Boolean,
-              );
+              const status = project.status?.toLowerCase();
+              const isRealUrl = project.url && project.url !== "#";
 
-              return (
-                <article
-                  key={project.id}
-                  id={`project-${project.id}`}
-                  className="border-b border-border px-6 py-6 content-visibility-auto"
-                >
-                  <div className="flex flex-col gap-4 max-w-3xl">
-                    <div className="flex items-baseline justify-between gap-4">
-                      <h3 className="min-w-0 text-sm font-semibold text-primary leading-snug">
-                        {project.url ? (
-                          <a
-                            href={project.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-accent transition-colors duration-normal inline-flex items-center gap-1.5"
+              const card = (
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h2 className="font-serif text-2xl font-bold tracking-tight text-primary">
+                        {title}
+                      </h2>
+                      {status && (() => {
+                        const s = statusStyles[status] ?? statusStyles.archived;
+                        return (
+                          <span
+                            className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full ${s.className}`}
+                            style={s.style}
                           >
-                            {title}
-                            <ExternalLink
-                              size={12}
-                              className="shrink-0 text-muted"
-                              aria-hidden="true"
-                            />
-                          </a>
-                        ) : (
-                          title
-                        )}
-                      </h3>
-                      {metaParts.length ? (
-                        <p className="text-xs text-muted shrink-0 tabular-nums">
-                          {metaParts.join(" · ")}
-                        </p>
-                      ) : null}
+                            {project.status}
+                          </span>
+                        );
+                      })()}
+                      {project.year && (
+                        <span className="text-xs text-muted tabular-nums">{project.year}</span>
+                      )}
                     </div>
 
-                    {project.description ? (
-                      <p className="text-xs text-secondary leading-relaxed">
-                        {project.description}
-                      </p>
-                    ) : null}
+                    {project.description && (
+                      <p className="mt-2 text-secondary leading-relaxed">{project.description}</p>
+                    )}
 
-                    {detail ? (
-                      <div className="article-prose">{detail}</div>
-                    ) : null}
-
-                    {techLabels.length ? (
-                      <div className="flex flex-wrap gap-1">
+                    {techLabels.length > 0 && (
+                      <div className="mt-4 flex flex-wrap gap-1.5">
                         {techLabels.map((label, i) => (
                           <span
                             key={`${label}-${i}`}
-                            className="px-1.5 py-0.5 text-2xs font-semibold bg-tag-bg text-tag-text"
+                            className="text-[10px] uppercase tracking-wider px-2 py-0.5 border border-border text-muted"
                           >
                             {label}
                           </span>
                         ))}
                       </div>
-                    ) : null}
-
-                    {project.github ? (
-                      <div className="pt-1">
-                        <a
-                          href={project.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-2xs text-muted hover:text-primary transition-colors duration-normal"
-                        >
-                          GitHub →
-                        </a>
-                      </div>
-                    ) : null}
+                    )}
                   </div>
-                </article>
-                );
-              })}
-              </div>
-            )}
-          </section>
-        </div>
+                  {isRealUrl && (
+                    <ArrowUpRight className="h-5 w-5 text-muted group-hover:text-primary transition-colors shrink-0 mt-1" />
+                  )}
+                </div>
+              );
 
-        {posts.length > 0 ? (
-          <SidebarLinkPanel
-            id="related-writing-heading"
-            title="Related writing"
-            viewAllHref="/writing"
-            items={posts.map((post) => ({
-              key: post.id,
-              href: `/writing/${post.slug}`,
-              label: caseStudyAnchor(post.title),
-            }))}
-          />
-        ) : null}
+              if (isRealUrl) {
+                return (
+                  <a
+                    key={project.id}
+                    href={project.url!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block rounded border border-border bg-surface p-6 hover:border-border-strong transition-colors"
+                  >
+                    {card}
+                  </a>
+                );
+              }
+
+              return (
+                <div
+                  key={project.id}
+                  className="rounded border border-border bg-surface p-6"
+                >
+                  {card}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </>
   );

@@ -18,13 +18,16 @@ export function BlogPostTocRail({ items, className }: Props) {
   return (
     <aside
       className={cn(
-        "hidden w-right-panel flex-col bg-surface border-l border-border lg:flex lg:sticky lg:top-writing-header lg:self-start",
+        "hidden w-right-panel flex-col bg-surface border-l border-border lg:flex",
         className,
       )}
     >
       <div
-        className="w-full overflow-y-auto px-6 pb-10 pt-6"
-        style={{ maxHeight: "calc(100vh - var(--header-height))" }}
+        className="sticky overflow-y-auto px-6 pb-10 pt-6"
+        style={{
+          top: "var(--writing-post-header-offset)",
+          maxHeight: "calc(100vh - var(--header-height))",
+        }}
       >
         <BlogPostTOC items={items} />
       </div>

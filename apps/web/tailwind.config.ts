@@ -119,6 +119,7 @@ const config = {
         semibold: "var(--weight-semibold)",
         bold: "var(--weight-bold)",
         extrabold: "var(--weight-extrabold)",
+        black: "var(--weight-black)",
       },
       letterSpacing: {
         tighter: "var(--tracking-tighter)",

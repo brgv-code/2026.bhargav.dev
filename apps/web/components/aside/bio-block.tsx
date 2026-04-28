@@ -5,11 +5,11 @@ type Props = {
 
 export function BioBlock({ name, tagline }: Props) {
   return (
-    <div className="flex flex-col gap-1">
-      <h1 className="font-serif italic font-semibold text-lg leading-tight text-primary">
-        {name}
+    <div className="flex flex-col gap-0.5">
+      <h1 className="font-serif font-black text-lg leading-tight text-primary">
+        {name.toLowerCase()}.
       </h1>
-      <p className="text-2xs font-semibold uppercase tracking-ultra text-muted leading-snug">
+      <p className="text-sm text-muted leading-snug">
         {tagline}
       </p>
     </div>

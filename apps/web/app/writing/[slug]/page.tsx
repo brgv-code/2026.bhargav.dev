@@ -236,7 +236,7 @@ export default async function WritingPostPage({ params }: Props) {
             <BlogPostMainColumn className="lg:col-start-1 lg:row-start-2 min-h-0">
               <header className={`${articleShellClass} pb-10`}>
                 <h1
-                  className="font-serif text-4xl md:text-6xl font-bold leading-[1.1] tracking-tight text-primary mb-6"
+                  className="font-serif text-4xl md:text-5xl xl:text-6xl font-black leading-[1.05] tracking-tight text-primary mb-6"
                   itemProp="headline"
                 >
                   {post.title}
@@ -244,12 +244,13 @@ export default async function WritingPostPage({ params }: Props) {
 
                 {post.description && (
                   <p
-                    className="font-sans text-base text-muted leading-relaxed mt-4"
+                    className="font-serif italic text-lg text-muted leading-relaxed mt-4"
                     itemProp="description"
                   >
                     {post.description}
                   </p>
                 )}
+                <hr className="mt-8 border-border" />
               </header>
 
               {cover?.url && (
@@ -277,6 +278,12 @@ export default async function WritingPostPage({ params }: Props) {
                     </p>
                   )}
                 </div>
+                <footer className="mt-16 pb-16 pt-8 border-t border-border flex items-center justify-between gap-4">
+                  <Link href="/writing" className="text-sm text-muted hover:text-primary transition-colors">
+                    ← All writing
+                  </Link>
+                  <p className="text-sm text-muted">Thanks for reading.</p>
+                </footer>
               </div>
             </BlogPostMainColumn>
 
@@ -313,7 +320,7 @@ export default async function WritingPostPage({ params }: Props) {
               </div>
 
               <h1
-                className="font-serif text-4xl md:text-6xl font-bold leading-[1.1] tracking-tight text-primary mb-6"
+                className="font-serif text-4xl md:text-5xl xl:text-6xl font-black leading-[1.05] tracking-tight text-primary mb-6"
                 itemProp="headline"
               >
                 {post.title}
@@ -321,12 +328,13 @@ export default async function WritingPostPage({ params }: Props) {
 
               {post.description && (
                 <p
-                  className="font-sans text-base text-muted leading-relaxed mt-4"
+                  className="font-serif italic text-lg text-muted leading-relaxed mt-4"
                   itemProp="description"
                 >
                   {post.description}
                 </p>
               )}
+              <hr className="mt-8 border-border" />
             </header>
 
             {cover?.url && (
@@ -352,6 +360,12 @@ export default async function WritingPostPage({ params }: Props) {
                   <p className="text-base text-muted">Content coming soon.</p>
                 )}
               </div>
+              <footer className="mt-16 pb-16 pt-8 border-t border-border flex items-center justify-between gap-4">
+                <Link href="/writing" className="text-sm text-muted hover:text-primary transition-colors">
+                  ← All writing
+                </Link>
+                <p className="text-sm text-muted">Thanks for reading.</p>
+              </footer>
             </div>
           </>
         )}
