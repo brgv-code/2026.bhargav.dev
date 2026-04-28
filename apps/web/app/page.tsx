@@ -29,7 +29,14 @@ export const metadata: Metadata = {
     description: defaultDescription,
     url: absoluteUrl("/"),
     siteName,
-    images: [{ url: "/og.svg", width: 1200, height: 630, alt: "Bhargav — Developer Portfolio" }],
+    images: [
+      {
+        url: "/og.svg",
+        width: 1200,
+        height: 630,
+        alt: "Bhargav — Developer Portfolio",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -38,9 +45,9 @@ export const metadata: Metadata = {
     images: ["/og.svg"],
   },
 };
-
+// move this to payload
 const FALLBACK_BIO =
-  "I'm Bhargav — a full-stack developer working on AI applications and developer tools. I write here when I learn something the hard way.";
+  "I'm Bhargav, a full-stack developer working on AI applications and developer tools. I write here when I learn something the hard way.";
 
 export default async function Home() {
   const [posts, projects, profile] = await Promise.all([
@@ -50,8 +57,8 @@ export default async function Home() {
   ]);
 
   const bio =
-    (profile as unknown as { resume_summary?: string | null })?.resume_summary ??
-    FALLBACK_BIO;
+    (profile as unknown as { resume_summary?: string | null })
+      ?.resume_summary ?? FALLBACK_BIO;
 
   const featuredProjects = projects.slice(0, 4);
 
@@ -77,7 +84,9 @@ export default async function Home() {
         <h1 className="mt-6 font-serif text-5xl xl:text-6xl font-black leading-[1.05] tracking-tight text-primary">
           I build software
           <br />
-          <span className="italic font-normal text-muted">and write about it.</span>
+          <span className="italic font-normal text-muted">
+            and write about it.
+          </span>
         </h1>
         <p className="mt-6 text-lg text-secondary max-w-prose font-serif leading-relaxed">
           {bio}
@@ -122,7 +131,9 @@ export default async function Home() {
                       {p.title}
                     </span>
                     <span className="shrink-0 text-xs uppercase tracking-wider text-muted tabular-nums">
-                      {formatPostDate(p.publishedAt ?? p.createdAt ?? p.updatedAt)}
+                      {formatPostDate(
+                        p.publishedAt ?? p.createdAt ?? p.updatedAt
+                      )}
                     </span>
                   </Link>
                 </li>
@@ -160,7 +171,9 @@ export default async function Home() {
                       className="group rounded border border-border bg-surface p-5 hover:border-border-strong transition-colors block"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-serif text-lg font-bold text-primary">{title}</h3>
+                        <h3 className="font-serif text-lg font-bold text-primary">
+                          {title}
+                        </h3>
                         <ArrowUpRight className="h-4 w-4 text-muted group-hover:text-primary transition-colors shrink-0 mt-0.5" />
                       </div>
                       {proj.description && (
@@ -188,7 +201,9 @@ export default async function Home() {
                     key={proj.id}
                     className="rounded border border-border bg-surface p-5"
                   >
-                    <h3 className="font-serif text-lg font-bold text-primary">{title}</h3>
+                    <h3 className="font-serif text-lg font-bold text-primary">
+                      {title}
+                    </h3>
                     {proj.description && (
                       <p className="mt-2 text-sm text-secondary leading-relaxed">
                         {proj.description}
@@ -214,9 +229,10 @@ export default async function Home() {
         )}
 
         <hr className="my-20 border-border" />
-        <p className="font-serif italic text-muted">
-          &ldquo;Treat your schema like production code. Version it. Review it. Never push it.&rdquo;
-        </p>
+        {/* <p className="font-serif italic text-muted">
+          &ldquo;Treat your schema like production code. Version it. Review it.
+          Never push it.&rdquo;
+        </p> */}
       </div>
     </>
   );

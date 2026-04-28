@@ -113,7 +113,7 @@ export default async function RootLayout({
   const profile = await fetchProfile();
   const name = profile?.name ?? "Bhargav";
   const tagline = profile?.tagline ?? "Fullstack & AI Developer";
-  const resumeUrl = process.env.NEXT_PUBLIC_RESUME_URL ?? "/resume.pdf";
+  // const resumeUrl = process.env.NEXT_PUBLIC_RESUME_URL ?? "/resume.pdf";
   const githubUrl = profile?.github ?? process.env.NEXT_PUBLIC_GITHUB_URL;
   const twitterUrl = profile?.x ?? process.env.NEXT_PUBLIC_TWITTER_URL;
   const linkedinUrl = profile?.linkedin ?? process.env.NEXT_PUBLIC_LINKEDIN_URL;
@@ -122,7 +122,10 @@ export default async function RootLayout({
   const websiteId = `${siteUrl}#website`;
 
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
+    <html
+      lang="en"
+      className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+    >
       <body className="overflow-hidden font-sans antialiased bg-background text-primary">
         <ThemeProvider>
           <TooltipProvider delayDuration={80} skipDelayDuration={500}>
