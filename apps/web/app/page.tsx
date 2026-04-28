@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { TrackedLink } from "@/components/analytics/tracked-link";
 import {
   fetchLatestPosts,
   fetchProjectsFromPayload,
@@ -123,8 +124,10 @@ export default async function Home() {
             <ul className="mt-6 divide-y divide-border">
               {posts.map((p) => (
                 <li key={p.slug}>
-                  <Link
+                  <TrackedLink
                     href={`/writing/${p.slug}`}
+                    eventName="blog_post_click"
+                    eventParams={{ event_category: "content", post: p.title }}
                     className="group flex items-baseline justify-between gap-6 py-4 -mx-3 px-3 hover:bg-highlight transition-colors"
                   >
                     <span className="font-serif text-lg leading-snug text-primary">
@@ -135,7 +138,7 @@ export default async function Home() {
                         p.publishedAt ?? p.createdAt ?? p.updatedAt
                       )}
                     </span>
-                  </Link>
+                  </TrackedLink>
                 </li>
               ))}
             </ul>
@@ -163,11 +166,12 @@ export default async function Home() {
                 const tech = proj.tech ?? [];
                 if (isRealUrl) {
                   return (
-                    <a
+                    <TrackedLink
                       key={proj.id}
                       href={proj.url!}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      external
+                      eventName="project_click"
+                      eventParams={{ event_category: "portfolio", project: title }}
                       className="group rounded border border-border bg-surface p-5 hover:border-border-strong transition-colors block"
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -193,7 +197,7 @@ export default async function Home() {
                           ))}
                         </div>
                       )}
-                    </a>
+                    </TrackedLink>
                   );
                 }
                 return (

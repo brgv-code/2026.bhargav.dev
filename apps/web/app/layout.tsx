@@ -2,7 +2,9 @@ import React from "react";
 import { Github, Twitter, Linkedin, Rss } from "lucide-react";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
+import { AnalyticsPageView } from "@/components/analytics-page-view";
 import { TooltipProvider } from "@repo/ui";
 import { SoundProvider } from "@/components/providers/sound-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -43,6 +45,7 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
 const bingVerification = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION;
 
@@ -126,7 +129,22 @@ export default async function RootLayout({
       lang="en"
       className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >
+      {GA_ID && (
+        <>
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+            strategy="afterInteractive"
+          />
+          <Script id="ga4-init" strategy="afterInteractive">{`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_ID}');
+          `}</Script>
+        </>
+      )}
       <body className="overflow-hidden font-sans antialiased bg-background text-primary">
+        <AnalyticsPageView />
         <ThemeProvider>
           <TooltipProvider delayDuration={80} skipDelayDuration={500}>
             <SoundProvider>

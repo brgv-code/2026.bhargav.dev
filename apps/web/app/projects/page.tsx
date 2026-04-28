@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
 import { fetchProjectsFromPayload } from "@/lib/data/cms";
+import { TrackedLink } from "@/components/analytics/tracked-link";
 import { absoluteUrl, siteName, siteUrl } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/jsonld";
 import { BreadcrumbsJsonLd } from "@/components/seo/breadcrumbs";
@@ -168,15 +169,16 @@ export default async function ProjectsPage() {
 
               if (isRealUrl) {
                 return (
-                  <a
+                  <TrackedLink
                     key={project.id}
                     href={project.url!}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    external
+                    eventName="project_click"
+                    eventParams={{ event_category: "portfolio", project: title }}
                     className="group block rounded border border-border bg-surface p-6 hover:border-border-strong transition-colors"
                   >
                     {card}
-                  </a>
+                  </TrackedLink>
                 );
               }
 
