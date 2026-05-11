@@ -3,6 +3,14 @@ import {
   convertLexicalToHTML,
   type HTMLConvertersFunction,
 } from "@payloadcms/richtext-lexical/html";
+
+const cmsBase = process.env.PAYLOAD_PUBLIC_SERVER_URL ?? "";
+
+function resolveCmsUrl(url: string | undefined): string {
+  if (!url) return "";
+  return url.startsWith("http") || !cmsBase ? url : `${cmsBase}${url}`;
+}
+
 function s(v: unknown): string {
   return v != null ? String(v) : "";
 }
@@ -21,8 +29,37 @@ type BlockNode = { fields: Record<string, unknown> };
 
 type BlockConverterArgs = { node: BlockNode };
 
+type UploadNode = {
+  value?: {
+    url?: string;
+    alt?: string;
+    mimeType?: string;
+    filename?: string;
+    width?: number;
+    height?: number;
+    sizes?: Record<string, { url?: string; width?: number; height?: number; mimeType?: string; filesize?: number; filename?: string }>;
+  };
+  fields?: { alt?: string; caption?: string };
+};
+
 const htmlConverters: HTMLConvertersFunction = ({ defaultConverters }) => ({
   ...defaultConverters,
+  upload: ({ node }) => {
+    const uploadNode = node as unknown as UploadNode;
+    if (typeof uploadNode.value !== "object" || !uploadNode.value) return "";
+    const doc = uploadNode.value;
+    const url = resolveCmsUrl(doc.url);
+    if (!url) return "";
+    const alt = escapeHtml(uploadNode.fields?.alt ?? doc.alt ?? "");
+    const caption = uploadNode.fields?.caption
+      ? `<figcaption class="text-sm text-muted-foreground mt-2">${escapeHtml(s(uploadNode.fields.caption))}</figcaption>`
+      : "";
+    if (!doc.mimeType?.startsWith("image")) {
+      return `<a href="${escapeHtml(url)}" rel="noopener noreferrer">${escapeHtml(doc.filename ?? url)}</a>`;
+    }
+    const img = `<img src="${escapeHtml(url)}" alt="${alt}" width="${doc.width ?? ""}" height="${doc.height ?? ""}" class="rounded-lg w-full object-cover" loading="lazy" />`;
+    return `<figure class="my-6">${img}${caption}</figure>`;
+  },
   blocks: {
     ...(defaultConverters.blocks ?? {}),
     code: ({ node }: BlockConverterArgs) => {
