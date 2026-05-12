@@ -122,19 +122,19 @@ export default async function WritingPostPage({ params }: Props) {
   let body: ReactNode = null;
   if (post.markdownInput) {
     body = await renderMarkdown(post.markdownInput, { slug });
-  } else if (post.contentHtml) {
-    body = (
-      <div
-        className="article-body"
-        dangerouslySetInnerHTML={{ __html: post.contentHtml }}
-      />
-    );
   } else if (post.content) {
     body = (
       <RichText
         data={post.content}
         className="article-body"
         headingIds={post.tocItems?.map((t) => t.id) ?? []}
+      />
+    );
+  } else if (post.contentHtml) {
+    body = (
+      <div
+        className="article-body"
+        dangerouslySetInnerHTML={{ __html: post.contentHtml }}
       />
     );
   }
