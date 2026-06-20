@@ -1,15 +1,28 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { useEffect } from "react";
-import { trackEvent } from "@/lib/analytics";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, Suspense } from "react";
+import { GA_ID } from "@/lib/analytics";
 
-export function AnalyticsPageView() {
+function PageViewTracker() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    trackEvent("page_view", { page_path: pathname });
-  }, [pathname]);
+    if (!GA_ID || typeof window === "undefined") return;
+    const gtag = (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag;
+    if (!gtag) return;
+    const url = pathname + (searchParams?.toString() ? `?${searchParams}` : "");
+    gtag("config", GA_ID, { page_path: url });
+  }, [pathname, searchParams]);
 
   return null;
+}
+
+export function AnalyticsPageView() {
+  return (
+    <Suspense>
+      <PageViewTracker />
+    </Suspense>
+  );
 }

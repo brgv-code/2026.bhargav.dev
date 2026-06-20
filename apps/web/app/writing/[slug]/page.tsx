@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           alt: post.title,
         },
       ]
-    : [{ url: "/og-writing.svg", width: 1200, height: 630, alt: "Writing" }];
+    : undefined; // no cover → opengraph-image.tsx generates the card
 
   return {
     title: post.title,
@@ -67,7 +67,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       url,
       siteName,
-      images: ogImages,
+      ...(ogImages ? { images: ogImages } : {}),
       publishedTime: post.publishedAt ?? post.createdAt ?? undefined,
       modifiedTime: post.updatedAt ?? undefined,
       tags: tagNames(post.tags),
@@ -76,7 +76,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: post.title,
       description,
-      images: ogImages.map((img) => img.url),
+      ...(ogImages ? { images: ogImages.map((img) => img.url) } : {}),
     },
   };
 }

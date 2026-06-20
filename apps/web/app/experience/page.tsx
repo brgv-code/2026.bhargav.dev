@@ -18,20 +18,11 @@ export const metadata: Metadata = {
     description: "Roles, responsibilities, and work highlights.",
     url: absoluteUrl("/experience"),
     siteName,
-    images: [
-      {
-        url: "/og-experience.svg",
-        width: 1200,
-        height: 630,
-        alt: "Experience",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Experience",
     description: "Roles, responsibilities, and work highlights.",
-    images: ["/og-experience.svg"],
   },
 };
 
