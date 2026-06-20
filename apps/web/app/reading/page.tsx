@@ -21,13 +21,11 @@ export const metadata: Metadata = {
     description: "Current reading progress and notes.",
     url: absoluteUrl("/reading"),
     siteName,
-    images: [{ url: "/og-writing.svg", width: 1200, height: 630, alt: "Reading" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Reading",
     description: "Current reading progress and notes.",
-    images: ["/og-writing.svg"],
   },
 };
 

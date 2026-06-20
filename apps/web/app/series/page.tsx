@@ -16,13 +16,11 @@ export const metadata: Metadata = {
     description: "Multi-part writing series and thematic collections.",
     url: absoluteUrl("/series"),
     siteName,
-    images: [{ url: "/og-writing.svg", width: 1200, height: 630, alt: "Series" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Series",
     description: "Multi-part writing series and thematic collections.",
-    images: ["/og-writing.svg"],
   },
 };
 

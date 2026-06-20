@@ -17,13 +17,11 @@ export const metadata: Metadata = {
     description: "Essays, notes, and field reports on engineering and shipping software.",
     url: absoluteUrl("/writing"),
     siteName,
-    images: [{ url: "/og-writing.svg", width: 1200, height: 630, alt: "Writing" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Writing",
     description: "Essays, notes, and field reports on engineering and shipping software.",
-    images: ["/og-writing.svg"],
   },
 };
 

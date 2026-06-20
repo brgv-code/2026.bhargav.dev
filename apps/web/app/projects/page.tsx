@@ -16,13 +16,11 @@ export const metadata: Metadata = {
     description: "Things I've built — shipped, in beta, and archived.",
     url: absoluteUrl("/projects"),
     siteName,
-    images: [{ url: "/og-projects.svg", width: 1200, height: 630, alt: "Projects" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Projects",
     description: "Things I've built — shipped, in beta, and archived.",
-    images: ["/og-projects.svg"],
   },
 };
 
