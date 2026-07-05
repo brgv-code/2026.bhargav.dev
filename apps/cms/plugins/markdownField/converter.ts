@@ -38,29 +38,42 @@ class JSDOMAdapter {
 }
 
 /**
- * Converts pasted markdown into HTML (the reliable path — `marked` handles
- * links, images, and code fences) plus a best-effort Lexical tree.
+ * Renders markdown to HTML with `marked` (handles links, images, code fences).
+ * Never throws — on the rare parse failure it degrades to the escaped raw text.
+ * This is the reliable path: posts store this as `contentHtml` and the frontend
+ * renders `markdownInput` directly (see apps/web/lib/markdown.tsx), so no Lexical
+ * conversion is involved for markdown-authored content.
+ */
+export async function markdownToHtml(markdown: string): Promise<string> {
+  try {
+    return await marked(markdown, { async: true, gfm: true, breaks: true });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn(`[markdownField] marked parsing failed, using raw text: ${msg}`);
+    return `<p>${escapeHtml(markdown)}</p>`;
+  }
+}
+
+/** A minimal valid Lexical editor state — used to clear the `content` field. */
+export function emptyLexicalRoot(): Record<string, unknown> {
+  return EMPTY_ROOT();
+}
+
+/**
+ * Converts pasted markdown into HTML plus a best-effort Lexical tree. Retained
+ * for the document-upload path; the post paste flow uses `markdownToHtml` and
+ * skips Lexical entirely (see plugin.ts).
  *
- * IMPORTANT: this NEVER throws. The frontend renders `markdownInput` directly
- * (see apps/web/lib/markdown.tsx), so the HTML/Lexical outputs are secondary.
- * `convertHTMLToLexical` is fragile — it chokes on anchors/images whose node
- * shape doesn't match the target editor config — so a failure there must not be
- * allowed to reject the whole save. On failure we keep the good HTML and fall
- * back to an empty Lexical root.
+ * IMPORTANT: this NEVER throws. `convertHTMLToLexical` is fragile — it chokes on
+ * anchors/images whose node shape doesn't match the target editor config — so a
+ * failure there must not reject the whole save; we keep the HTML and fall back
+ * to an empty Lexical root.
  */
 export async function markdownToPayload(markdown: string): Promise<{
   html: string;
   lexicalJSON: Record<string, unknown>;
 }> {
-  let html: string;
-  try {
-    html = await marked(markdown, { async: true, gfm: true, breaks: true });
-  } catch (err) {
-    // marked almost never fails; degrade to the raw text rather than blocking.
-    const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[markdownField] marked parsing failed, using raw text: ${msg}`);
-    html = `<p>${escapeHtml(markdown)}</p>`;
-  }
+  const html = await markdownToHtml(markdown);
 
   let lexicalJSON: Record<string, unknown>;
   try {
