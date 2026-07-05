@@ -36,6 +36,12 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns,
     unoptimized: process.env.NODE_ENV === "development",
+    // The CMS (PAYLOAD_PUBLIC_SERVER_URL) is self-hosted and its host resolves
+    // to a private IP (localhost / VPS-internal). Next 16's image optimizer
+    // otherwise rejects those with a 400 `"url" parameter is not allowed`
+    // (SSRF guard, error E394). Image URLs come only from trusted, admin-authored
+    // CMS content, so bypassing the private-IP guard here is safe.
+    dangerouslyAllowLocalIP: true,
   },
   async redirects() {
     return [
