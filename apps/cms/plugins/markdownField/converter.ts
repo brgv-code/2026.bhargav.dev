@@ -37,6 +37,17 @@ class JSDOMAdapter {
   }
 }
 
+/**
+ * Converts pasted markdown into HTML (the reliable path — `marked` handles
+ * links, images, and code fences) plus a best-effort Lexical tree.
+ *
+ * IMPORTANT: this NEVER throws. The frontend renders `markdownInput` directly
+ * (see apps/web/lib/markdown.tsx), so the HTML/Lexical outputs are secondary.
+ * `convertHTMLToLexical` is fragile — it chokes on anchors/images whose node
+ * shape doesn't match the target editor config — so a failure there must not be
+ * allowed to reject the whole save. On failure we keep the good HTML and fall
+ * back to an empty Lexical root.
+ */
 export async function markdownToPayload(markdown: string): Promise<{
   html: string;
   lexicalJSON: Record<string, unknown>;
@@ -45,33 +56,38 @@ export async function markdownToPayload(markdown: string): Promise<{
   try {
     html = await marked(markdown, { async: true, gfm: true, breaks: true });
   } catch (err) {
+    // marked almost never fails; degrade to the raw text rather than blocking.
     const msg = err instanceof Error ? err.message : String(err);
-    throw new Error(`Markdown parsing failed: ${msg}`);
-  }
-
-  let editorConfig: Awaited<ReturnType<typeof getSanitizedConfig>>;
-  try {
-    editorConfig = await getSanitizedConfig();
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    throw new Error(`Lexical config failed: ${msg}`);
+    console.warn(`[markdownField] marked parsing failed, using raw text: ${msg}`);
+    html = `<p>${escapeHtml(markdown)}</p>`;
   }
 
   let lexicalJSON: Record<string, unknown>;
   try {
-    lexicalJSON = await convertHTMLToLexical({
-      html,
-      editorConfig,
-      JSDOM: JSDOMAdapter,
-    });
+    const editorConfig = await getSanitizedConfig();
+    lexicalJSON = ensureNonEmptyRoot(
+      await convertHTMLToLexical({
+        html,
+        editorConfig,
+        JSDOM: JSDOMAdapter,
+      })
+    );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    throw new Error(`HTML to Lexical conversion failed: ${msg}`);
+    console.warn(
+      `[markdownField] HTML→Lexical conversion failed (keeping markdown + HTML): ${msg}`
+    );
+    lexicalJSON = EMPTY_ROOT();
   }
 
-  const safeLexical = ensureNonEmptyRoot(lexicalJSON);
+  return { html, lexicalJSON };
+}
 
-  return { html, lexicalJSON: safeLexical };
+function escapeHtml(raw: string): string {
+  return raw
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 const EMPTY_PARAGRAPH = {
@@ -82,6 +98,20 @@ const EMPTY_PARAGRAPH = {
   format: "",
   indent: 0,
 };
+
+/** A minimal, valid Lexical editor state used when conversion can't run. */
+function EMPTY_ROOT(): Record<string, unknown> {
+  return {
+    root: {
+      type: "root",
+      version: 1,
+      direction: null,
+      format: "",
+      indent: 0,
+      children: [EMPTY_PARAGRAPH],
+    },
+  };
+}
 
 function ensureNonEmptyRoot<T extends Record<string, unknown>>(value: T): T {
   const root = value?.root as { children?: unknown[] } | undefined;

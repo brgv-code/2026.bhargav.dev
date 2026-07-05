@@ -197,7 +197,7 @@ export interface Tag {
    */
   description?: string | null;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -276,7 +276,7 @@ export interface Series {
    */
   description?: string | null;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -369,7 +369,7 @@ export interface Post {
    */
   audio_generated_at?: string | null;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -438,7 +438,7 @@ export interface Project {
     | null;
   github?: string | null;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -497,7 +497,7 @@ export interface WorkExperience {
     | null;
   order?: number | null;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -543,7 +543,7 @@ export interface Favorite {
   thoughts?: string | null;
   dateAdded: string;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -591,7 +591,7 @@ export interface Book {
   finishedAt?: string | null;
   summary?: string | null;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -643,7 +643,7 @@ export interface ReadingNote {
   thoughts?: string | null;
   habitCompletion?: (number | null) | HabitCompletion;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -694,7 +694,7 @@ export interface HabitCompletion {
   notes?: string | null;
   readingNote?: (number | null) | ReadingNote;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -753,7 +753,7 @@ export interface ErrorLog {
   resolvedAt?: string | null;
   resolutionNotes?: string | null;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -819,7 +819,7 @@ export interface Streak {
     | boolean
     | null;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -892,7 +892,7 @@ export interface Notebook {
       }[]
     | null;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -938,7 +938,7 @@ export interface Education {
   note?: string | null;
   order?: number | null;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -984,7 +984,7 @@ export interface Research {
   url?: string | null;
   order?: number | null;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -1030,7 +1030,7 @@ export interface Community {
   description?: string | null;
   order?: number | null;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -1077,7 +1077,7 @@ export interface Skill {
     | null;
   order?: number | null;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**
@@ -1119,7 +1119,7 @@ export interface Language {
   level: string;
   order?: number | null;
   /**
-   * Paste raw Markdown here and save — it will be auto-converted into the Content field below.
+   * This is the source of truth for the post body — it renders with syntax highlighting, links, and images. Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). The Content (Rich Text) field below is derived and optional; you do not need to edit it.
    */
   markdownInput?: string | null;
   /**

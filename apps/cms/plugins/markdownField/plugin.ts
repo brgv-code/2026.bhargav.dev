@@ -211,7 +211,9 @@ export const markdownPlugin =
             label: "Paste Markdown",
             admin: {
               description:
-                "Paste raw Markdown here and save — it will be auto-converted into the Content field below.",
+                "This is the source of truth for the post body — it renders with syntax highlighting, links, and images. " +
+                "Images: upload the file in the Media collection, copy its URL, and embed it as ![alt](/api/media/file/your-file.png). " +
+                "The Content (Rich Text) field below is derived and optional; you do not need to edit it.",
               style: { fontFamily: "monospace", minHeight: "200px" },
             },
           } satisfies Field);

@@ -3,6 +3,7 @@ import {
   convertLexicalToHTML,
   type HTMLConvertersFunction,
 } from "@payloadcms/richtext-lexical/html";
+import { codeToHtml } from "shiki";
 
 const cmsBase = process.env.PAYLOAD_PUBLIC_SERVER_URL ?? "";
 
@@ -24,6 +25,90 @@ function escapeHtml(raw: string): string {
     .replace(/'/g, "&#39;");
 }
 
+/**
+ * Syntax highlighting for Lexical code/sandpack blocks. Uses the same shiki
+ * themes as the markdown renderer (apps/web/lib/markdown.tsx) so both content
+ * paths look identical, and emits `data-theme="light dark"` on the <code> so the
+ * existing `code[data-theme*=" "] span` CSS colours the spans per theme.
+ * convertLexicalToHTML is synchronous, so we pre-highlight every code block and
+ * hand the converters a lookup map keyed by language + source.
+ */
+type CodeLike = { code: string; language: string };
+
+function codeKey(language: string, code: string): string {
+  return `${language} ${code}`;
+}
+
+function shikiLang(language: string): string {
+  return language === "plaintext" || !language ? "text" : language;
+}
+
+function collectCodeBlocks(data: SerializedEditorState): CodeLike[] {
+  const out: CodeLike[] = [];
+  const walk = (node: unknown): void => {
+    if (!node || typeof node !== "object") return;
+    const n = node as Record<string, unknown>;
+    const fields = n.fields as Record<string, unknown> | undefined;
+    if (n.type === "block" && fields && typeof fields === "object") {
+      const blockType = fields.blockType;
+      if (blockType === "code" || blockType === "sandpack") {
+        const code = typeof fields.code === "string" ? fields.code : "";
+        if (code) {
+          out.push({
+            code,
+            language:
+              blockType === "sandpack"
+                ? "tsx"
+                : typeof fields.language === "string"
+                  ? fields.language
+                  : "plaintext",
+          });
+        }
+      }
+    }
+    if (Array.isArray(n.children)) n.children.forEach(walk);
+  };
+  const root = (data as { root?: { children?: unknown[] } }).root;
+  if (Array.isArray(root?.children)) root.children.forEach(walk);
+  return out;
+}
+
+/** Highlights one block and returns just the inner <code> markup (spans). */
+async function highlightInner(code: string, language: string): Promise<string> {
+  try {
+    const html = await codeToHtml(code, {
+      lang: shikiLang(language),
+      themes: { light: "github-light", dark: "github-dark-dimmed" },
+      defaultColor: false,
+    });
+    const match = html.match(/<code[^>]*>([\s\S]*?)<\/code>/);
+    return match ? match[1] : escapeHtml(code);
+  } catch {
+    return escapeHtml(code);
+  }
+}
+
+async function buildHighlightMap(
+  data: SerializedEditorState
+): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  await Promise.all(
+    collectCodeBlocks(data).map(async ({ code, language }) => {
+      const key = codeKey(language, code);
+      if (!map.has(key)) map.set(key, await highlightInner(code, language));
+    })
+  );
+  return map;
+}
+
+/** Wraps highlighted (or escaped) code in the site's code-block container. */
+function codeContainer(inner: string, filename?: string): string {
+  const filenameBar = filename
+    ? `<div style="padding:0.5rem 0.75rem;border-bottom:1px solid var(--code-border);background:var(--code-header-bg);font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted)">${escapeHtml(filename)}</div>`
+    : "";
+  return `<div style="margin:2rem 0;border:1px solid var(--code-border);border-radius:var(--radius-md);overflow:hidden;background:var(--code-bg)">${filenameBar}<pre style="margin:0;padding:1.25rem;overflow-x:auto;font-size:0.875rem;line-height:1.65;background:var(--code-bg)"><code data-theme="light dark" style="font-family:var(--font-mono)">${inner}</code></pre></div>`;
+}
+
 /** Lexical block node shape (type: "block", blockType: slug, fields: {...}). */
 type BlockNode = { fields: Record<string, unknown> };
 
@@ -42,7 +127,9 @@ type UploadNode = {
   fields?: { alt?: string; caption?: string };
 };
 
-const htmlConverters: HTMLConvertersFunction = ({ defaultConverters }) => ({
+const makeHtmlConverters =
+  (highlightMap: Map<string, string>): HTMLConvertersFunction =>
+  ({ defaultConverters }) => ({
   ...defaultConverters,
   upload: ({ node }) => {
     const uploadNode = node as unknown as UploadNode;
@@ -68,10 +155,11 @@ const htmlConverters: HTMLConvertersFunction = ({ defaultConverters }) => ({
         language?: string;
         filename?: string;
       };
-      const filenameBar = fields.filename
-        ? `<div style="padding:0.5rem 0.75rem;border-bottom:1px solid var(--code-border);background:var(--code-header-bg);font-family:var(--font-mono);font-size:0.75rem;color:var(--color-text-muted)">${escapeHtml(s(fields.filename))}</div>`
-        : "";
-      return `<div style="margin:2rem 0;border:1px solid var(--code-border);border-radius:var(--radius-md);overflow:hidden;background:var(--code-bg)">${filenameBar}<pre style="margin:0;padding:1.25rem;overflow-x:auto;font-size:0.875rem;line-height:1.65;background:var(--code-bg)"><code style="font-family:var(--font-mono)">${escapeHtml(s(fields.code))}</code></pre></div>`;
+      const language = fields.language || "plaintext";
+      const inner =
+        highlightMap.get(codeKey(language, s(fields.code))) ??
+        escapeHtml(s(fields.code));
+      return codeContainer(inner, fields.filename);
     },
     callout: ({ node }: BlockConverterArgs) => {
       const fields = node.fields as {
@@ -150,7 +238,10 @@ const htmlConverters: HTMLConvertersFunction = ({ defaultConverters }) => ({
     },
     sandpack: ({ node }: BlockConverterArgs) => {
       const fields = node.fields as { code?: string };
-      return `<div style="margin:2rem 0;border:1px solid var(--code-border);border-radius:var(--radius-md);overflow:hidden;background:var(--code-bg)"><pre style="margin:0;padding:1.25rem;overflow-x:auto;font-size:0.875rem;line-height:1.65;background:var(--code-bg)"><code style="font-family:var(--font-mono)">${escapeHtml(s(fields.code))}</code></pre></div>`;
+      const inner =
+        highlightMap.get(codeKey("tsx", s(fields.code))) ??
+        escapeHtml(s(fields.code));
+      return codeContainer(inner);
     },
     aiPlayground: ({ node }: BlockConverterArgs) => {
       const fields = node.fields as {
@@ -198,14 +289,16 @@ type Props = {
   headingIds?: string[];
 };
 
-export function RichText({ data, className, headingIds }: Props) {
+export async function RichText({ data, className, headingIds }: Props) {
   if (!data || typeof data !== "object" || !("root" in data)) {
     return <p className="text-muted-foreground">No content yet.</p>;
   }
 
+  const highlightMap = await buildHighlightMap(data);
+
   let html = convertLexicalToHTML({
     data,
-    converters: htmlConverters,
+    converters: makeHtmlConverters(highlightMap),
     disableContainer: true,
   });
 
