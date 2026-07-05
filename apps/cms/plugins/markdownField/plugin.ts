@@ -3,7 +3,11 @@ import { APIError } from "payload";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import fs from "node:fs";
 import path from "node:path";
-import { markdownToPayload } from "./converter";
+import {
+  markdownToPayload,
+  markdownToHtml,
+  emptyLexicalRoot,
+} from "./converter";
 import { slugs, type SlugValues } from "@/collections/constants";
 import { extractPlainText } from "@/collections/blocks";
 
@@ -394,10 +398,15 @@ export const markdownPlugin =
               const rawMarkdown: string | undefined = data[inputName];
               if (rawMarkdown?.trim()) {
                 try {
-                  const { lexicalJSON, html } =
-                    await markdownToPayload(rawMarkdown);
+                  // Markdown is the source of truth: render it to HTML for the
+                  // `contentHtml` field and clear the Lexical `content` field.
+                  // We deliberately DON'T convert to Lexical — that path fails
+                  // Payload's strict richText validation on images (invalid
+                  // upload IDs), links, and unsupported heading levels, and the
+                  // frontend never renders `content` when `markdownInput` is set.
+                  const html = await markdownToHtml(rawMarkdown);
                   (data as Record<string, unknown>)[pasteContentName] =
-                    lexicalJSON;
+                    emptyLexicalRoot();
                   (data as Record<string, unknown>)[pasteHtmlName] = html;
                   if (existing.includes("title") && existing.includes("slug")) {
                     const title = titleFromMarkdown(rawMarkdown);

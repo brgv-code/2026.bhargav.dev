@@ -21,6 +21,52 @@ import {
   extractPlainText,
 } from "./blocks";
 
+/**
+ * Derives word count and h2–h4 headings straight from markdown. Anchor IDs use
+ * the same slug rule the frontend renderer applies to headings so the TOC rail
+ * links resolve. Fenced code blocks are skipped so `#` lines inside them aren't
+ * read as headings.
+ */
+function extractMarkdownMeta(markdown: string): {
+  wordCount: number;
+  headings: { id: string; text: string; level: number }[];
+} {
+  const headings: { id: string; text: string; level: number }[] = [];
+  const bodyLines: string[] = [];
+  let fence: string | null = null;
+  for (const raw of markdown.split(/\r?\n/)) {
+    const trimmed = raw.trim();
+    const fenceMatch = /^(```|~~~)/.exec(trimmed);
+    if (fenceMatch) {
+      if (fence === null) fence = fenceMatch[1];
+      else if (trimmed.startsWith(fence)) fence = null;
+      continue;
+    }
+    if (fence !== null) continue;
+    const headingMatch = /^(#{2,4})\s+(.+?)\s*#*$/.exec(trimmed);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const text = headingMatch[2]
+        .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+        .replace(/[*_`~]/g, "")
+        .trim();
+      const id = text
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+      if (id) headings.push({ id, text, level });
+    }
+    bodyLines.push(raw);
+  }
+  const plain = bodyLines
+    .join(" ")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/[#>*_`~]/g, " ");
+  const wordCount = plain.split(/\s+/).filter(Boolean).length;
+  return { wordCount, headings };
+}
+
 export const postsCollection: CollectionConfig = {
   slug: slugs.posts,
   admin: { useAsTitle: "title" },
@@ -167,7 +213,16 @@ export const postsCollection: CollectionConfig = {
   hooks: {
     beforeChange: [
       ({ data }: { data: Record<string, unknown> }) => {
-        if (data.content) {
+        // Markdown-first posts derive reading time + TOC straight from the
+        // markdown source (the Lexical `content` field is left empty for them).
+        const rawMarkdown =
+          typeof data.markdownInput === "string" ? data.markdownInput : "";
+        if (rawMarkdown.trim()) {
+          const { wordCount, headings } = extractMarkdownMeta(rawMarkdown);
+          data.wordCount = wordCount;
+          data.readingTime = Math.max(1, Math.ceil(wordCount / 200));
+          data.tocItems = headings;
+        } else if (data.content) {
           try {
             const text = extractPlainText(data.content);
             const wordCount = text.split(/\s+/).filter(Boolean).length;
@@ -223,7 +278,15 @@ export const postsCollection: CollectionConfig = {
         if (doc.audio_summary) return doc;
         const openaiKey = process.env.OPENAI_API_KEY?.trim();
         if (!openaiKey) return doc;
-        const bodyText = extractPlainText(doc.content);
+        // Prefer the rendered HTML (markdown-first posts leave `content` empty);
+        // fall back to the Lexical content for legacy lexical-authored posts.
+        const bodyText =
+          typeof doc.contentHtml === "string" && doc.contentHtml.trim()
+            ? doc.contentHtml
+                .replace(/<[^>]+>/g, " ")
+                .replace(/\s+/g, " ")
+                .trim()
+            : extractPlainText(doc.content);
         const fullText = [doc.title, doc.description, bodyText]
           .filter(Boolean)
           .join(". ");
