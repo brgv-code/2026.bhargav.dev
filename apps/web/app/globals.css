@@ -60,6 +60,14 @@
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+@font-face {
+  font-family: "Geist Pixel Square";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/geist-pixel-square/GeistPixel-Square.woff2") format("woff2");
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    DESIGN SYSTEM — Atelier Mono
    All raw values live here. Components consume only CSS variables — never
@@ -165,9 +173,11 @@
      dark mode overrides this to the brighter green-300 (#4db87a).         */
   --color-list-marker: var(--palette-green-500);
 
-  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
-  --font-serif: var(--font-fraunces), Georgia, serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-sans: "Geist Pixel Square", var(--font-inter), system-ui, -apple-system,
+    sans-serif;
+  --font-serif: "Geist Pixel Square", var(--font-fraunces), Georgia, serif;
+  --font-mono: "Geist Pixel Square", var(--font-jetbrains-mono), ui-monospace,
+    SFMono-Regular, monospace;
 
   /* Font size scale */
   --text-2xs: 0.625rem; /* 10px */
