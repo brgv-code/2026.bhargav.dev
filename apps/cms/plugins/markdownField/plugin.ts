@@ -59,30 +59,112 @@ function slugify(text: string): string {
 
 const SEO_DESCRIPTION_MAX_LEN = 160;
 
+function isBlank(value: unknown): boolean {
+  return (
+    value == null || (typeof value === "string" && value.trim().length === 0)
+  );
+}
+
+function truncateForSeo(
+  text: string,
+  maxLen = SEO_DESCRIPTION_MAX_LEN
+): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length <= maxLen) return clean;
+  const cut = clean.slice(0, maxLen - 3);
+  const lastSpace = cut.lastIndexOf(" ");
+  const body = lastSpace > maxLen / 2 ? cut.slice(0, lastSpace) : cut;
+  return body.trimEnd() + "...";
+}
+
+/** Strips the inline markdown that would otherwise leak into an SEO summary. */
+function stripInlineMarkdown(text: string): string {
+  return text
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/`([^`]*)`/g, "$1")
+    .replace(/[*_~]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * First paragraph of real prose in the markdown.
+ *
+ * The heading has to be skipped explicitly: a post opens with `# Title`
+ * followed by a blank line, so the first "paragraph" is the H1 itself and
+ * naively taking it produces a description identical to the title. Frontmatter,
+ * fenced code, horizontal rules, and image-only lines are skipped for the same
+ * reason — none of them read as a summary.
+ */
 function descriptionFromMarkdown(
   md: string,
   maxLen = SEO_DESCRIPTION_MAX_LEN
 ): string {
   const trimmed = md.trim();
   if (!trimmed) return "";
-  const firstPara = trimmed.split(/\n\n+/)[0] ?? trimmed;
-  const stripped = firstPara
-    .replace(/^#+\s*/, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (stripped.length <= maxLen) return stripped;
-  return stripped.slice(0, maxLen - 3).trim() + "...";
+  const body = trimmed.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, "");
+
+  const paragraphs: string[] = [];
+  let current: string[] = [];
+  let fence: string | null = null;
+  const flush = () => {
+    if (current.length) paragraphs.push(current.join(" "));
+    current = [];
+  };
+
+  for (const raw of body.split(/\r?\n/)) {
+    const line = raw.trim();
+    const fenceMatch = /^(```|~~~)/.exec(line);
+    if (fenceMatch) {
+      if (fence === null) fence = fenceMatch[1];
+      else if (line.startsWith(fence)) fence = null;
+      flush();
+      continue;
+    }
+    if (fence !== null) continue;
+    // Blank line, heading, or horizontal rule: paragraph break, no content.
+    if (!line || /^#{1,6}\s/.test(line) || /^([-*_])\1{2,}$/.test(line)) {
+      flush();
+      continue;
+    }
+    current.push(line.replace(/^>+\s*/, "").replace(/^(?:[-*+]|\d+\.)\s+/, ""));
+  }
+  flush();
+
+  const prose = paragraphs.map(stripInlineMarkdown).find((p) => p.length > 0);
+  return prose ? truncateForSeo(prose, maxLen) : "";
 }
 
-function descriptionFromPlainText(
-  plain: string,
+function lexicalBlocks(content: unknown): { type: string; text: string }[] {
+  const root = (content as { root?: { children?: unknown[] } } | null)?.root;
+  const children = Array.isArray(root?.children) ? root.children : [];
+  return children
+    .map((node) => ({
+      type: ((node as { type?: string })?.type ?? "") as string,
+      text: extractPlainText({ root: node }).trim(),
+    }))
+    .filter((block) => block.text.length > 0);
+}
+
+/** Heading of a parsed Markdown document — its first non-empty block. */
+function titleFromLexical(content: unknown): string {
+  const first = lexicalBlocks(content)[0];
+  return first ? first.text.slice(0, 200) : "";
+}
+
+/**
+ * First prose block of a parsed Markdown document, skipping the leading block
+ * (it supplies the title) and any further headings.
+ */
+function descriptionFromLexical(
+  content: unknown,
   maxLen = SEO_DESCRIPTION_MAX_LEN
 ): string {
-  const trimmed = plain.trim().replace(/\s+/g, " ");
-  if (!trimmed) return "";
-  const firstLine = trimmed.split(/\n/)[0] ?? trimmed;
-  if (firstLine.length <= maxLen) return firstLine;
-  return firstLine.slice(0, maxLen - 3).trim() + "...";
+  const body = lexicalBlocks(content)
+    .slice(1)
+    .find((block) => block.type !== "heading");
+  return body ? truncateForSeo(body.text, maxLen) : "";
 }
 
 export const markdownPlugin =
@@ -264,6 +346,23 @@ export const markdownPlugin =
         col.hooks.beforeChange = [
           async ({ data, req, originalDoc }) => {
             try {
+              const incoming = data as Record<string, unknown>;
+              const stored = originalDoc as
+                Record<string, unknown> | null | undefined;
+              /**
+               * Derived values fill blanks — they never overwrite. Anything the
+               * editor typed, or a value already stored and not part of this
+               * update, wins over whatever the markdown would produce. Clearing
+               * the field in the admin regenerates it on the next save.
+               */
+              const shouldDerive = (field: string): boolean => {
+                if (!existing.includes(field)) return false;
+                if (!isBlank(incoming[field])) return false;
+                // Absent from a partial update: keep what is already stored.
+                if (!(field in incoming) && !isBlank(stored?.[field]))
+                  return false;
+                return true;
+              };
               const sourceDocRef = data[documentFieldName];
               const docId =
                 typeof sourceDocRef === "object" &&
@@ -316,12 +415,8 @@ export const markdownPlugin =
                       : path.resolve(process.cwd(), uploadDir, filename);
                     if (fs.existsSync(filePath)) {
                       try {
-                        const rawMarkdown = fs.readFileSync(
-                          filePath,
-                          "utf-8"
-                        );
-                        const parsed =
-                          await markdownToPayload(rawMarkdown);
+                        const rawMarkdown = fs.readFileSync(filePath, "utf-8");
+                        const parsed = await markdownToPayload(rawMarkdown);
                         fromContent = parsed.lexicalJSON;
                         fromHtml = parsed.html;
                         try {
@@ -350,39 +445,30 @@ export const markdownPlugin =
                     (data as Record<string, unknown>)[pasteContentName] =
                       fromContent;
                     (data as Record<string, unknown>)[pasteHtmlName] = fromHtml;
-                    const plain = extractPlainText(fromContent);
-                    if (
-                      plain.trim() &&
-                      existing.includes("title") &&
-                      existing.includes("slug")
-                    ) {
-                      const firstLine =
-                        plain
-                          .split(/\n/)
-                          .map((l) => l.trim())
-                          .find(Boolean) ?? "Untitled";
-                      const title = firstLine.slice(0, 200);
-                      const slug = slugify(title) || "untitled";
-                      (data as Record<string, unknown>).title = title;
-                      (data as Record<string, unknown>).slug = slug;
+                    const derivedTitle = titleFromLexical(fromContent);
+                    const derivedDescription =
+                      descriptionFromLexical(fromContent);
+                    if (derivedTitle) {
+                      if (shouldDerive("title")) {
+                        (data as Record<string, unknown>).title = derivedTitle;
+                      }
+                      if (shouldDerive("slug")) {
+                        (data as Record<string, unknown>).slug =
+                          slugify(derivedTitle) || "untitled";
+                      }
                     }
-                    if (plain.trim() && existing.includes("description")) {
+                    if (derivedDescription && shouldDerive("description")) {
                       (data as Record<string, unknown>).description =
-                        descriptionFromPlainText(plain);
+                        derivedDescription;
                     }
-                    if (plain.trim() && existing.includes("meta")) {
+                    if (existing.includes("meta")) {
                       const meta = (data.meta as Record<string, unknown>) ?? {};
-                      const firstLine =
-                        plain
-                          .split(/\n/)
-                          .map((l) => l.trim())
-                          .find(Boolean) ?? "";
-                      const seoTitle = firstLine.slice(0, 200);
-                      const seoDesc = descriptionFromPlainText(plain);
                       (data as Record<string, unknown>).meta = {
                         ...meta,
-                        title: seoTitle,
-                        description: seoDesc,
+                        title: isBlank(meta.title) ? derivedTitle : meta.title,
+                        description: isBlank(meta.description)
+                          ? derivedDescription
+                          : meta.description,
                       };
                     }
                   }
@@ -408,24 +494,28 @@ export const markdownPlugin =
                   (data as Record<string, unknown>)[pasteContentName] =
                     emptyLexicalRoot();
                   (data as Record<string, unknown>)[pasteHtmlName] = html;
-                  if (existing.includes("title") && existing.includes("slug")) {
-                    const title = titleFromMarkdown(rawMarkdown);
-                    const slug = slugify(title) || "untitled";
-                    (data as Record<string, unknown>).title = title;
-                    (data as Record<string, unknown>).slug = slug;
+                  const derivedTitle = titleFromMarkdown(rawMarkdown);
+                  const derivedDescription =
+                    descriptionFromMarkdown(rawMarkdown);
+                  if (shouldDerive("title")) {
+                    (data as Record<string, unknown>).title = derivedTitle;
                   }
-                  if (existing.includes("description")) {
+                  if (shouldDerive("slug")) {
+                    (data as Record<string, unknown>).slug =
+                      slugify(derivedTitle) || "untitled";
+                  }
+                  if (shouldDerive("description")) {
                     (data as Record<string, unknown>).description =
-                      descriptionFromMarkdown(rawMarkdown);
+                      derivedDescription;
                   }
                   if (existing.includes("meta")) {
                     const meta = (data.meta as Record<string, unknown>) ?? {};
-                    const seoTitle = titleFromMarkdown(rawMarkdown);
-                    const seoDesc = descriptionFromMarkdown(rawMarkdown);
                     (data as Record<string, unknown>).meta = {
                       ...meta,
-                      title: seoTitle,
-                      description: seoDesc,
+                      title: isBlank(meta.title) ? derivedTitle : meta.title,
+                      description: isBlank(meta.description)
+                        ? derivedDescription
+                        : meta.description,
                     };
                   }
                   return data;
